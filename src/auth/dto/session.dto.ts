@@ -1,13 +1,13 @@
 import { Role } from 'generated/prisma/client';
 
 export interface SessionUser {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: Role;
-  image: string;
-  organization: string | null;
-  phone: string;
+  image?: string | null;
+  organization?: string | null;
+  phone?: string | null;
 }
 
 export interface SessionResponse {

@@ -15,7 +15,7 @@ import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { SessionsService } from './sessions.service';
-import { SessionResponse, SessionUser } from './dto/session.dto';
+import { SessionResponse } from './dto/session.dto';
 
 @Injectable()
 export class AuthService {
@@ -196,18 +196,16 @@ export class AuthService {
    * Get the current session information
    */
   async getCurrentSession(user: User): Promise<SessionResponse> {
-    const sessionUser: SessionUser = {
-      id: user.id.toString(),
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      image: '',
-      organization: null,
-      phone: '',
-    };
-
     return {
-      user: sessionUser,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        image: user.image,
+        phone: user.phone,
+        organization: user.organization,
+      },
     };
   }
 

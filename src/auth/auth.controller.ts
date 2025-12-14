@@ -77,13 +77,12 @@ export class AuthController {
 
     const token = authHeader.substring(7);
 
-    // Decode token to get sessionId
     const payload = await this.jwtService.verifyAsync(token, {
       secret: process.env.JWT_SECRET,
     });
 
     if (!payload.sessionId) {
-      throw new NotFoundException('Session ID not found in token');
+      throw new NotFoundException('Session not found');
     }
 
     return this.authService.logout(payload.sessionId);
