@@ -13,12 +13,11 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   private excludePassword(user: User): Omit<User, 'password'> {
-    const { password, ...result } = user;
+    const { password: _, ...result } = user;
     return result;
   }
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    // Check if user with email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
@@ -58,7 +57,6 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
       where: { id },
     });
