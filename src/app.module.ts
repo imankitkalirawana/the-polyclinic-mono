@@ -7,13 +7,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { OrganizationModule } from './system/organization/organization.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { User } from './users/entities/user.entity';
 import { Session } from './auth/entities/session.entity';
 import { Otp } from './auth/entities/otp.entity';
-import { Organization } from './system/organization/entities/organization.entity';
+import { Tenant } from './modules/public/tenants/entities/tenant.entity';
+import { TenantsModule } from './modules/public/tenants/tenants.module';
+import { CatsModule } from './modules/tenanted/cats/cats.module';
+import { publicOrmConfig } from './orm.config';
+import { DatabaseInitService } from './common/database-init.service';
 
 @Module({
   imports: [
@@ -24,28 +27,36 @@ import { Organization } from './system/organization/entities/organization.entity
       },
     ]),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [User, Session, Otp, Organization],
-      // IMPORTANT: synchronize is disabled due to schema conflicts with existing data
-      // To fix: Run the SQL script (fix-null-names.sql) to fix null values, then enable synchronize
-      // OR use TypeORM migrations for production (recommended)
-      synchronize: false,
-      // For development after fixing data, uncomment:
-      // synchronize: process.env.NODE_ENV !== 'production',
+      ...publicOrmConfig,
+      // Keep existing entities for backward compatibility
+      entities: [
+        ...(Array.isArray(publicOrmConfig.entities)
+          ? (publicOrmConfig.entities as any[])
+          : []),
+        User,
+        Session,
+        Otp,
+        Tenant,
+      ],
+      // Keep synchronize disabled to avoid breaking existing data
+      // Run fix-null-names.sql first if you need to fix data issues
+      // For new tables like 'tenants', create them manually or use migrations
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,
-    OrganizationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN as any },
       global: true,
     }),
+    TenantsModule,
+    CatsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    DatabaseInitService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

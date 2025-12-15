@@ -2,10 +2,12 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { TenancyMiddleware } from './modules/tenancy/tenancy.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
+  app.use(new TenancyMiddleware().use.bind(new TenancyMiddleware()));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
