@@ -8,4 +8,3 @@ export enum Role {
   NURSE = 'NURSE',
   RECEPTIONIST = 'RECEPTIONIST',
 }
-

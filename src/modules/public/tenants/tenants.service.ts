@@ -105,7 +105,9 @@ export class TenantsService implements OnModuleInit {
     updateTenantDto: UpdateTenantDto,
   ): Promise<Tenant> {
     const tenant = await this.findOne(slug);
-    await this.tenantRepository.update(tenant.id, updateTenantDto);
+    const { slug: _, ...safeUpdate } = updateTenantDto;
+
+    await this.tenantRepository.update(tenant.id, safeUpdate);
     return this.findOne(slug);
   }
 
