@@ -1,10 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Session } from 'generated/prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, MoreThan, LessThan } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { Session } from './entities/session.entity';
 
 @Injectable()
 export class SessionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Session)
+    private sessionRepository: Repository<Session>,
+  ) {}
 
   /**
    * Create a new session for a user
@@ -15,21 +20,21 @@ export class SessionsService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<Session> {
-    return this.prisma.session.create({
-      data: {
-        userId,
-        expiresAt,
-        ipAddress,
-        userAgent,
-      },
+    const session = this.sessionRepository.create({
+      sessionId: uuidv4(),
+      userId,
+      expiresAt,
+      ipAddress,
+      userAgent,
     });
+    return this.sessionRepository.save(session);
   }
 
   /**
    * Find a session by sessionId
    */
   async findSessionById(sessionId: string): Promise<Session | null> {
-    return this.prisma.session.findUnique({
+    return this.sessionRepository.findOne({
       where: {
         sessionId,
       },
@@ -40,15 +45,13 @@ export class SessionsService {
    * Find all active sessions for a user
    */
   async findSessionsByUserId(userId: number): Promise<Session[]> {
-    return this.prisma.session.findMany({
+    return this.sessionRepository.find({
       where: {
         userId,
-        expiresAt: {
-          gt: new Date(), // Only active sessions
-        },
+        expiresAt: MoreThan(new Date()), // Only active sessions
       },
-      orderBy: {
-        createdAt: 'desc',
+      order: {
+        createdAt: 'DESC',
       },
     });
   }
@@ -76,10 +79,8 @@ export class SessionsService {
    * Delete a session by sessionId
    */
   async deleteSession(sessionId: string): Promise<void> {
-    await this.prisma.session.delete({
-      where: {
-        sessionId,
-      },
+    await this.sessionRepository.delete({
+      sessionId,
     });
   }
 
@@ -87,10 +88,8 @@ export class SessionsService {
    * Delete all sessions for a user
    */
   async deleteAllUserSessions(userId: number): Promise<void> {
-    await this.prisma.session.deleteMany({
-      where: {
-        userId,
-      },
+    await this.sessionRepository.delete({
+      userId,
     });
   }
 
@@ -98,14 +97,10 @@ export class SessionsService {
    * Delete expired sessions (cleanup task)
    */
   async deleteExpiredSessions(): Promise<number> {
-    const result = await this.prisma.session.deleteMany({
-      where: {
-        expiresAt: {
-          lt: new Date(),
-        },
-      },
+    const result = await this.sessionRepository.delete({
+      expiresAt: LessThan(new Date()),
     });
-    return result.count;
+    return result.affected || 0;
   }
 
   /**
@@ -115,13 +110,16 @@ export class SessionsService {
     sessionId: string,
     newExpiresAt: Date,
   ): Promise<Session> {
-    return this.prisma.session.update({
-      where: {
-        sessionId,
-      },
-      data: {
-        expiresAt: newExpiresAt,
-      },
+    await this.sessionRepository.update(
+      { sessionId },
+      { expiresAt: newExpiresAt },
+    );
+    const session = await this.sessionRepository.findOne({
+      where: { sessionId },
     });
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+    return session;
   }
 }

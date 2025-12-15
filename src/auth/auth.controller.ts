@@ -18,7 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
-import { User } from 'generated/prisma/client';
+import { User } from '../users/entities/user.entity';
 
 @Controller()
 export class AuthController {

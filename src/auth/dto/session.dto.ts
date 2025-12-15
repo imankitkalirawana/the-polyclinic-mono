@@ -1,4 +1,4 @@
-import { Role } from 'generated/prisma/client';
+import { Role } from '../../common/enums/role.enum';
 
 export interface SessionUser {
   id: number;

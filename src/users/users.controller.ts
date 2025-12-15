@@ -15,7 +15,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Role, User } from 'generated/prisma/client';
+import { Role } from '../common/enums/role.enum';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {

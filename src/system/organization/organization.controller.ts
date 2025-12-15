@@ -11,7 +11,7 @@ import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'generated/prisma/client';
+import { Role } from '../../common/enums/role.enum';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller('organization')

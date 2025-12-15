@@ -3,14 +3,18 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from 'generated/prisma/client';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   private excludePassword(user: User): Omit<User, 'password'> {
     const { password: _, ...result } = user;
@@ -18,7 +22,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUser = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
 
@@ -26,23 +30,22 @@ export class UsersService {
       throw new ConflictException('User with this email already exists');
     }
 
-    const user = await this.prisma.user.create({
-      data: createUserDto,
-    });
+    const user = this.userRepository.create(createUserDto);
+    const savedUser = await this.userRepository.save(user);
 
-    return this.excludePassword(user);
+    return this.excludePassword(savedUser);
   }
 
   async findAll(): Promise<Omit<User, 'password'>[]> {
-    const users = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
+    const users = await this.userRepository.find({
+      order: { createdAt: 'DESC' },
     });
 
     return users.map((user) => this.excludePassword(user));
   }
 
   async findOne(id: number): Promise<Omit<User, 'password'>> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { id },
     });
 
@@ -54,7 +57,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { email },
     });
 
@@ -66,7 +69,7 @@ export class UsersService {
   }
 
   async userExistsByEmail(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { email },
       select: { id: true },
     });
@@ -78,7 +81,7 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUser = await this.userRepository.findOne({
       where: { id },
     });
 
@@ -88,7 +91,7 @@ export class UsersService {
 
     // Check if email is being updated and if it's already taken
     if (updateUserDto.email && updateUserDto.email !== existingUser.email) {
-      const emailTaken = await this.prisma.user.findUnique({
+      const emailTaken = await this.userRepository.findOne({
         where: { email: updateUserDto.email },
       });
 
@@ -97,16 +100,16 @@ export class UsersService {
       }
     }
 
-    const user = await this.prisma.user.update({
+    await this.userRepository.update(id, updateUserDto);
+    const user = await this.userRepository.findOne({
       where: { id },
-      data: updateUserDto,
     });
 
-    return this.excludePassword(user);
+    return this.excludePassword(user!);
   }
 
   async remove(id: number): Promise<void> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { id },
     });
 
@@ -114,8 +117,6 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    await this.prisma.user.delete({
-      where: { id },
-    });
+    await this.userRepository.delete(id);
   }
 }

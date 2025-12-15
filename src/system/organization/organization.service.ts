@@ -1,26 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Organization } from './entities/organization.entity';
 
 @Injectable()
 export class OrganizationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Organization)
+    private readonly organizationRepository: Repository<Organization>,
+  ) {}
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const organization = await this.prisma.organization.create({
-      data: createOrganizationDto,
-    });
-
-    return organization;
+    const organization = this.organizationRepository.create(
+      createOrganizationDto,
+    );
+    return this.organizationRepository.save(organization);
   }
 
   async findAll() {
-    return await this.prisma.organization.findMany();
+    return await this.organizationRepository.find();
   }
 
   async findOne(slug: string) {
-    const organization = await this.prisma.organization.findUnique({
+    const organization = await this.organizationRepository.findOne({
       where: { slug },
     });
 
@@ -32,7 +36,7 @@ export class OrganizationService {
   }
 
   async update(slug: string, updateOrganizationDto: UpdateOrganizationDto) {
-    const organization = await this.prisma.organization.findUnique({
+    const organization = await this.organizationRepository.findOne({
       where: { slug },
     });
 
@@ -40,14 +44,12 @@ export class OrganizationService {
       throw new NotFoundException('Organization not found');
     }
 
-    return await this.prisma.organization.update({
-      where: { slug },
-      data: updateOrganizationDto,
-    });
+    await this.organizationRepository.update({ slug }, updateOrganizationDto);
+    return this.organizationRepository.findOne({ where: { slug } });
   }
 
   async remove(slug: string) {
-    const organization = await this.prisma.organization.findUnique({
+    const organization = await this.organizationRepository.findOne({
       where: { slug },
     });
 
@@ -55,8 +57,7 @@ export class OrganizationService {
       throw new NotFoundException(`Organization with slug '${slug}' not found`);
     }
 
-    return await this.prisma.organization.delete({
-      where: { slug },
-    });
+    await this.organizationRepository.delete({ slug });
+    return organization;
   }
 }

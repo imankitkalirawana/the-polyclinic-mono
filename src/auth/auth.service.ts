@@ -5,22 +5,25 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterDto } from './dto/register.dto';
-import { User } from 'generated/prisma/client';
+import { User } from '../users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { SessionsService } from './sessions.service';
 import { SessionResponse } from './dto/session.dto';
+import { Otp } from './entities/otp.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Otp)
+    private otpRepository: Repository<Otp>,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -46,24 +49,23 @@ export class AuthService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 10); // OTP expires in 10 minutes
 
     // Invalidate any existing unverified OTPs for this email
-    await this.prisma.otp.updateMany({
-      where: {
+    await this.otpRepository.update(
+      {
         email,
         verified: false,
       },
-      data: {
+      {
         verified: true, // Mark as used/invalid
       },
-    });
+    );
 
     // Create new OTP record
-    await this.prisma.otp.create({
-      data: {
-        email,
-        otp,
-        expiresAt,
-      },
+    const otpRecord = this.otpRepository.create({
+      email,
+      otp,
+      expiresAt,
     });
+    await this.otpRepository.save(otpRecord);
 
     // TODO: Send OTP via email service (e.g., SendGrid, AWS SES, etc.)
     // For now, we'll just log it (remove in production)
@@ -83,14 +85,14 @@ export class AuthService {
     const { email, otp } = verifyOtpDto;
 
     // Find the most recent unverified OTP for this email
-    const otpRecord = await this.prisma.otp.findFirst({
+    const otpRecord = await this.otpRepository.findOne({
       where: {
         email,
         otp,
         verified: false,
       },
-      orderBy: {
-        createdAt: 'desc',
+      order: {
+        createdAt: 'DESC',
       },
     });
 
@@ -104,14 +106,14 @@ export class AuthService {
     }
 
     // Mark OTP as verified
-    await this.prisma.otp.update({
-      where: {
+    await this.otpRepository.update(
+      {
         id: otpRecord.id,
       },
-      data: {
+      {
         verified: true,
       },
-    });
+    );
 
     return {
       message: 'OTP verified successfully',

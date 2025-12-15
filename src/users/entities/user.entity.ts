@@ -4,13 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  Index,
 } from 'typeorm';
-import { Status } from '../../../common/enums/status.enum';
+import { Role } from '../../common/enums/role.enum';
 
-@Entity('organizations')
-@Index(['slug'])
-export class Organization {
+@Entity('users')
+export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,20 +16,26 @@ export class Organization {
   name: string;
 
   @Column({ unique: true })
-  slug: string;
+  email: string;
 
-  @Column({ nullable: true })
-  logoUrl: string | null;
+  @Column()
+  password: string;
 
   @Column({
     type: 'enum',
-    enum: Status,
-    default: Status.ACTIVE,
+    enum: Role,
+    default: Role.PATIENT,
   })
-  status: Status;
+  role: Role;
 
   @Column({ nullable: true })
-  subscriptionId: string | null;
+  phone: string | null;
+
+  @Column({ nullable: true })
+  image: string | null;
+
+  @Column({ nullable: true })
+  organizationSlug: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -39,3 +43,4 @@ export class Organization {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
