@@ -15,7 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Role } from '../common/enums/role.enum';
+import { Role } from 'src/common/enums/role.enum';
 import { User } from './entities/user.entity';
 
 @Controller('users')

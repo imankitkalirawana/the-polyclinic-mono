@@ -31,4 +31,3 @@ export class Session {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

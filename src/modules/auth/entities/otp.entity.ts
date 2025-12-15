@@ -28,4 +28,3 @@ export class Otp {
   @CreateDateColumn()
   createdAt: Date;
 }
-
