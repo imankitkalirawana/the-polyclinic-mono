@@ -39,4 +39,3 @@ export class PublicUser {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

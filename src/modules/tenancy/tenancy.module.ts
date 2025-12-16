@@ -3,6 +3,8 @@ import { REQUEST } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 import { CONNECTION } from './tenancy.symbols';
 import { getTenantConnectionConfig } from '../../tenant-orm.config';
+import { TenantMigrationService } from './services/tenant-migration.service';
+import { TenantAuthInitService } from './tenant-auth-init.service';
 
 // Connection pool to reuse connections
 const connections = new Map<string, DataSource>();
@@ -40,8 +42,12 @@ const connectionFactory = {
 };
 
 @Module({
-  providers: [connectionFactory],
-  exports: [CONNECTION],
+  providers: [
+    connectionFactory,
+    TenantMigrationService,
+    TenantAuthInitService,
+  ],
+  exports: [CONNECTION, TenantMigrationService, TenantAuthInitService],
 })
 export class TenancyModule implements OnModuleDestroy {
   async onModuleDestroy() {

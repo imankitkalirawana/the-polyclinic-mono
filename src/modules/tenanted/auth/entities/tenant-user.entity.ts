@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Role } from '../../../../common/enums/role.enum';
 import { Session } from './session.entity';
+import { Status } from 'src/common/enums/status.enum';
 
 @Entity('users')
 export class TenantUser {
@@ -30,6 +31,19 @@ export class TenantUser {
   })
   role: Role;
 
+  @Column({
+    type: 'enum',
+    enum: Status,
+    default: Status.ACTIVE,
+  })
+  status: Status;
+
+  @Column({ nullable: true })
+  image: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
 
@@ -39,4 +53,3 @@ export class TenantUser {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
