@@ -95,12 +95,12 @@ export class CreateAuthTables20240101000000 implements TenantMigration {
       );
     `);
 
-    await dataSource.query(`
+      await dataSource.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS "IDX_${schemaName}_sessions_token" 
       ON "${schemaName}".sessions(token);
     `);
 
-    await dataSource.query(`
+      await dataSource.query(`
       CREATE INDEX IF NOT EXISTS "IDX_${schemaName}_sessions_expiresAt" 
       ON "${schemaName}".sessions("expiresAt");
     `);
@@ -113,9 +113,12 @@ export class CreateAuthTables20240101000000 implements TenantMigration {
   }
 
   async down(dataSource: DataSource, schemaName: string): Promise<void> {
-    await dataSource.query(`DROP TABLE IF EXISTS "${schemaName}".sessions CASCADE;`);
-    await dataSource.query(`DROP TABLE IF EXISTS "${schemaName}".users CASCADE;`);
+    await dataSource.query(
+      `DROP TABLE IF EXISTS "${schemaName}".sessions CASCADE;`,
+    );
+    await dataSource.query(
+      `DROP TABLE IF EXISTS "${schemaName}".users CASCADE;`,
+    );
     await dataSource.query(`DROP TYPE IF EXISTS "${schemaName}".role;`);
   }
 }
-

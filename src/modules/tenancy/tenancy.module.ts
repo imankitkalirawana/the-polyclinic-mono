@@ -42,11 +42,7 @@ const connectionFactory = {
 };
 
 @Module({
-  providers: [
-    connectionFactory,
-    TenantMigrationService,
-    TenantAuthInitService,
-  ],
+  providers: [connectionFactory, TenantMigrationService, TenantAuthInitService],
   exports: [CONNECTION, TenantMigrationService, TenantAuthInitService],
 })
 export class TenancyModule implements OnModuleDestroy {

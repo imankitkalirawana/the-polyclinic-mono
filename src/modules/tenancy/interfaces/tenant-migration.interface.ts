@@ -22,4 +22,3 @@ export interface TenantMigration {
    */
   down(dataSource: DataSource, schemaName: string): Promise<void>;
 }
-

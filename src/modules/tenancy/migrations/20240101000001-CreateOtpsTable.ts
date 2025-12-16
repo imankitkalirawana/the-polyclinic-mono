@@ -30,12 +30,12 @@ export class CreateOtpsTable20240101000001 implements TenantMigration {
       );
     `);
 
-    await dataSource.query(`
+      await dataSource.query(`
       CREATE INDEX IF NOT EXISTS "IDX_${schemaName}_otps_email_code" 
       ON "${schemaName}".otps(email, code);
     `);
 
-    await dataSource.query(`
+      await dataSource.query(`
       CREATE INDEX IF NOT EXISTS "IDX_${schemaName}_otps_email_verified" 
       ON "${schemaName}".otps(email, verified);
     `);
@@ -48,7 +48,8 @@ export class CreateOtpsTable20240101000001 implements TenantMigration {
   }
 
   async down(dataSource: DataSource, schemaName: string): Promise<void> {
-    await dataSource.query(`DROP TABLE IF EXISTS "${schemaName}".otps CASCADE;`);
+    await dataSource.query(
+      `DROP TABLE IF EXISTS "${schemaName}".otps CASCADE;`,
+    );
   }
 }
-

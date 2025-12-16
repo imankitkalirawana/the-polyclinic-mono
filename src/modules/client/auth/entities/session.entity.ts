@@ -32,4 +32,3 @@ export class Session {
   @CreateDateColumn()
   createdAt: Date;
 }
-

@@ -6,13 +6,9 @@ import { PublicUser } from '../auth/entities/public-user.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([PublicUser], 'default'),
-    AuthModule,
-  ],
+  imports: [TypeOrmModule.forFeature([PublicUser], 'default'), AuthModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
 })
 export class UsersModule {}
-

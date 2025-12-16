@@ -7,4 +7,3 @@ export class BearerAuthGuard extends AuthGuard('bearer') {
     return super.canActivate(context);
   }
 }
-

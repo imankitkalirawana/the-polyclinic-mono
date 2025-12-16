@@ -1,9 +1,7 @@
 import { DataSource } from 'typeorm';
 import { TenantMigration } from '../interfaces/tenant-migration.interface';
 
-export class AddStatusImagePhoneToUsers20240101000002
-  implements TenantMigration
-{
+export class AddStatusImagePhoneToUsers20240101000002 implements TenantMigration {
   version = '20240101000002';
   name = 'AddStatusImagePhoneToUsers';
 
@@ -111,4 +109,3 @@ export class AddStatusImagePhoneToUsers20240101000002
     await dataSource.query(`DROP TYPE IF EXISTS "${schemaName}".status;`);
   }
 }
-

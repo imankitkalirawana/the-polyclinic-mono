@@ -4,4 +4,3 @@ export class RequestOtpDto {
   @IsEmail()
   email: string;
 }
-
