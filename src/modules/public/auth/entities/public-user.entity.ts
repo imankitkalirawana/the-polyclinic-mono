@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Role } from '../../../../common/enums/role.enum';
 import { Session } from './session.entity';
+import { SystemRole } from 'src/common/enums/role.enum';
 
 @Entity('users')
 export class PublicUser {
@@ -25,10 +25,10 @@ export class PublicUser {
 
   @Column({
     type: 'enum',
-    enum: Role,
-    default: Role.OPS,
+    enum: SystemRole,
+    default: SystemRole.ops,
   })
-  role: Role;
+  role: SystemRole;
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];

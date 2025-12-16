@@ -11,7 +11,17 @@ export class TenantMigrationService {
 
   constructor(private readonly dataSource: DataSource) {
     // Load all migrations from the migrations directory
+    // Object.values returns class constructors, so we need to instantiate them
     this.migrationList = Object.values(migrations)
+      .filter(
+        (MigrationClass) =>
+          MigrationClass &&
+          typeof MigrationClass === 'function' &&
+          MigrationClass.prototype,
+      )
+      .map(
+        (MigrationClass) => new (MigrationClass as new () => TenantMigration)(),
+      )
       .filter((migration) => migration.version && migration.name)
       .sort((a, b) => a.version.localeCompare(b.version));
   }
@@ -21,7 +31,9 @@ export class TenantMigrationService {
    */
   async runMigrations(tenantSlug: string): Promise<void> {
     const schemaName = getTenantSchemaName(tenantSlug);
-    this.logger.log(`Running migrations for tenant: ${tenantSlug} (schema: ${schemaName})`);
+    this.logger.log(
+      `Running migrations for tenant: ${tenantSlug} (schema: ${schemaName})`,
+    );
 
     try {
       // Ensure migrations table exists
@@ -51,7 +63,11 @@ export class TenantMigrationService {
             `Running migration ${migration.version}: ${migration.name} for tenant: ${tenantSlug}`,
           );
           await migration.up(this.dataSource, schemaName);
-          await this.recordMigration(schemaName, migration.version, migration.name);
+          await this.recordMigration(
+            schemaName,
+            migration.version,
+            migration.name,
+          );
           this.logger.log(
             `Successfully applied migration ${migration.version} for tenant: ${tenantSlug}`,
           );
@@ -66,7 +82,10 @@ export class TenantMigrationService {
 
       this.logger.log(`All migrations completed for tenant: ${tenantSlug}`);
     } catch (error) {
-      this.logger.error(`Error running migrations for tenant ${tenantSlug}:`, error);
+      this.logger.error(
+        `Error running migrations for tenant ${tenantSlug}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -88,7 +107,8 @@ export class TenantMigrationService {
       }
 
       // Get the last executed migration
-      const lastMigrationVersion = executedMigrations[executedMigrations.length - 1];
+      const lastMigrationVersion =
+        executedMigrations[executedMigrations.length - 1];
       const migration = this.migrationList.find(
         (m) => m.version === lastMigrationVersion,
       );
@@ -189,6 +209,10 @@ export class TenantMigrationService {
       );
       return result.map((row: any) => row.version);
     } catch (error) {
+      this.logger.error(
+        `Error getting executed migrations for schema ${schemaName}:`,
+        error,
+      );
       // Table might not exist yet
       return [];
     }
@@ -221,4 +245,3 @@ export class TenantMigrationService {
     );
   }
 }
-

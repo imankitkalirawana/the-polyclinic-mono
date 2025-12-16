@@ -10,15 +10,15 @@ export enum Role {
 }
 
 export enum SystemRole {
-  SUPERADMIN = 'SUPERADMIN',
-  MODERATOR = 'MODERATOR',
-  OPS = 'OPS',
+  superadmin = 'SUPERADMIN',
+  moderator = 'MODERATOR',
+  ops = 'OPS',
 }
 
 export enum ClientRole {
-  ADMIN = 'ADMIN',
-  PATIENT = 'PATIENT',
-  DOCTOR = 'DOCTOR',
-  NURSE = 'NURSE',
-  RECEPTIONIST = 'RECEPTIONIST',
+  admin = 'ADMIN',
+  patient = 'PATIENT',
+  doctor = 'DOCTOR',
+  nurse = 'NURSE',
+  receptionist = 'RECEPTIONIST',
 }
