@@ -14,6 +14,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { BaseTenantService } from '../../tenancy/base-tenant.service';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
+import { Role } from 'src/common/enums/role.enum';
 
 const patientSelect = [
   'patient.id AS id',
@@ -67,20 +68,21 @@ export class PatientsService extends BaseTenantService {
     // Check if patient already exists for this user
     const existingPatient = await patientRepository.findOne({
       where: { userId: createPatientDto.userId },
+      relations: ['user'],
     });
 
     if (existingPatient) {
       throw new ConflictException(
-        'Patient record already exists for this user',
+        `Patient record already exists for "${existingPatient.user.name}"`,
       );
     }
 
-    const patient = patientRepository.create({
-      userId: createPatientDto.userId,
-      gender: createPatientDto.gender,
-      age: createPatientDto.age,
-      address: createPatientDto.address,
-    });
+    const patient = patientRepository.create(createPatientDto);
+
+    if (user.role !== Role.PATIENT) {
+      user.role = Role.PATIENT;
+      await userRepository.save(user);
+    }
 
     const savedPatient = await patientRepository.save(patient);
 
