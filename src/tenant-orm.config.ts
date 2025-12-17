@@ -13,7 +13,7 @@ export function getTenantConnectionConfig(
     database: process.env.DB_NAME,
     schema: `tenant_${tenantSlug}`,
     entities: [
-      join(__dirname, './modules/tenanted/**/entities/*.entity.{ts,js}'),
+      join(__dirname, './modules/client/**/entities/*.entity.{ts,js}'),
     ],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',

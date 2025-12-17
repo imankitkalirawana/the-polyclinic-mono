@@ -12,6 +12,7 @@ import { AuthModule as PublicAuthModule } from './modules/public/auth/auth.modul
 import { AuthModule as TenantedAuthModule } from './modules/client/auth/auth.module';
 import { UsersModule as PublicUsersModule } from './modules/public/users/users.module';
 import { UsersModule as TenantedUsersModule } from './modules/client/users/users.module';
+import { PatientsModule } from './modules/client/patients/patients.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UsersModule as TenantedUsersModule } from './modules/client/users/users
     PublicUsersModule,
     TenantedAuthModule,
     TenantedUsersModule,
+    PatientsModule,
   ],
   controllers: [AppController],
   providers: [
