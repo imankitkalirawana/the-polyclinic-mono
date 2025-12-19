@@ -19,6 +19,8 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { JwtPayload } from './strategies/bearer.strategy';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
+import { CheckEmailDto } from './dto/check-email.dto';
+import { ApiResponse } from 'src/common/response-wrapper';
 
 @Injectable()
 export class AuthService {
@@ -85,7 +87,9 @@ export class AuthService {
     return this.connection.getRepository(Otp);
   }
 
-  async requestOtp(requestOtpDto: RequestOtpDto): Promise<{ message: string }> {
+  async requestOtp(
+    requestOtpDto: RequestOtpDto,
+  ): Promise<ApiResponse<{ message: string }>> {
     await this.ensureTablesExist();
     const otpRepository = this.getOtpRepository();
     const userRepository = this.getUserRepository();
@@ -126,10 +130,12 @@ export class AuthService {
     // For now, we'll log it (remove in production)
     this.logger.log(`OTP for ${requestOtpDto.email}`);
 
-    return { message: 'OTP sent successfully' };
+    return ApiResponse.success(null, 'OTP sent successfully');
   }
 
-  async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{ message: string }> {
+  async verifyOtp(
+    verifyOtpDto: VerifyOtpDto,
+  ): Promise<ApiResponse<{ message: string }>> {
     await this.ensureTablesExist();
     const otpRepository = this.getOtpRepository();
 
@@ -154,12 +160,22 @@ export class AuthService {
     otp.verified = true;
     await otpRepository.save(otp);
 
-    return { message: 'OTP verified successfully' };
+    return ApiResponse.success({ message: 'OTP verified successfully' });
   }
 
+  async checkEmail(
+    checkEmailDto: CheckEmailDto,
+  ): Promise<ApiResponse<{ exists: boolean }>> {
+    await this.ensureTablesExist();
+    const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({
+      where: { email: checkEmailDto.email },
+    });
+    return ApiResponse.success({ exists: !!user });
+  }
   async register(
     registerDto: RegisterDto,
-  ): Promise<{ user: TenantUser; token: string }> {
+  ): Promise<ApiResponse<{ user: TenantUser; token: string }>> {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
     const otpRepository = this.getOtpRepository();
@@ -213,10 +229,10 @@ export class AuthService {
     // Clean up verified OTP after successful registration
     await otpRepository.delete({ email: registerDto.email, verified: true });
 
-    return { user: savedUser, token };
+    return ApiResponse.success({ user: savedUser, token });
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<ApiResponse<{ token: string }>> {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
     const user = await userRepository.findOne({
@@ -236,10 +252,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    this.logger.log(`User ${user.email} logged in`);
+
     // Create session
     const token = await this.createSession(user);
 
-    return { token };
+    return ApiResponse.success({ token });
   }
 
   async logout(sessionId: string): Promise<void> {

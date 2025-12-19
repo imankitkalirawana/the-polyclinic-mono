@@ -17,6 +17,8 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from './decorators/current-user.decorator';
+import { CheckEmailDto } from './dto/check-email.dto';
+import { ApiResponse } from '../../../common/response-wrapper';
 
 @Controller('client/auth')
 export class AuthController {
@@ -34,6 +36,12 @@ export class AuthController {
     return this.authService.verifyOtp(verifyOtpDto);
   }
 
+  @Post('check-email')
+  @HttpCode(HttpStatus.OK)
+  async checkEmail(@Body() checkEmailDto: CheckEmailDto) {
+    return this.authService.checkEmail(checkEmailDto);
+  }
+
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -47,9 +55,9 @@ export class AuthController {
 
   @Delete('logout')
   @UseGuards(BearerAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async logout(@CurrentUser() user: CurrentUserPayload) {
     await this.authService.logout(user.sessionId);
-    return { message: 'Logged out successfully' };
+    return ApiResponse.success({ message: 'Logged out successfully' });
   }
 }
