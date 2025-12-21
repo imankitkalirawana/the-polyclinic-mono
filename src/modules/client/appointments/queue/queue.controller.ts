@@ -59,4 +59,16 @@ export class QueueController {
   remove(@Param('id') id: string) {
     return this.queueService.remove(id);
   }
+
+  @Get('doctor/:doctorId/queue')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  getQueueForDoctor(@Param('doctorId') doctorId: string) {
+    return this.queueService.getQueueForDoctor(doctorId);
+  }
+
+  @Patch('call/:doctorId')
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR)
+  callInQueue(@Param('doctorId') doctorId: string) {
+    return this.queueService.callInQueue(doctorId);
+  }
 }

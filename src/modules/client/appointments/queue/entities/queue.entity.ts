@@ -11,9 +11,11 @@ import { Patient } from '@/client/patients/entities/patient.entity';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { TenantUser } from '@/client/auth/entities/tenant-user.entity';
 
-enum QueueStatus {
+export enum QueueStatus {
   BOOKED = 'BOOKED',
-  PENDING = 'PENDING',
+  CALLED = 'CALLED',
+  IN_CONSULTATION = 'IN_CONSULTATION',
+  SKIPPED = 'SKIPPED',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
 }
@@ -45,14 +47,14 @@ export class Queue {
   doctor: Doctor;
 
   @Column({ type: 'uuid', nullable: true })
-  bookedBy: string | null;
+  bookedBy: string;
 
   @ManyToOne(() => TenantUser, (user) => user.id, {
     onDelete: 'SET NULL',
     nullable: true,
   })
   @JoinColumn({ name: 'bookedBy' })
-  bookedByUser: TenantUser | null;
+  bookedByUser: TenantUser;
 
   @Column({ type: 'int' })
   sequenceNumber: number;

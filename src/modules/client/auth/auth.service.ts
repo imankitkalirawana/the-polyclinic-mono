@@ -257,6 +257,10 @@ export class AuthService {
     // Create session
     const token = await this.createSession(user);
 
+    this.logger.debug(
+      `User ${user.email} logged in successfully, token: ${token}`,
+    );
+
     return ApiResponse.success({ token });
   }
 
@@ -306,5 +310,19 @@ export class AuthService {
       .from(Session)
       .where('expiresAt < :now', { now: new Date() })
       .execute();
+  }
+
+  async getSession(userId: string): Promise<
+    ApiResponse<{
+      user: Pick<TenantUser, 'id' | 'email' | 'name' | 'role' | 'phone'>;
+    }>
+  > {
+    const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'email', 'name', 'role', 'phone'],
+    });
+
+    return ApiResponse.success({ user });
   }
 }

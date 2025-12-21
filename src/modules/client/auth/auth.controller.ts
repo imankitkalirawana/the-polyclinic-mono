@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Delete,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -51,6 +52,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Get('session')
+  @UseGuards(BearerAuthGuard)
+  async getSession(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.getSession(user.userId);
   }
 
   @Delete('logout')
