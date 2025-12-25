@@ -20,6 +20,12 @@ export enum QueueStatus {
   COMPLETED = 'COMPLETED',
 }
 
+export interface Counter {
+  skip: number;
+  clockIn: number;
+  call: number;
+}
+
 @Entity('appointment_queue')
 export class Queue {
   @PrimaryGeneratedColumn('uuid')
@@ -83,6 +89,17 @@ export class Queue {
   })
   @JoinColumn({ name: 'completedBy' })
   completedByUser: TenantUser;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    default: {
+      skip: 0,
+      clockIn: 0,
+      call: 0,
+    },
+  })
+  counter: Counter;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;

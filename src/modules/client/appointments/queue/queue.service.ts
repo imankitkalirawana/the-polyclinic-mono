@@ -195,6 +195,9 @@ export class QueueService extends BaseTenantService {
       relations: queueRelations,
       order: {
         status: 'ASC',
+        counter: {
+          skip: 'ASC',
+        },
         sequenceNumber: 'ASC',
       },
     });
@@ -223,7 +226,10 @@ export class QueueService extends BaseTenantService {
   // Call queue by id
   async callQueue(id: string) {
     const queueRepository = this.getRepository(Queue);
-    const queue = await queueRepository.findOne({ where: { id } });
+    const queue = await queueRepository.findOne({
+      where: { id },
+      relations: queueRelations,
+    });
     if (!queue) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
@@ -237,15 +243,26 @@ export class QueueService extends BaseTenantService {
     }
 
     queue.status = QueueStatus.CALLED;
+    queue.counter = {
+      skip: queue.counter?.skip || 0,
+      clockIn: queue.counter?.clockIn || 0,
+      call: queue.counter?.call + 1 || 1,
+    };
     await queueRepository.save(queue);
 
-    return ApiResponse.success(null, 'Patient has been called');
+    return ApiResponse.success(
+      null,
+      `${queue.patient.user.name} has been called`,
+    );
   }
 
   // skip queue by id
   async skipQueue(id: string) {
     const queueRepository = this.getRepository(Queue);
-    const queue = await queueRepository.findOne({ where: { id } });
+    const queue = await queueRepository.findOne({
+      where: { id },
+      relations: queueRelations,
+    });
     if (!queue) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
@@ -264,9 +281,17 @@ export class QueueService extends BaseTenantService {
     }
 
     queue.status = QueueStatus.SKIPPED;
+    queue.counter = {
+      skip: queue.counter?.skip + 1 || 1,
+      clockIn: queue.counter?.clockIn || 0,
+      call: queue.counter?.call || 0,
+    };
     await queueRepository.save(queue);
 
-    return ApiResponse.success(null, 'Appointment has been skipped');
+    return ApiResponse.success(
+      null,
+      `${queue.patient.user.name}'s turn is skipped`,
+    );
   }
 
   // clock in
@@ -284,6 +309,11 @@ export class QueueService extends BaseTenantService {
     }
 
     queue.status = QueueStatus.IN_CONSULTATION;
+    queue.counter = {
+      skip: queue.counter?.skip || 0,
+      clockIn: queue.counter?.clockIn + 1 || 1,
+      call: queue.counter?.call || 0,
+    };
     queue.startedAt = new Date();
     await queueRepository.save(queue);
 
