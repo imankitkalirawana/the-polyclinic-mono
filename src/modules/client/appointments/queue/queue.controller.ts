@@ -21,6 +21,7 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from '../../auth/decorators/current-user.decorator';
+import { CompleteQueueDto } from './dto/compelete-queue.dto';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -42,6 +43,15 @@ export class QueueController {
     return this.queueService.findAll(date);
   }
 
+  @Get('doctor/:doctorId/queue')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  getQueueForDoctor(
+    @Param('doctorId') doctorId: string,
+    @Query('id') queueId?: string,
+  ) {
+    return this.queueService.getQueueForDoctor(doctorId, queueId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   findOne(@Param('id') id: string) {
@@ -60,15 +70,35 @@ export class QueueController {
     return this.queueService.remove(id);
   }
 
-  @Get('doctor/:doctorId/queue')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  getQueueForDoctor(@Param('doctorId') doctorId: string) {
-    return this.queueService.getQueueForDoctor(doctorId);
+  @Patch(':id/call')
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  callQueue(@Param('id') id: string) {
+    return this.queueService.callQueue(id);
   }
 
-  @Patch('call/:doctorId')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR)
-  callInQueue(@Param('doctorId') doctorId: string) {
-    return this.queueService.callInQueue(doctorId);
+  @Patch(':id/clock-in')
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  clockIn(@Param('id') id: string) {
+    return this.queueService.clockIn(id);
+  }
+
+  @Patch(':id/skip')
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  skipQueue(@Param('id') id: string) {
+    return this.queueService.skipQueue(id);
+  }
+
+  @Patch(':id/complete')
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  completeAppointmentQueue(
+    @Param('id') id: string,
+    @Body() completeQueueDto: CompleteQueueDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.queueService.completeAppointmentQueue(
+      id,
+      completeQueueDto,
+      user,
+    );
   }
 }

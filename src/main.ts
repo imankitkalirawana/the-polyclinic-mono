@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { TenancyMiddleware } from './modules/tenancy/tenancy.middleware';
 
@@ -30,6 +30,20 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: false,
       transform: true,
+      exceptionFactory: (errors) => {
+        const messages = errors
+          .map((error) => {
+            const firstConstraint = Object.values(error.constraints || {})[0];
+            return firstConstraint;
+          })
+          .filter(Boolean); // Remove any undefined values
+
+        return new BadRequestException({
+          message: messages,
+          error: 'Bad Request',
+          statusCode: 400,
+        });
+      },
     }),
   );
   await app.listen(process.env.PORT ?? 8000);

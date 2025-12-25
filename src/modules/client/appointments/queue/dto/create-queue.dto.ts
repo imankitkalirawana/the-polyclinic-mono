@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateQueueDto {
   @IsUUID()
@@ -8,4 +8,8 @@ export class CreateQueueDto {
   @IsUUID()
   @IsNotEmpty()
   doctorId: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
 }

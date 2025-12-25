@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, DataSource, In, MoreThanOrEqual } from 'typeorm';
+import { Between, DataSource, In, MoreThanOrEqual, Not } from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
@@ -18,9 +18,19 @@ import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { TenantUser } from '@/client/auth/entities/tenant-user.entity';
 import { ApiResponse } from 'src/common/response-wrapper';
 import { formatQueue } from './queue.helper';
+import { CompleteQueueDto } from './dto/compelete-queue.dto';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
+
+const queueRelations = [
+  'patient',
+  'patient.user',
+  'doctor',
+  'doctor.user',
+  'bookedByUser',
+  'completedByUser',
+];
 
 @Injectable()
 export class QueueService extends BaseTenantService {
@@ -78,7 +88,7 @@ export class QueueService extends BaseTenantService {
       where: {
         createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
       },
-      relations: ['patient.user', 'doctor.user', 'bookedByUser'],
+      relations: queueRelations,
       order: {
         sequenceNumber: 'ASC',
       },
@@ -93,13 +103,7 @@ export class QueueService extends BaseTenantService {
     await this.ensureTablesExist();
     const qb = await this.getRepository(Queue).findOne({
       where: { id },
-      relations: [
-        'patient',
-        'patient.user',
-        'doctor',
-        'doctor.user',
-        'bookedByUser',
-      ],
+      relations: queueRelations,
     });
     const formattedData = formatQueue(qb);
 
@@ -154,91 +158,169 @@ export class QueueService extends BaseTenantService {
     };
   }
 
-  async getQueueForDoctor(doctorId: string) {
-    const qb = await this.getRepository(Queue).find({
-      where: {
-        doctorId,
-        status: In([QueueStatus.BOOKED, QueueStatus.CALLED]),
-        createdAt: Between(todayStart, todayEnd),
-      },
-      relations: [
-        'patient',
-        'patient.user',
-        'doctor',
-        'doctor.user',
-        'bookedByUser',
-      ],
-      order: {
-        sequenceNumber: 'ASC',
-      },
-      take: 4,
-    });
+  async getQueueForDoctor(doctorId: string, queueId?: string) {
+    let requestedQueue: Queue | null = null;
 
-    const current = qb[0];
-    const next = qb.slice(1, 4);
+    this.logger.log(`Queue ID: ${queueId}`);
 
-    return {
-      current,
-      next,
-    };
-  }
-
-  async callInQueue(doctorId: string) {
-    // mark the queue as called
-
-    const doctor = await this.getRepository(Doctor).findOne({
-      where: { id: doctorId },
-    });
-
-    if (!doctor) {
-      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
-    }
-
-    const currentSequenceNumber = doctor.currentSequenceNumber || 1;
-
-    let queue = await this.getRepository(Queue).findOne({
-      where: {
-        doctorId,
-        sequenceNumber: currentSequenceNumber,
-        createdAt: Between(todayStart, todayEnd),
-      },
-    });
-
-    if (!queue) {
-      const nextQueue = await this.getQueueForDoctor(doctorId);
-      if (
-        nextQueue.current &&
-        nextQueue.current.status === QueueStatus.BOOKED
-      ) {
-        queue = nextQueue.current;
-        await this.getRepository(Doctor).update(doctorId, {
-          currentSequenceNumber: queue.sequenceNumber,
-        });
-      } else {
-        throw new NotFoundException(`No queue found for doctor ${doctorId}`);
+    if (queueId) {
+      requestedQueue = await this.getRepository(Queue).findOne({
+        where: { id: queueId },
+        relations: queueRelations,
+      });
+      if (!requestedQueue) {
+        throw new NotFoundException(`Queue with ID ${queueId} not found`);
       }
     }
 
-    if (queue.status === QueueStatus.BOOKED) {
-      await this.getRepository(Queue).update(queue.id, {
-        status: QueueStatus.CALLED,
-      });
-    } else {
+    const previousQueues = await this.getRepository(Queue).find({
+      where: {
+        doctorId,
+        createdAt: Between(todayStart, todayEnd),
+        status: In([QueueStatus.COMPLETED, QueueStatus.CANCELLED]),
+      },
+
+      relations: queueRelations,
+      order: {
+        sequenceNumber: 'DESC',
+      },
+    });
+
+    const nextQueues = await this.getRepository(Queue).find({
+      where: {
+        doctorId,
+        createdAt: Between(todayStart, todayEnd),
+        status: Not(In([QueueStatus.COMPLETED, QueueStatus.CANCELLED])),
+      },
+      relations: queueRelations,
+      order: {
+        status: 'ASC',
+        sequenceNumber: 'ASC',
+      },
+    });
+
+    // add the id of next queue in the each queue
+    const next = queueId
+      ? nextQueues.filter((queue) => queue.id !== queueId)
+      : nextQueues.slice(1);
+
+    const currentQueue = queueId ? requestedQueue : nextQueues[0];
+    const current = currentQueue
+      ? {
+          ...currentQueue,
+          nextQueueId: next[0]?.id,
+          previousQueueId: previousQueues[0]?.id,
+        }
+      : null;
+
+    return ApiResponse.success({
+      previous: previousQueues.map(formatQueue),
+      current: current ? formatQueue(current) : null,
+      next: next ? next.map(formatQueue) : null,
+    });
+  }
+
+  // Call queue by id
+  async callQueue(id: string) {
+    const queueRepository = this.getRepository(Queue);
+    const queue = await queueRepository.findOne({ where: { id } });
+    if (!queue) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    if (
+      ![QueueStatus.BOOKED, QueueStatus.SKIPPED, QueueStatus.CALLED].includes(
+        queue.status,
+      )
+    ) {
+      throw new BadRequestException('Patient is already called');
+    }
+
+    queue.status = QueueStatus.CALLED;
+    await queueRepository.save(queue);
+
+    return ApiResponse.success(null, 'Patient has been called');
+  }
+
+  // skip queue by id
+  async skipQueue(id: string) {
+    const queueRepository = this.getRepository(Queue);
+    const queue = await queueRepository.findOne({ where: { id } });
+    if (!queue) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    if (
+      ![
+        QueueStatus.BOOKED,
+        QueueStatus.SKIPPED,
+        QueueStatus.CALLED,
+        QueueStatus.IN_CONSULTATION,
+      ].includes(queue.status)
+    ) {
       throw new BadRequestException(
-        `Queue with sequence number ${currentSequenceNumber} is already called, Either skip it or mark it as completed`,
+        'The appointment is not in a valid state to skip',
       );
     }
 
-    return new ApiResponse(null, 'Queue entry called successfully');
+    queue.status = QueueStatus.SKIPPED;
+    await queueRepository.save(queue);
+
+    return ApiResponse.success(null, 'Appointment has been skipped');
   }
 
-  async skipQueue(doctorId: string) {
-    const doctor = await this.getRepository(Doctor).findOne({
-      where: { id: doctorId },
+  // clock in
+  async clockIn(id: string) {
+    const queueRepository = this.getRepository(Queue);
+    const queue = await queueRepository.findOne({ where: { id } });
+    if (!queue) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    if (queue.status !== QueueStatus.CALLED) {
+      throw new BadRequestException(
+        'Please call the appointment before clocking in',
+      );
+    }
+
+    queue.status = QueueStatus.IN_CONSULTATION;
+    queue.startedAt = new Date();
+    await queueRepository.save(queue);
+
+    return ApiResponse.success(null, 'Appointment has been started');
+  }
+
+  // complete appointment queue
+  async completeAppointmentQueue(
+    id: string,
+    completeQueueDto: CompleteQueueDto,
+    user: CurrentUserPayload,
+  ) {
+    const queueRepository = this.getRepository(Queue);
+
+    const queue = await queueRepository.findOne({
+      where: { id },
+      relations: queueRelations,
+    });
+    if (!queue) {
+      throw new NotFoundException(`Queue with ID ${id} not found`);
+    }
+
+    if (queue.status !== QueueStatus.IN_CONSULTATION) {
+      throw new BadRequestException(
+        'Appointment should be in consultation to complete',
+      );
+    }
+
+    Object.assign(queue, {
+      ...completeQueueDto,
+      status: QueueStatus.COMPLETED,
+      completedBy: user.userId,
+      completedAt: new Date(),
     });
 
-    if (!doctor) {
-      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
-    }
+    await queueRepository.save(queue);
+
+    return ApiResponse.success(null, 'Appointment completed successfully');
   }
 }

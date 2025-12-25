@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+// import { APP_GUARD } from '@nestjs/core';
+// import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -18,12 +18,12 @@ import { QueueModule } from './modules/client/appointments/queue/queue.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 1 minute
-        limit: 10, // 10 requests per minute
-      },
-    ]),
+    // ThrottlerModule.forRoot([
+    //   {
+    //     ttl: 60000, // 1 minute
+    //     limit: process.env.NODE_ENV === 'production' ? 10 : 100, // 10 requests per minute
+    //   },
+    // ]),
     TypeOrmModule.forRoot({
       ...publicOrmConfig,
       entities: [
@@ -53,10 +53,10 @@ import { QueueModule } from './modules/client/appointments/queue/queue.module';
   providers: [
     AppService,
     DatabaseInitService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
   ],
 })
 export class AppModule {}

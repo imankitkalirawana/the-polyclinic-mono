@@ -59,6 +59,31 @@ export class Queue {
   @Column({ type: 'int' })
   sequenceNumber: number;
 
+  @Column({ type: 'text', nullable: true })
+  title: string;
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
+
+  @Column({ type: 'text', nullable: true })
+  prescription: string;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  startedAt: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  completedBy: string;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  completedAt: Date;
+
+  @ManyToOne(() => TenantUser, (user) => user.id, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'completedBy' })
+  completedByUser: TenantUser;
+
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
