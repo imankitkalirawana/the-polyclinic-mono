@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
@@ -33,8 +34,8 @@ export class DoctorsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async findAll() {
-    return this.doctorsService.findAll();
+  async findAll(@Query('search') search?: string) {
+    return this.doctorsService.findAll(search);
   }
 
   @Get('me')

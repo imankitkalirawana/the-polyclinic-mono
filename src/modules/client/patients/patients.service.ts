@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { DataSource } from 'typeorm';
+import { DataSource, ILike } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { TenantUser } from '../auth/entities/tenant-user.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -15,6 +15,13 @@ import { BaseTenantService } from '../../tenancy/base-tenant.service';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { Role } from 'src/common/enums/role.enum';
+import {
+  areNamesSimilar,
+  formatPatient,
+  generatePassword,
+} from './patients.helper';
+import * as bcrypt from 'bcryptjs';
+import { ApiResponse } from 'src/common/response-wrapper';
 
 const patientSelect = [
   'patient.id AS id',
@@ -53,6 +60,45 @@ export class PatientsService extends BaseTenantService {
     await this.ensureTablesExist();
     const patientRepository = this.getPatientRepository();
     const userRepository = this.getUserRepository();
+
+    // If userId is not provided, create a new user
+    if (!createPatientDto?.userId) {
+      // if email is not provided, then consider phone as email with @example.com domain
+      if (!createPatientDto.email) {
+        createPatientDto.email = `${createPatientDto.phone}@example.com`;
+      }
+
+      // now check if user exists with this email
+      const user = await userRepository.findOne({
+        where: { email: createPatientDto.email },
+      });
+      if (user) {
+        const password = await bcrypt.hash(generatePassword(), 10);
+
+        if (areNamesSimilar(createPatientDto.name, user.name)) {
+          createPatientDto.userId = user.id;
+        } else {
+          const email = `${createPatientDto.email.split('@')[0]}+${Math.random().toString(36).substring(2, 4)}@${createPatientDto.email.split('@')[1]}`;
+
+          // create a new user with the given name and email+ random 2 digits at the end
+          const newUser = userRepository.create({
+            ...createPatientDto,
+            email,
+            password,
+          });
+          await userRepository.save(newUser);
+          createPatientDto.userId = newUser.id;
+        }
+      } else {
+        const password = await bcrypt.hash(generatePassword(), 10);
+        const newUser = userRepository.create({
+          ...createPatientDto,
+          password,
+        });
+        await userRepository.save(newUser);
+        createPatientDto.userId = newUser.id;
+      }
+    }
 
     // Check if user exists
     const user = await userRepository.findOne({
@@ -98,55 +144,59 @@ export class PatientsService extends BaseTenantService {
       throw new NotFoundException('Failed to retrieve created patient');
     }
 
-    return {
-      message: 'Patient created successfully',
-      data: patientWithUser,
-    };
+    return ApiResponse.success(patientWithUser);
   }
 
-  async findAll() {
+  async findAll(search?: string) {
     await this.ensureTablesExist();
-    const patientRepository = this.getPatientRepository();
-    return patientRepository
-      .createQueryBuilder('patient')
-      .leftJoin('patient.user', 'user')
-      .select([...patientSelect, ...userSelect])
-      .getRawMany();
-  }
+    const patients = await this.getRepository(Patient).find({
+      where: search
+        ? [
+            { user: { name: ILike(`%${search}%`) } },
+            { user: { email: ILike(`%${search}%`) } },
+            { user: { phone: ILike(`%${search}%`) } },
+          ]
+        : {},
+      relations: ['user'],
+      order: {
+        user: { name: 'ASC' },
+      },
+      take: 30,
+    });
 
-  async findOne(id: string) {
-    await this.ensureTablesExist();
-    const patientRepository = this.getPatientRepository();
-
-    const patient = await patientRepository
-      .createQueryBuilder('patient')
-      .leftJoin('patient.user', 'user')
-      .select([...patientSelect, ...userSelect])
-      .getRawOne();
-
-    if (!patient) {
-      throw new NotFoundException(`Patient with ID ${id} not found`);
-    }
-
-    return patient;
+    return ApiResponse.success(
+      patients.map(formatPatient),
+      search ? `${patients.length} patients found` : 'All patients fetched',
+    );
   }
 
   async findByUserId(userId: string) {
     await this.ensureTablesExist();
-    const patientRepository = this.getPatientRepository();
 
-    const patient = await patientRepository
-      .createQueryBuilder('patient')
-      .leftJoin('patient.user', 'user')
-      .select([...patientSelect, ...userSelect])
-      .where('patient.userId = :userId', { userId })
-      .getRawOne();
+    const patient = await this.getRepository(Patient).findOne({
+      where: { userId },
+      relations: ['user'],
+    });
 
     if (!patient) {
       throw new NotFoundException(`Patient with user ID ${userId} not found`);
     }
 
-    return patient;
+    return ApiResponse.success(formatPatient(patient));
+  }
+
+  async findOne(id: string) {
+    await this.ensureTablesExist();
+    const patient = await this.getRepository(Patient).findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${id} not found`);
+    }
+
+    return ApiResponse.success(formatPatient(patient));
   }
 
   async update(id: string, updatePatientDto: UpdatePatientDto) {
@@ -201,10 +251,7 @@ export class PatientsService extends BaseTenantService {
       throw new NotFoundException('Failed to retrieve updated patient');
     }
 
-    return {
-      message: 'Patient updated successfully',
-      data: patientWithUser,
-    };
+    return ApiResponse.success(patientWithUser);
   }
 
   async remove(id: string) {
@@ -221,8 +268,6 @@ export class PatientsService extends BaseTenantService {
 
     await patientRepository.remove(patient);
 
-    return {
-      message: 'Patient deleted successfully',
-    };
+    return ApiResponse.success(null);
   }
 }

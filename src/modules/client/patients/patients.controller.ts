@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -33,8 +34,8 @@ export class PatientsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async findAll() {
-    return this.patientsService.findAll();
+  async findAll(@Query('search') search?: string) {
+    return this.patientsService.findAll(search);
   }
 
   @Get('me')

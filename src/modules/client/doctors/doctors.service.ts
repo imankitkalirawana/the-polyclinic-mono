@@ -15,6 +15,7 @@ import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { Doctor } from './entities/doctor.entity';
 import { TenantUser } from '../auth/entities/tenant-user.entity';
 import { Role } from 'src/common/enums/role.enum';
+import { ApiResponse } from 'src/common/response-wrapper';
 
 const doctorSelect = [
   'doctor.id AS id',
@@ -105,14 +106,27 @@ export class DoctorsService extends BaseTenantService {
     };
   }
 
-  async findAll() {
+  async findAll(search?: string) {
     await this.ensureTablesExist();
     const doctorRepository = this.getDoctorRepository();
-    return doctorRepository
+    const doctors = await doctorRepository
       .createQueryBuilder('doctor')
       .leftJoin('doctor.user', 'user')
       .select([...doctorSelect, ...userSelect])
+      .where(
+        'user.name ILIKE :search OR user.email ILIKE :search OR user.phone ILIKE :search',
+        {
+          search: `%${search}%`,
+        },
+      )
+      .orderBy('user.name', 'ASC')
+      .limit(10)
       .getRawMany();
+
+    return ApiResponse.success(
+      doctors,
+      search ? `${doctors.length} doctors found` : 'All doctors fetched',
+    );
   }
 
   async findOne(id: string) {
@@ -126,11 +140,7 @@ export class DoctorsService extends BaseTenantService {
       .where('doctor.id = :id', { id })
       .getRawOne();
 
-    if (!doctor) {
-      throw new NotFoundException(`Doctor with ID ${id} not found`);
-    }
-
-    return doctor;
+    return ApiResponse.success(doctor, 'Doctor fetched successfully');
   }
 
   async findByUserId(userId: string) {
