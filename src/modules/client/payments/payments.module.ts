@@ -16,6 +16,6 @@ import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService, RazorpayService, TenantAuthInitService],
-  exports: [PaymentsService],
+  exports: [PaymentsService, RazorpayService],
 })
 export class PaymentsModule {}

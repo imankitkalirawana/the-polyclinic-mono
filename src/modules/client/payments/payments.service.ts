@@ -10,13 +10,8 @@ import { DataSource } from 'typeorm';
 import { BaseTenantService } from '../../tenancy/base-tenant.service';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
-import { CreateOrderDto } from './dto/create-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
-import {
-  Payment,
-  PaymentProvider,
-  PaymentStatus,
-} from './entities/payment.entity';
+import { Payment, PaymentStatus } from './entities/payment.entity';
 import {
   Queue,
   QueueStatus,
@@ -33,46 +28,6 @@ export class PaymentsService extends BaseTenantService {
     private readonly razorpayService: RazorpayService,
   ) {
     super(request, connection, tenantAuthInitService, PaymentsService.name);
-  }
-
-  async createOrder(dto: CreateOrderDto) {
-    await this.ensureTablesExist();
-    const queueRepo = this.getRepository(Queue);
-    const paymentRepo = this.getRepository(Payment);
-
-    const queue = await queueRepo.findOne({
-      where: { id: dto.appointmentId, status: QueueStatus.PAYMENT_PENDING },
-    });
-
-    if (!queue) {
-      throw new NotFoundException('Appointment not found or already booked');
-    }
-
-    const amountInRupees = dto.amount;
-    const amountInPaise = amountInRupees * 100;
-
-    const order = await this.razorpayService.createOrder(
-      amountInRupees,
-      `que_${queue.id}`,
-    );
-
-    const payment = paymentRepo.create({
-      provider: PaymentProvider.RAZORPAY,
-      orderId: order.id,
-      amount: amountInPaise,
-      currency: 'INR',
-      status: PaymentStatus.CREATED,
-    });
-    await paymentRepo.save(payment);
-
-    await queueRepo.update({ id: queue.id }, { paymentId: payment.id });
-
-    return ApiResponse.success({
-      orderId: order.id,
-      amount: amountInPaise,
-      currency: 'INR',
-      status: PaymentStatus.CREATED,
-    });
   }
 
   async verifyPayment(dto: VerifyPaymentDto) {

@@ -22,6 +22,7 @@ import {
   CurrentUserPayload,
 } from '../../auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
+import { ApiResponse } from 'src/common/response-wrapper';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -55,19 +56,19 @@ export class QueueController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   findOne(@Param('id') id: string) {
-    return this.queueService.findOne(id);
+    return ApiResponse.success(this.queueService.findOne(id));
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST)
   update(@Param('id') id: string, @Body() updateQueueDto: UpdateQueueDto) {
-    return this.queueService.update(id, updateQueueDto);
+    return ApiResponse.success(this.queueService.update(id, updateQueueDto));
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
-    return this.queueService.remove(id);
+    return ApiResponse.success(this.queueService.remove(id));
   }
 
   @Patch(':id/call')

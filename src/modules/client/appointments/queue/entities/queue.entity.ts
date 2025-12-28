@@ -23,6 +23,11 @@ export enum QueueStatus {
   COMPLETED = 'COMPLETED',
 }
 
+export enum PaymentMode {
+  RAZORPAY = 'RAZORPAY',
+  CASH = 'CASH',
+}
+
 export interface Counter {
   skip: number;
   clockIn: number;
@@ -42,6 +47,9 @@ export class Queue {
   })
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column({ type: 'enum', enum: PaymentMode, nullable: true })
+  paymentMode: PaymentMode | null;
 
   @Column({ type: 'enum', enum: QueueStatus, default: QueueStatus.BOOKED })
   status: QueueStatus;

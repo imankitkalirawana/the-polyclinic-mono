@@ -6,12 +6,14 @@ import { AuthModule } from '../../auth/auth.module';
 import { TenancyModule } from '../../../tenancy/tenancy.module';
 import { Tenant } from '../../../public/tenants/entities/tenant.entity';
 import { TenantAuthInitService } from '../../../tenancy/tenant-auth-init.service';
+import { PaymentsModule } from '../../payments/payments.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tenant], 'default'),
     AuthModule,
     TenancyModule,
+    PaymentsModule,
   ],
   controllers: [QueueController],
   providers: [QueueService, TenantAuthInitService],

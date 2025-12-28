@@ -5,7 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, DataSource, In, MoreThanOrEqual, Not } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  In,
+  MoreThanOrEqual,
+  Not,
+  QueryRunner,
+} from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
@@ -13,12 +20,19 @@ import { CurrentUserPayload } from '@/client/auth/decorators/current-user.decora
 import { BaseTenantService } from '@/tenancy/base-tenant.service';
 import { CONNECTION } from '@/tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '@/tenancy/tenant-auth-init.service';
-import { Queue, QueueStatus } from './entities/queue.entity';
+import { PaymentMode, Queue, QueueStatus } from './entities/queue.entity';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { TenantUser } from '@/client/auth/entities/tenant-user.entity';
 import { ApiResponse } from 'src/common/response-wrapper';
 import { formatQueue } from './queue.helper';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
+import { PaymentsService } from '@/client/payments/payments.service';
+import {
+  Payment,
+  PaymentProvider,
+  PaymentStatus,
+} from '@/client/payments/entities/payment.entity';
+import { RazorpayService } from '@/client/payments/razorpay.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -38,12 +52,18 @@ export class QueueService extends BaseTenantService {
     @Inject(REQUEST) request: Request,
     @Inject(CONNECTION) connection: DataSource | null,
     tenantAuthInitService: TenantAuthInitService,
+    private readonly paymentsService: PaymentsService,
+    private readonly razorpayService: RazorpayService,
   ) {
     super(request, connection, tenantAuthInitService, QueueService.name);
   }
 
   async create(createQueueDto: CreateQueueDto, user: CurrentUserPayload) {
     await this.ensureTablesExist();
+
+    if (!this.connection) {
+      throw new NotFoundException('Database connection not available');
+    }
 
     const bookedByUser = await this.getRepository(TenantUser).findOne({
       where: { id: user.userId },
@@ -57,28 +77,89 @@ export class QueueService extends BaseTenantService {
       where: { id: createQueueDto.doctorId },
     });
 
-    const queueRepository = this.getRepository(Queue);
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
 
     const lastSequenceNumber = doctor.lastSequenceNumber ?? 0;
 
-    // Update doctor's last sequence number
-    const doctorRepository = this.getRepository(Doctor);
-    await doctorRepository.update(createQueueDto.doctorId, {
-      lastSequenceNumber: lastSequenceNumber + 1,
-    });
+    // Start transaction
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const queue = queueRepository.create({
-      ...createQueueDto,
-      bookedBy: user.userId,
-      sequenceNumber: lastSequenceNumber + 1,
-    });
+    let result = null;
 
-    const savedQueue = await queueRepository.save(queue);
+    try {
+      const manager = queryRunner.manager;
 
-    return {
-      message: 'Queue entry created successfully',
-      data: await this.findOne(savedQueue.id),
-    };
+      // Update doctor's last sequence number
+      await manager.update(
+        Doctor,
+        { id: createQueueDto.doctorId },
+        { lastSequenceNumber: lastSequenceNumber + 1 },
+      );
+
+      // Create and save queue
+      const queue = manager.create(Queue, {
+        ...createQueueDto,
+        bookedBy: user.userId,
+        sequenceNumber: lastSequenceNumber + 1,
+      });
+
+      const savedQueue = await manager.save(Queue, queue);
+
+      // Create payment order if RAZORPAY mode
+      if (createQueueDto.paymentMode === PaymentMode.RAZORPAY) {
+        const amountInPaise = 100 * 100; // TODO: get amount from doctor's fee
+
+        // Create Razorpay order (external API call)
+        const razorpayOrder = await this.razorpayService.createOrder(
+          amountInPaise,
+          `receipt_${new Date().toISOString()}`,
+        );
+
+        // Create payment entity within transaction
+        const payment = manager.create(Payment, {
+          provider: PaymentProvider.RAZORPAY,
+          orderId: razorpayOrder.id,
+          amount: amountInPaise,
+          currency: 'INR',
+          status: PaymentStatus.CREATED,
+        });
+
+        const savedPayment = await manager.save(Payment, payment);
+
+        // Link payment to queue
+        savedQueue.paymentId = savedPayment.id;
+        await manager.save(Queue, savedQueue);
+
+        result = {
+          orderId: razorpayOrder.id,
+          amount: amountInPaise,
+          currency: 'INR',
+          status: PaymentStatus.CREATED,
+        };
+      }
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+
+      return ApiResponse.success(
+        {
+          ...(await this.findOne(savedQueue.id)),
+          ...result,
+        },
+        'Queue created successfully',
+      );
+    } catch (error) {
+      // Rollback transaction on error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release query runner
+      await queryRunner.release();
+    }
   }
 
   async findAll(date?: string) {
@@ -94,9 +175,7 @@ export class QueueService extends BaseTenantService {
       },
     });
 
-    const formattedData = qb.map(formatQueue);
-
-    return ApiResponse.success(formattedData);
+    return qb.map(formatQueue);
   }
 
   async findOne(id: string) {
@@ -105,9 +184,7 @@ export class QueueService extends BaseTenantService {
       where: { id },
       relations: queueRelations,
     });
-    const formattedData = formatQueue(qb);
-
-    return ApiResponse.success(formattedData);
+    return formatQueue(qb);
   }
 
   async update(id: string, updateQueueDto: UpdateQueueDto) {
