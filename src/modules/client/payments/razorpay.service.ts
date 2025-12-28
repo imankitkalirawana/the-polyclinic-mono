@@ -58,4 +58,38 @@ export class RazorpayService {
 
     return expectedSignature === signature;
   }
+
+  /**
+   * Verify Razorpay webhook signature
+   */
+  verifyWebhookSignature(payload: Buffer, signature: string): boolean {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      this.logger.error('RAZORPAY_WEBHOOK_SECRET is not configured');
+      return false;
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(payload)
+      .digest('hex');
+
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(signature),
+    );
+  }
+
+  /**
+   * Get order details from Razorpay
+   */
+  async getOrder(orderId: string) {
+    try {
+      return await this.razorpay.orders.fetch(orderId);
+    } catch (error) {
+      this.logger.error('Failed to fetch Razorpay order', error);
+      throw error;
+    }
+  }
 }

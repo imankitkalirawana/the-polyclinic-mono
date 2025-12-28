@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentsController } from './payments.controller';
+import { PaymentsWebhookController } from './payments.webhook.controller';
 import { PaymentsService } from './payments.service';
 import { RazorpayService } from './razorpay.service';
 import { AuthModule } from '../auth/auth.module';
@@ -14,7 +15,7 @@ import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
     AuthModule,
     TenancyModule,
   ],
-  controllers: [PaymentsController],
+  controllers: [PaymentsController, PaymentsWebhookController],
   providers: [PaymentsService, RazorpayService, TenantAuthInitService],
   exports: [PaymentsService, RazorpayService],
 })

@@ -3,10 +3,18 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { TenancyMiddleware } from './modules/tenancy/tenancy.middleware';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
+
+  // Raw body parser for Razorpay webhook endpoint
+  app.use(
+    '/api/v1/payments/webhook',
+    express.raw({ type: 'application/json' }),
+  );
+
   app.use(new TenancyMiddleware().use.bind(new TenancyMiddleware()));
   app.enableCors({
     origin: (origin, callback) => {
