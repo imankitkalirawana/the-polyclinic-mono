@@ -5,7 +5,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { PaymentMode } from '../entities/queue.entity';
+import { PaymentMode } from '../enums/queue.enum';
 
 export class CreateQueueDto {
   @IsUUID()

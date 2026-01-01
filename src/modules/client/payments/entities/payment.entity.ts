@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/common/entity/base.entity';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, Index } from 'typeorm';
 
 /**
  * Payment Provider
@@ -18,8 +18,24 @@ export enum PaymentStatus {
   FAILED = 'FAILED',
 }
 
+export enum PaymentReferenceType {
+  APPOINTMENT_QUEUE = 'APPOINTMENT_QUEUE',
+}
+
 @Entity({ name: 'payments' })
+@Index(['referenceType', 'referenceId'])
 export class Payment extends BaseEntity {
+  /**
+   * Generic reference (appointment / event / etc)
+   */
+  @Column({
+    type: 'enum',
+    enum: PaymentReferenceType,
+  })
+  referenceType: PaymentReferenceType;
+
+  @Column({ type: 'uuid' })
+  referenceId: string;
   /**
    * Payment provider (Razorpay / Cash)
    */

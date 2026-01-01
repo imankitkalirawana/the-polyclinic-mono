@@ -23,6 +23,7 @@ import {
 } from '../../auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { ApiResponse } from 'src/common/response-wrapper';
+import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -36,6 +37,12 @@ export class QueueController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.queueService.create(createQueueDto, user);
+  }
+
+  @Post('verify-payment')
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
+  verifyPayment(@Body() verifyPaymentDto: VerifyPaymentDto) {
+    return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
   @Get()
@@ -55,8 +62,9 @@ export class QueueController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  findOne(@Param('id') id: string) {
-    return ApiResponse.success(this.queueService.findOne(id));
+  async findOne(@Param('id') id: string) {
+    const queue = await this.queueService.findOne(id);
+    return ApiResponse.success(queue);
   }
 
   @Patch(':id')

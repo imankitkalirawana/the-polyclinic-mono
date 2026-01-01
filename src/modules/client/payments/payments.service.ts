@@ -17,7 +17,6 @@ import {
   QueueStatus,
 } from '../appointments/queue/entities/queue.entity';
 import { RazorpayService } from './razorpay.service';
-import { ApiResponse } from 'src/common/response-wrapper';
 
 @Injectable()
 export class PaymentsService extends BaseTenantService {
@@ -33,7 +32,6 @@ export class PaymentsService extends BaseTenantService {
   async verifyPayment(dto: VerifyPaymentDto) {
     await this.ensureTablesExist();
     const paymentRepo = this.getRepository(Payment);
-    const queueRepo = this.getRepository(Queue);
 
     const payment = await paymentRepo.findOne({
       where: { orderId: dto.orderId },
@@ -59,17 +57,9 @@ export class PaymentsService extends BaseTenantService {
     payment.signature = dto.signature;
     payment.status = PaymentStatus.PAID;
 
-    await paymentRepo.save(payment);
+    const savedPayment = await paymentRepo.save(payment);
 
-    await queueRepo.update(
-      { paymentId: payment.id },
-      { status: QueueStatus.BOOKED },
-    );
-
-    return ApiResponse.success(
-      null,
-      'Payment verified and appointment confirmed',
-    );
+    return savedPayment;
   }
 
   async handleWebhookEvent(webhookPayload: any) {
@@ -121,7 +111,9 @@ export class PaymentsService extends BaseTenantService {
     await paymentRepo.save(payment);
 
     await queueRepo.update(
-      { paymentId: payment.id },
+      {
+        referenceId: payment.id,
+      },
       { status: QueueStatus.BOOKED },
     );
 

@@ -10,7 +10,6 @@ import {
 import { Patient } from '@/client/patients/entities/patient.entity';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { TenantUser } from '@/client/auth/entities/tenant-user.entity';
-import { Payment } from '@/client/payments/entities/payment.entity';
 
 export enum QueueStatus {
   PAYMENT_PENDING = 'PAYMENT_PENDING',
@@ -21,11 +20,6 @@ export enum QueueStatus {
   SKIPPED = 'SKIPPED',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED',
-}
-
-export enum PaymentMode {
-  RAZORPAY = 'RAZORPAY',
-  CASH = 'CASH',
 }
 
 export interface Counter {
@@ -48,10 +42,11 @@ export class Queue {
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
 
-  @Column({ type: 'enum', enum: PaymentMode, nullable: true })
-  paymentMode: PaymentMode | null;
-
-  @Column({ type: 'enum', enum: QueueStatus, default: QueueStatus.BOOKED })
+  @Column({
+    type: 'enum',
+    enum: QueueStatus,
+    default: QueueStatus.PAYMENT_FAILED,
+  })
   status: QueueStatus;
 
   @Column({ type: 'uuid' })
@@ -111,17 +106,6 @@ export class Queue {
     },
   })
   counter: Counter;
-
-  // payment related fields
-  @Column({ type: 'uuid', nullable: true })
-  paymentId: string;
-
-  @ManyToOne(() => Payment, (payment) => payment.id, {
-    onDelete: 'SET NULL',
-    nullable: true,
-  })
-  @JoinColumn({ name: 'paymentId' })
-  payment: Payment;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;

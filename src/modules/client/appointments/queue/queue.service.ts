@@ -20,9 +20,9 @@ import { CurrentUserPayload } from '@/client/auth/decorators/current-user.decora
 import { BaseTenantService } from '@/tenancy/base-tenant.service';
 import { CONNECTION } from '@/tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '@/tenancy/tenant-auth-init.service';
-import { PaymentMode, Queue, QueueStatus } from './entities/queue.entity';
+import { Queue, QueueStatus } from './entities/queue.entity';
+import { PaymentMode } from './enums/queue.enum';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
-import { TenantUser } from '@/client/auth/entities/tenant-user.entity';
 import { ApiResponse } from 'src/common/response-wrapper';
 import { formatQueue } from './queue.helper';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
@@ -30,9 +30,12 @@ import { PaymentsService } from '@/client/payments/payments.service';
 import {
   Payment,
   PaymentProvider,
+  PaymentReferenceType,
   PaymentStatus,
 } from '@/client/payments/entities/payment.entity';
 import { RazorpayService } from '@/client/payments/razorpay.service';
+import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
+import { Role } from 'src/common/enums/role.enum';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -60,18 +63,6 @@ export class QueueService extends BaseTenantService {
 
   async create(createQueueDto: CreateQueueDto, user: CurrentUserPayload) {
     await this.ensureTablesExist();
-
-    if (!this.connection) {
-      throw new NotFoundException('Database connection not available');
-    }
-
-    const bookedByUser = await this.getRepository(TenantUser).findOne({
-      where: { id: user.userId },
-    });
-
-    if (!bookedByUser) {
-      throw new NotFoundException('Booking user not found');
-    }
 
     const doctor = await this.getRepository(Doctor).findOne({
       where: { id: createQueueDto.doctorId },
@@ -105,6 +96,12 @@ export class QueueService extends BaseTenantService {
         ...createQueueDto,
         bookedBy: user.userId,
         sequenceNumber: lastSequenceNumber + 1,
+        status:
+          createQueueDto.paymentMode === PaymentMode.CASH
+            ? user.role === Role.PATIENT
+              ? QueueStatus.PAYMENT_PENDING
+              : QueueStatus.BOOKED
+            : undefined,
       });
 
       const savedQueue = await manager.save(Queue, queue);
@@ -126,19 +123,16 @@ export class QueueService extends BaseTenantService {
           amount: amountInPaise,
           currency: 'INR',
           status: PaymentStatus.CREATED,
+          referenceType: PaymentReferenceType.APPOINTMENT_QUEUE,
+          referenceId: savedQueue.id,
         });
 
-        const savedPayment = await manager.save(Payment, payment);
-
-        // Link payment to queue
-        savedQueue.paymentId = savedPayment.id;
-        await manager.save(Queue, savedQueue);
+        await manager.save(Payment, payment);
 
         result = {
           orderId: razorpayOrder.id,
           amount: amountInPaise,
           currency: 'INR',
-          status: PaymentStatus.CREATED,
         };
       }
 
@@ -162,6 +156,26 @@ export class QueueService extends BaseTenantService {
     }
   }
 
+  async verifyPayment(verifyPaymentDto: VerifyPaymentDto) {
+    await this.ensureTablesExist();
+    const payment = await this.paymentsService.verifyPayment(verifyPaymentDto);
+
+    // update queue status to booked
+    const queueRepository = this.getRepository(Queue);
+    const queue = await queueRepository.findOne({
+      where: { id: payment.referenceId },
+    });
+
+    if (!queue) {
+      throw new NotFoundException(
+        `Queue with ID ${payment.referenceId} not found`,
+      );
+    }
+    queue.status = QueueStatus.BOOKED;
+    await queueRepository.save(queue);
+    return ApiResponse.success(queue, 'Payment verified');
+  }
+
   async findAll(date?: string) {
     await this.ensureTablesExist();
 
@@ -180,11 +194,14 @@ export class QueueService extends BaseTenantService {
 
   async findOne(id: string) {
     await this.ensureTablesExist();
+
     const qb = await this.getRepository(Queue).findOne({
       where: { id },
       relations: queueRelations,
     });
-    return formatQueue(qb);
+
+    const formattedQueue = formatQueue(qb);
+    return formattedQueue;
   }
 
   async update(id: string, updateQueueDto: UpdateQueueDto) {
