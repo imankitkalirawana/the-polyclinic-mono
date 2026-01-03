@@ -20,6 +20,7 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from '../auth/decorators/current-user.decorator';
+import { StandardParam, StandardParams } from 'nest-standard-response';
 
 @Controller('client/patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -28,7 +29,11 @@ export class PatientsController {
 
   @Post()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
-  async create(@Body() createPatientDto: CreatePatientDto) {
+  async create(
+    @Body() createPatientDto: CreatePatientDto,
+    @StandardParam() params: StandardParams,
+  ) {
+    params.setMessage(`Patient created successfully`);
     return this.patientsService.create(createPatientDto);
   }
 

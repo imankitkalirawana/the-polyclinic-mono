@@ -15,6 +15,7 @@ import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { Doctor } from './entities/doctor.entity';
 import { TenantUser } from '../auth/entities/tenant-user.entity';
 import { Role } from 'src/common/enums/role.enum';
+import { formatDoctor } from './doctors.helper';
 
 const doctorSelect = [
   'doctor.id AS id',
@@ -138,25 +139,23 @@ export class DoctorsService extends BaseTenantService {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
 
-    return doctor;
+    return formatDoctor(doctor);
   }
 
   async findByUserId(userId: string) {
     await this.ensureTablesExist();
     const doctorRepository = this.getDoctorRepository();
 
-    const doctor = await doctorRepository
-      .createQueryBuilder('doctor')
-      .leftJoin('doctor.user', 'user')
-      .select([...doctorSelect, ...userSelect])
-      .where('doctor.userId = :userId', { userId })
-      .getRawOne();
+    const doctor = await doctorRepository.findOne({
+      where: { userId },
+      relations: ['user'],
+    });
 
     if (!doctor) {
       throw new NotFoundException(`Doctor with user ID ${userId} not found`);
     }
 
-    return doctor;
+    return formatDoctor(doctor);
   }
 
   async update(id: string, updateDoctorDto: UpdateDoctorDto) {

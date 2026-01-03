@@ -13,6 +13,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Gender } from '../entities/patient.entity';
+import { Transform } from 'class-transformer';
 
 @ValidatorConstraint({ name: 'PatientNameEmailConstraint', async: false })
 export class PatientNameEmailConstraint implements ValidatorConstraintInterface {
@@ -46,6 +47,7 @@ export class CreatePatientDto {
   @IsOptional()
   userId: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEmail()
   @IsOptional()
   email?: string;
