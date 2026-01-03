@@ -60,4 +60,3 @@ export abstract class BaseTenantService {
     return this.connection.getRepository(entity);
   }
 }
-

@@ -24,10 +24,13 @@ export class RazorpayService {
    * @param amount Amount in paise
    * @param receipt Receipt for the order
    */
-  async createOrder(amount: number, receipt: string) {
+  async createOrder(
+    amount: number,
+    receipt: string = `receipt_${new Date().toISOString()}`,
+  ) {
     try {
       return await this.razorpay.orders.create({
-        amount, // convert to paise
+        amount,
         currency: 'INR',
         receipt,
         payment_capture: true,

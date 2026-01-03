@@ -112,10 +112,8 @@ export class QueueService extends BaseTenantService {
         const amountInPaise = 100 * 100; // TODO: get amount from doctor's fee
 
         // Create Razorpay order (external API call)
-        const razorpayOrder = await this.razorpayService.createOrder(
-          amountInPaise,
-          `receipt_${new Date().toISOString()}`,
-        );
+        const razorpayOrder =
+          await this.razorpayService.createOrder(amountInPaise);
 
         // Create payment entity within transaction
         const payment = manager.create(Payment, {
