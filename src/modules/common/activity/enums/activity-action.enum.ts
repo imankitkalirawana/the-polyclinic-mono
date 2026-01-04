@@ -1,0 +1,7 @@
+export enum ActivityAction {
+  CREATED = 'CREATED',
+  UPDATED = 'UPDATED',
+  STATUS_CHANGED = 'STATUS_CHANGED',
+  DELETED = 'DELETED',
+  SOFT_DELETED = 'SOFT_DELETED',
+}

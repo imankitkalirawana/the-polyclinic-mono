@@ -28,6 +28,7 @@ import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 import { Response } from 'express';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { PaymentMode } from './enums/queue.enum';
+import { formatQueue } from './queue.helper';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -83,11 +84,17 @@ export class QueueController {
     return queue;
   }
 
+  @Get(':id/activity-logs')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  async getActivityLogs(@Param('id') id: string) {
+    return this.queueService.getActivityLogs(id);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async findOne(@Param('id') id: string) {
     const queue = await this.queueService.findOne(id);
-    return queue;
+    return formatQueue(queue);
   }
 
   @Patch(':id')

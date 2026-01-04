@@ -16,6 +16,7 @@ import { PatientsModule } from './modules/client/patients/patients.module';
 import { PaymentsModule } from './modules/client/payments/payments.module';
 import { DoctorsModule } from './modules/client/doctors/doctors.module';
 import { QueueModule } from './modules/client/appointments/queue/queue.module';
+import { ActivityModule } from './modules/common/activity/activity.module';
 import {
   StandardResponseModule,
   StandardResponseModuleOptions,
@@ -57,6 +58,7 @@ const options: StandardResponseModuleOptions = {};
     DoctorsModule,
     QueueModule,
     PaymentsModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [

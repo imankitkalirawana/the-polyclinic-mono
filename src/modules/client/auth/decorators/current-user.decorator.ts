@@ -7,6 +7,8 @@ export interface CurrentUserPayload {
   sessionId: string;
   type: 'tenant';
   tenantSlug: string;
+  name: string;
+  phone: string | null;
 }
 
 export const CurrentUser = createParamDecorator(

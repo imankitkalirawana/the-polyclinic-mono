@@ -87,6 +87,8 @@ export class BearerStrategy extends PassportStrategy(
       sessionId: session.id,
       type: 'tenant',
       tenantSlug,
+      name: user.name,
+      phone: user.phone,
     };
   }
 }

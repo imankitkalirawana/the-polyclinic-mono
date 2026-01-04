@@ -27,6 +27,8 @@ import { Role } from 'src/common/enums/role.enum';
 import { PaymentMode } from './enums/queue.enum';
 import { appointmentConfirmationTemplate } from './templates/confirm-appointment.template';
 import { QrService } from '@/client/qr/qr.service';
+import { ActivityService } from '@/common/activity/services/activity.service';
+import { ActivityLogService } from '@/common/activity/services/activity-log.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -50,6 +52,8 @@ export class QueueService extends BaseTenantService {
     private readonly doctorsService: DoctorsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
+    private readonly activityService: ActivityService,
+    private readonly activityLogService: ActivityLogService,
   ) {
     super(request, connection, tenantAuthInitService, QueueService.name);
   }
@@ -89,10 +93,19 @@ export class QueueService extends BaseTenantService {
     await queryRunner.startTransaction();
 
     try {
-      const status =
-        createQueueDto.paymentMode === PaymentMode.CASH
-          ? QueueStatus.PAYMENT_PENDING
-          : QueueStatus.PAYMENT_FAILED;
+      let status: QueueStatus;
+
+      if (
+        createQueueDto.paymentMode === PaymentMode.CASH &&
+        (this.request.user.role === Role.ADMIN ||
+          this.request.user.role === Role.RECEPTIONIST)
+      ) {
+        status = QueueStatus.BOOKED;
+      } else if (createQueueDto.paymentMode === PaymentMode.CASH) {
+        status = QueueStatus.PAYMENT_PENDING;
+      } else {
+        status = QueueStatus.PAYMENT_FAILED;
+      }
 
       const queue = queryRunner.manager.create(Queue, {
         ...createQueueDto,
@@ -112,6 +125,14 @@ export class QueueService extends BaseTenantService {
       );
 
       await queryRunner.commitTransaction();
+      this.activityService.logCreate(
+        'Queue',
+        queue.id,
+        'appointments',
+        queue,
+        `Appointment created`,
+      );
+
       return queue;
     } catch (error) {
       this.logger.error(error);
@@ -132,12 +153,14 @@ export class QueueService extends BaseTenantService {
       throw new NotFoundException(`Queue with ID ${queueId} not found`);
     }
 
-    return await this.paymentsService.createPayment({
+    const payment = await this.paymentsService.createPayment({
       referenceId: queueId,
       amount: 10000,
       currency: Currency.INR,
       referenceType: PaymentReferenceType.APPOINTMENT_QUEUE,
     });
+
+    return payment;
   }
 
   async verifyPayment(verifyPaymentDto: VerifyPaymentDto) {
@@ -155,25 +178,43 @@ export class QueueService extends BaseTenantService {
         `Queue with ID ${payment.referenceId} not found`,
       );
     }
+
+    const previousStatus = queue.status;
     queue.status = QueueStatus.BOOKED;
     await queueRepository.save(queue);
+
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus },
+      after: { status: queue.status },
+      description: `Payment verified and appointment status updated`,
+    });
+
     return queue;
   }
 
   async cancelPayment(queueId: string, remark?: string) {
-    const queue = await this.getQueueRepository().findOne({
-      where: { id: queueId },
-    });
-    if (!queue) {
-      throw new NotFoundException(`Queue with ID ${queueId} not found`);
-    }
+    const queue = await this.findOne(queueId);
 
     queue.status = QueueStatus.CANCELLED;
     queue.cancellationDetails = {
       by: this.request.user.userId,
       remark,
     };
-    return await this.getQueueRepository().save(queue);
+    const previousStatus = queue.status;
+    await this.getQueueRepository().save(queue);
+
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus },
+      after: { status: queue.status },
+      description: `Appointment cancelled by ${this.request.user?.name || 'user'}.`,
+    });
+    return queue;
   }
 
   async findAll(date?: string) {
@@ -196,23 +237,23 @@ export class QueueService extends BaseTenantService {
   async findOne(id: string) {
     await this.ensureTablesExist();
 
-    const qb = await this.getRepository(Queue).findOne({
+    const queue = await this.getQueueRepository().findOne({
       where: { id },
       relations: queueRelations,
     });
 
-    const formattedQueue = formatQueue(qb);
-    return formattedQueue;
+    if (!queue) {
+      throw new NotFoundException(`Queue with ID ${id} not found`);
+    }
+
+    return queue;
   }
 
   async update(id: string, updateQueueDto: UpdateQueueDto) {
     await this.ensureTablesExist();
-    const queueRepository = this.getRepository(Queue);
+    const queueRepository = this.getQueueRepository();
 
-    const queue = await queueRepository.findOne({ where: { id } });
-    if (!queue) {
-      throw new NotFoundException(`Queue with ID ${id} not found`);
-    }
+    const queue = await this.findOne(id);
 
     if (updateQueueDto.doctorId) {
       const doctorRepository = this.getRepository(Doctor);
@@ -227,8 +268,17 @@ export class QueueService extends BaseTenantService {
       }
     }
 
+    const previousData = { ...queue };
     Object.assign(queue, updateQueueDto);
     await queueRepository.save(queue);
+
+    this.activityService.logUpdate({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: previousData,
+      after: queue,
+    });
 
     return {
       message: 'Queue entry updated successfully',
@@ -247,6 +297,13 @@ export class QueueService extends BaseTenantService {
     }
 
     await queueRepository.remove(queue);
+    this.activityService.logDelete(
+      'Queue',
+      queue.id,
+      'appointments',
+      queue,
+      `Appointment deleted by ${this.request.user?.name || 'user'}.`,
+    );
 
     return {
       message: 'Queue entry deleted successfully',
@@ -329,14 +386,8 @@ export class QueueService extends BaseTenantService {
 
   // Call queue by id
   async callQueue(id: string) {
-    const queueRepository = this.getRepository(Queue);
-    const queue = await queueRepository.findOne({
-      where: { id },
-      relations: queueRelations,
-    });
-    if (!queue) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
+    const queueRepository = this.getQueueRepository();
+    const queue = await this.findOne(id);
 
     if (
       ![QueueStatus.BOOKED, QueueStatus.SKIPPED, QueueStatus.CALLED].includes(
@@ -346,6 +397,9 @@ export class QueueService extends BaseTenantService {
       throw new BadRequestException('Patient is already called');
     }
 
+    const previousStatus = queue.status;
+    const previousCounter = queue.counter;
+
     queue.status = QueueStatus.CALLED;
     queue.counter = {
       skip: queue.counter?.skip || 0,
@@ -354,19 +408,22 @@ export class QueueService extends BaseTenantService {
     };
     await queueRepository.save(queue);
 
-    return queue;
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus, counter: previousCounter },
+      after: { status: queue.status, counter: queue.counter },
+      description: `Patient called by ${this.request.user?.name || 'user'}.`,
+    });
+
+    return formatQueue(queue, this.request.user.role);
   }
 
   // skip queue by id
   async skipQueue(id: string) {
-    const queueRepository = this.getRepository(Queue);
-    const queue = await queueRepository.findOne({
-      where: { id },
-      relations: queueRelations,
-    });
-    if (!queue) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
+    const queueRepository = this.getQueueRepository();
+    const queue = await this.findOne(id);
 
     if (
       ![
@@ -381,6 +438,9 @@ export class QueueService extends BaseTenantService {
       );
     }
 
+    const previousStatus = queue.status;
+    const previousCounter = queue.counter;
+
     queue.status = QueueStatus.SKIPPED;
     queue.counter = {
       skip: queue.counter?.skip + 1 || 1,
@@ -389,16 +449,22 @@ export class QueueService extends BaseTenantService {
     };
     await queueRepository.save(queue);
 
-    return null;
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus, counter: previousCounter },
+      after: { status: queue.status, counter: queue.counter },
+      description: `Appointment skipped by ${this.request.user?.name || 'user'}.`,
+    });
+
+    return formatQueue(queue, this.request.user.role);
   }
 
   // clock in
   async clockIn(id: string) {
-    const queueRepository = this.getRepository(Queue);
-    const queue = await queueRepository.findOne({ where: { id } });
-    if (!queue) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
+    const queueRepository = this.getQueueRepository();
+    const queue = await this.findOne(id);
 
     if (queue.status !== QueueStatus.CALLED) {
       throw new BadRequestException(
@@ -406,6 +472,8 @@ export class QueueService extends BaseTenantService {
       );
     }
 
+    const previousStatus = queue.status;
+    const previousCounter = queue.counter;
     queue.status = QueueStatus.IN_CONSULTATION;
     queue.counter = {
       skip: queue.counter?.skip || 0,
@@ -415,7 +483,15 @@ export class QueueService extends BaseTenantService {
     queue.startedAt = new Date();
     await queueRepository.save(queue);
 
-    return null;
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus, counter: previousCounter },
+      after: { status: queue.status, counter: queue.counter },
+      description: `Appointment clocked in by ${this.request.user?.name || 'user'}.`,
+    });
+    return formatQueue(queue, this.request.user.role);
   }
 
   // complete appointment queue
@@ -424,15 +500,9 @@ export class QueueService extends BaseTenantService {
     completeQueueDto: CompleteQueueDto,
     user: CurrentUserPayload,
   ) {
-    const queueRepository = this.getRepository(Queue);
+    const queueRepository = this.getQueueRepository();
 
-    const queue = await queueRepository.findOne({
-      where: { id },
-      relations: queueRelations,
-    });
-    if (!queue) {
-      throw new NotFoundException(`Queue with ID ${id} not found`);
-    }
+    const queue = await this.findOne(id);
 
     if (
       ![QueueStatus.IN_CONSULTATION, QueueStatus.COMPLETED].includes(
@@ -444,6 +514,8 @@ export class QueueService extends BaseTenantService {
       );
     }
 
+    const previousStatus = queue.status;
+
     Object.assign(queue, {
       ...completeQueueDto,
       status: QueueStatus.COMPLETED,
@@ -451,21 +523,23 @@ export class QueueService extends BaseTenantService {
       completedAt: new Date(),
     });
 
+    this.activityService.logStatusChange({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      before: { status: previousStatus },
+      after: { status: queue.status },
+      description: `Appointment completed by ${user.name || 'user'}.`,
+    });
+
     await queueRepository.save(queue);
-    return null;
+    return formatQueue(queue, this.request.user.role);
   }
 
   async appointmentReceiptPdf(id: string) {
     await this.ensureTablesExist();
 
-    const queue = await this.getRepository(Queue).findOne({
-      where: { id },
-      relations: queueRelations,
-    });
-
-    if (!queue) {
-      throw new NotFoundException('Queue not found');
-    }
+    const queue = await this.findOne(id);
 
     const url = `${process.env.APP_URL}/appointments/queues/${queue.referenceNumber}`;
 
@@ -489,5 +563,11 @@ export class QueueService extends BaseTenantService {
         filename: `${queue.patient.user.name.replace(' ', '_')}_${queue.sequenceNumber}.pdf`,
       },
     };
+  }
+
+  async getActivityLogs(queueId: string) {
+    const queue = await this.findOne(queueId);
+
+    return this.activityLogService.getActivityLogsByEntity('Queue', queue.id);
   }
 }

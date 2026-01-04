@@ -5,6 +5,8 @@ declare global {
     interface User {
       userId: string;
       email: string;
+      name: string;
+      phone: string;
       role: Role;
       sessionId: string;
       type: 'tenant';

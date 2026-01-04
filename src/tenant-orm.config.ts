@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { DataSourceOptions } from 'typeorm';
+import { ActivityLog } from './modules/common/activity/entities/activity-log.entity';
 
 export function getTenantConnectionConfig(
   tenantSlug: string,
@@ -14,6 +15,7 @@ export function getTenantConnectionConfig(
     schema: `tenant_${tenantSlug}`,
     entities: [
       join(__dirname, './modules/client/**/entities/*.entity.{ts,js}'),
+      ActivityLog,
     ],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',
