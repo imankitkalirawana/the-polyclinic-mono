@@ -8,7 +8,6 @@ import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
-
   // Raw body parser for Razorpay webhook endpoint
   app.use(
     '/api/v1/payments/webhook',

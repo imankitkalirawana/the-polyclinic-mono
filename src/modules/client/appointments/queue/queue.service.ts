@@ -185,11 +185,12 @@ export class QueueService extends BaseTenantService {
       },
       relations: queueRelations,
       order: {
+        createdAt: 'DESC',
         sequenceNumber: 'ASC',
       },
     });
 
-    return qb.map(formatQueue);
+    return qb.map((queue) => formatQueue(queue, this.request.user.role));
   }
 
   async findOne(id: string) {
@@ -316,9 +317,13 @@ export class QueueService extends BaseTenantService {
       : null;
 
     return {
-      previous: previousQueues.map(formatQueue),
-      current: current ? formatQueue(current) : null,
-      next: next ? next.map(formatQueue) : null,
+      previous: previousQueues.map((queue) =>
+        formatQueue(queue, this.request.user.role),
+      ),
+      current: current ? formatQueue(current, this.request.user.role) : null,
+      next: next
+        ? next.map((queue) => formatQueue(queue, this.request.user.role))
+        : null,
     };
   }
 

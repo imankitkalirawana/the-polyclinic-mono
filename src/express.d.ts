@@ -5,7 +5,7 @@ declare global {
     interface User {
       userId: string;
       email: string;
-      role: string;
+      role: Role;
       sessionId: string;
       type: 'tenant';
       tenantSlug: string;

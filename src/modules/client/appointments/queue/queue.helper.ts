@@ -1,11 +1,13 @@
+import { Role } from 'src/common/enums/role.enum';
 import { Queue } from './entities/queue.entity';
+import { redactField } from 'src/common/utils/redact.util';
 
 interface FormattedQueue extends Queue {
   nextQueueId?: string;
   previousQueueId?: string;
 }
 
-export function formatQueue(queue: FormattedQueue) {
+export function formatQueue(queue: FormattedQueue, role?: Role | null) {
   return {
     id: queue.id,
     referenceNumber: queue.referenceNumber,
@@ -21,7 +23,11 @@ export function formatQueue(queue: FormattedQueue) {
     completedByUser: queue.completedByUser
       ? {
           id: queue.completedByUser.id,
-          email: queue.completedByUser.email,
+          email: redactField({
+            value: queue.completedByUser.email,
+            currentRole: role,
+            targetRole: queue.completedByUser.role,
+          }),
           name: queue.completedByUser.name,
         }
       : null,
@@ -47,7 +53,11 @@ export function formatQueue(queue: FormattedQueue) {
       ? {
           id: queue.doctor.id,
           specialization: queue.doctor.specialization,
-          email: queue.doctor.user?.email ?? null,
+          email: redactField({
+            value: queue.doctor.user?.email ?? null,
+            currentRole: role,
+            targetRole: queue.doctor.user?.role,
+          }),
           name: queue.doctor.user?.name ?? null,
           userId: queue.doctor.user?.id ?? null,
           image: queue.doctor.user?.image ?? null,
@@ -57,9 +67,17 @@ export function formatQueue(queue: FormattedQueue) {
     bookedByUser: queue.bookedByUser
       ? {
           id: queue.bookedByUser.id,
-          email: queue.bookedByUser.email,
+          email: redactField({
+            value: queue.bookedByUser.email,
+            currentRole: role,
+            targetRole: queue.bookedByUser.role,
+          }),
           name: queue.bookedByUser.name,
-          phone: queue.bookedByUser.phone ?? null,
+          phone: redactField({
+            value: queue.bookedByUser.phone,
+            currentRole: role,
+            targetRole: queue.bookedByUser.role,
+          }),
           image: queue.bookedByUser.image ?? null,
         }
       : null,
