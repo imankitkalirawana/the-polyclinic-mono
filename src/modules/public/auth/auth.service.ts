@@ -118,13 +118,13 @@ export class AuthService {
     }
 
     // Check if OTP was verified recently (within last 30 minutes)
-    const otpAge = Date.now() - verifiedOtp.createdAt.getTime();
-    const thirtyMinutes = 30 * 60 * 1000;
-    if (otpAge > thirtyMinutes) {
-      throw new UnauthorizedException(
-        'OTP verification has expired. Please request a new OTP',
-      );
-    }
+    // const otpAge = Date.now() - verifiedOtp.createdAt.getTime();
+    // const thirtyMinutes = 30 * 60 * 1000;
+    // if (otpAge > thirtyMinutes) {
+    //   throw new UnauthorizedException(
+    //     'OTP verification has expired. Please request a new OTP',
+    //   );
+    // }
 
     const existingUser = await userRepository.findOne({
       where: { email: registerDto.email },

@@ -6,6 +6,24 @@ export class AddReferenceFieldsToQueue20240101000003 implements TenantMigration 
   name = 'AddReferenceFieldsToQueue';
 
   async up(dataSource: DataSource, schemaName: string): Promise<void> {
+    // Check if appointment_queue table exists first
+    const tableExists = await dataSource.query(
+      `
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = $1 
+        AND table_name = 'appointment_queue'
+      );
+    `,
+      [schemaName],
+    );
+
+    if (!tableExists[0].exists) {
+      // Table doesn't exist yet, skip this migration
+      // TypeORM synchronize will create it with the correct structure
+      return;
+    }
+
     // Check if ReferenceType enum exists, create if not
     const referenceTypeEnumExists = await dataSource.query(
       `
@@ -98,6 +116,23 @@ export class AddReferenceFieldsToQueue20240101000003 implements TenantMigration 
   }
 
   async down(dataSource: DataSource, schemaName: string): Promise<void> {
+    // Check if appointment_queue table exists first
+    const tableExists = await dataSource.query(
+      `
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = $1 
+        AND table_name = 'appointment_queue'
+      );
+    `,
+      [schemaName],
+    );
+
+    if (!tableExists[0].exists) {
+      // Table doesn't exist, nothing to rollback
+      return;
+    }
+
     // Check if paymentId column exists, if not add it back
     const paymentIdColumnExists = await dataSource.query(
       `
@@ -136,6 +171,8 @@ export class AddReferenceFieldsToQueue20240101000003 implements TenantMigration 
       DROP COLUMN IF EXISTS "referenceType";
     `);
 
-    await dataSource.query(`DROP TYPE IF EXISTS "${schemaName}".referencetype;`);
+    await dataSource.query(
+      `DROP TYPE IF EXISTS "${schemaName}".referencetype;`,
+    );
   }
 }

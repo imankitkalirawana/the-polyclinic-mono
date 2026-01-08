@@ -12,12 +12,15 @@ export function getTenantConnectionConfig(
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    schema: `tenant_${tenantSlug}`,
+    schema: tenantSlug,
     entities: [
       join(__dirname, './modules/client/**/entities/*.entity.{ts,js}'),
       ActivityLog,
     ],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',
+    ssl: {
+      rejectUnauthorized: false,
+    },
   };
 }

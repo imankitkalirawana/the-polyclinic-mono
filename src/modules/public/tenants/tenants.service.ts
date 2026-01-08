@@ -10,8 +10,7 @@ import { Repository, DataSource } from 'typeorm';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant } from './entities/tenant.entity';
-import { getTenantSchemaName } from '../../tenancy/tenancy.utils';
-import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
+import { TenantAuthInitService } from 'src/modules/tenancy/tenant-auth-init.service';
 
 @Injectable()
 export class TenantsService implements OnModuleInit {
@@ -99,7 +98,7 @@ export class TenantsService implements OnModuleInit {
     const tenant = await this.findOne(slug);
 
     // Drop the tenant schema using slug
-    const schemaName = getTenantSchemaName(tenant.slug);
+    const schemaName = tenant.slug;
     await this.dataSource.query(
       `DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`,
     );

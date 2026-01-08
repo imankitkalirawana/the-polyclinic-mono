@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { getTenantSchemaName } from '../tenancy.utils';
 import { TenantMigration } from '../interfaces/tenant-migration.interface';
 import * as migrations from '../migrations';
 
@@ -30,7 +29,7 @@ export class TenantMigrationService {
    * Run all pending migrations for a tenant
    */
   async runMigrations(tenantSlug: string): Promise<void> {
-    const schemaName = getTenantSchemaName(tenantSlug);
+    const schemaName = tenantSlug;
     this.logger.log(
       `Running migrations for tenant: ${tenantSlug} (schema: ${schemaName})`,
     );
@@ -94,7 +93,7 @@ export class TenantMigrationService {
    * Rollback the last migration for a tenant
    */
   async rollbackLastMigration(tenantSlug: string): Promise<void> {
-    const schemaName = getTenantSchemaName(tenantSlug);
+    const schemaName = tenantSlug;
     this.logger.log(
       `Rolling back last migration for tenant: ${tenantSlug} (schema: ${schemaName})`,
     );
@@ -144,7 +143,7 @@ export class TenantMigrationService {
     pending: string[];
     total: number;
   }> {
-    const schemaName = getTenantSchemaName(tenantSlug);
+    const schemaName = tenantSlug;
     await this.ensureMigrationsTable(schemaName);
 
     const executedMigrations = await this.getExecutedMigrations(schemaName);

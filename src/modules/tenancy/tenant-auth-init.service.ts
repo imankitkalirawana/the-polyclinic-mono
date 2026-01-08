@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { getTenantSchemaName } from './tenancy.utils';
 import { TenantMigrationService } from './services/tenant-migration.service';
 
 @Injectable()
@@ -17,7 +16,7 @@ export class TenantAuthInitService {
    * This creates the schema and runs all pending migrations
    */
   async initializeTenantAuth(tenantSlug: string): Promise<void> {
-    const schemaName = getTenantSchemaName(tenantSlug);
+    const schemaName = tenantSlug;
     this.logger.log(
       `Initializing auth tables for tenant: ${tenantSlug} (schema: ${schemaName})`,
     );
@@ -48,7 +47,7 @@ export class TenantAuthInitService {
    * Creates schema if needed and runs all pending migrations
    */
   async ensureTenantAuthTables(tenantSlug: string): Promise<void> {
-    const schemaName = getTenantSchemaName(tenantSlug);
+    const schemaName = tenantSlug;
 
     try {
       // Create schema if it doesn't exist
