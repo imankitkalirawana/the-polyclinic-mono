@@ -19,8 +19,8 @@ export function getTenantConnectionConfig(
     ],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    // ssl: {
+    //   rejectUnauthorized: false,
+    // },
   };
 }

@@ -12,7 +12,7 @@ export const publicOrmConfig: DataSourceOptions = {
   entities: [join(__dirname, './modules/public/**/entities/*.entity.{ts,js}')],
   synchronize: true,
   logging: process.env.NODE_ENV === 'development',
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  // ssl: {
+  //   rejectUnauthorized: false,
+  // },
 };
