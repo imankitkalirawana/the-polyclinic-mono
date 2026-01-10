@@ -195,6 +195,7 @@ export class AuthService {
 
     const existingUser = await userRepository.findOne({
       where: { email: registerDto.email },
+      withDeleted: true,
     });
 
     if (existingUser) {
@@ -226,6 +227,7 @@ export class AuthService {
     const userRepository = this.getUserRepository();
     const user = await userRepository.findOne({
       where: { email: loginDto.email },
+      withDeleted: true,
     });
 
     if (!user) {

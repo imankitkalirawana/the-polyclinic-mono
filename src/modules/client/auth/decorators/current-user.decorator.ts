@@ -1,9 +1,10 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Role } from 'src/common/enums/role.enum';
 
 export interface CurrentUserPayload {
   userId: string;
   email: string;
-  role: string;
+  role: Role;
   sessionId: string;
   type: 'tenant';
   tenantSlug: string;

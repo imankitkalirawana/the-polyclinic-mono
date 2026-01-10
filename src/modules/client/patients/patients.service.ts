@@ -12,7 +12,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { BaseTenantService } from '../../tenancy/base-tenant.service';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
-import { formatPatient } from './patients.helper';
+import { formatPatient, queryDeletedPatient } from './patients.helper';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 
 @Injectable()
@@ -44,8 +44,9 @@ export class PatientsService extends BaseTenantService {
             { user: { name: ILike(`%${search}%`) } },
             { user: { email: ILike(`%${search}%`) } },
             { user: { phone: ILike(`%${search}%`) } },
+            queryDeletedPatient,
           ]
-        : {},
+        : queryDeletedPatient,
       relations: ['user'],
       order: {
         user: { name: 'ASC' },
@@ -97,20 +98,34 @@ export class PatientsService extends BaseTenantService {
     return await patientRepository.save(patient);
   }
 
-  async remove(id: string) {
+  async remove(userId: string) {
     await this.ensureTablesExist();
     const patientRepository = this.getPatientRepository();
 
-    const patient = await patientRepository.findOne({
-      where: { id },
+    const patient = await patientRepository.exists({
+      where: { userId },
     });
 
     if (!patient) {
-      throw new NotFoundException(`Patient with ID ${id} not found`);
+      throw new NotFoundException(`Patient with user ID ${userId} not found`);
     }
 
-    await patientRepository.remove(patient);
+    await patientRepository.softDelete({ userId });
+  }
 
-    return null;
+  async restore(userId: string) {
+    await this.ensureTablesExist();
+    const patientRepository = this.getPatientRepository();
+
+    const patient = await patientRepository.exists({
+      where: { userId },
+      withDeleted: true,
+    });
+
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${userId} not found`);
+    }
+
+    await patientRepository.restore({ userId });
   }
 }

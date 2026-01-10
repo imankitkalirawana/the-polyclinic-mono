@@ -10,7 +10,9 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -29,6 +31,7 @@ import { PatientsService } from '../patients/patients.service';
 import { DoctorsService } from '../doctors/doctors.service';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { formatLabel } from 'src/common/utils/text-transform.util';
+import { formatUser } from './users.helper';
 
 @Controller('client/users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -44,6 +47,7 @@ export class UsersController {
   async create(
     @StandardParam() params: StandardParams,
     @Body() createUserDto: CreateUserDto,
+    @Req() req: Request,
   ) {
     const user = await this.usersService.create(createUserDto);
     createUserDto.userId = user.id;
@@ -58,12 +62,15 @@ export class UsersController {
     params.setMessage(
       `${formatLabel(createUserDto.role)} created successfully`,
     );
-    return user;
+    return formatUser(user, req.user.role);
   }
 
   @Get('me')
-  async getMe(@CurrentUser() user: CurrentUserPayload) {
-    return this.usersService.findOne(user.userId);
+  async getMe(@CurrentUser() user: CurrentUserPayload, @Req() req: Request) {
+    return formatUser(
+      await this.usersService.findOne(user.userId),
+      req.user.role,
+    );
   }
 
   @Get()
@@ -92,6 +99,7 @@ export class UsersController {
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Req() req: Request,
   ) {
     const user = await this.usersService.findOne(id);
     if (!user) {
@@ -107,13 +115,31 @@ export class UsersController {
     }
 
     params.setMessage(`${formatLabel(user.role)} updated successfully`);
-    return this.usersService.update(id, updateUserDto);
+    const updatedUser = await this.usersService.findOne(id);
+
+    return formatUser(updatedUser, req.user.role);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
+  async remove(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+  ) {
     await this.usersService.remove(id);
+    params.setMessage(`User removed successfully`);
+    return null;
+  }
+
+  @Patch(':id/restore')
+  @Roles(Role.ADMIN)
+  async restore(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+  ) {
+    await this.usersService.restore(id);
+    params.setMessage(`User restored successfully`);
+    return null;
   }
 }

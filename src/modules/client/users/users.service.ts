@@ -16,6 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { v4 as uuidv4 } from 'uuid';
+import { formatUser } from './users.helper';
 
 @Injectable()
 export class UsersService {
@@ -64,20 +65,14 @@ export class UsersService {
     return this.connection.getRepository(TenantUser);
   }
 
-  async create(
-    createUserDto: CreateUserDto,
-  ): Promise<Omit<TenantUser, 'password'>> {
+  async create(createUserDto: CreateUserDto) {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
 
-    this.logger.log(JSON.stringify(createUserDto));
-
-    // Check if user with email already exists
     const existingUser = await userRepository.findOne({
       where: { email: createUserDto.email },
+      withDeleted: true,
     });
-
-    this.logger.log(JSON.stringify(existingUser));
 
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
@@ -99,25 +94,20 @@ export class UsersService {
 
     const savedUser = await userRepository.save(user);
 
-    // Remove password from response
     delete savedUser.password;
 
     return savedUser;
   }
 
-  async findAll(): Promise<Omit<TenantUser, 'password'>[]> {
+  async findAll() {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
     const users = await userRepository.find();
 
-    // Remove passwords from response
-    return users.map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    return users.map((user) => formatUser(user, this.request.user.role));
   }
 
-  async findOne(id: string): Promise<Omit<TenantUser, 'password'>> {
+  async findOne(id: string) {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
 
@@ -128,10 +118,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-
-    // Remove password from response
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -148,7 +135,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string) {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
 
@@ -160,6 +147,22 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    await userRepository.remove(user);
+    await userRepository.softRemove(user);
+  }
+
+  async restore(id: string) {
+    await this.ensureTablesExist();
+    const userRepository = this.getUserRepository();
+
+    const user = await userRepository.exists({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    await userRepository.restore(id);
   }
 }

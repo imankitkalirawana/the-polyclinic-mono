@@ -224,6 +224,7 @@ export class QueueService extends BaseTenantService {
       where: {
         createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
       },
+      withDeleted: true,
       relations: queueRelations,
       order: {
         createdAt: 'DESC',
@@ -239,6 +240,7 @@ export class QueueService extends BaseTenantService {
 
     const queue = await this.getQueueRepository().findOne({
       where: { id },
+      withDeleted: true,
       relations: queueRelations,
     });
 

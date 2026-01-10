@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
@@ -42,10 +43,10 @@ export class Doctor {
   @Column({ nullable: true })
   seating?: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   lastSequenceNumber?: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   currentSequenceNumber?: number;
 
   @CreateDateColumn()
@@ -53,4 +54,7 @@ export class Doctor {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date | null;
 }

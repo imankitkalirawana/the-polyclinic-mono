@@ -1,5 +1,6 @@
 import { formatLabel } from 'src/common/utils/text-transform.util';
 import { Patient } from './entities/patient.entity';
+import { IsNull } from 'typeorm';
 
 export function areNamesSimilar(
   nameA: string,
@@ -76,3 +77,5 @@ export function formatPatient(patient: Patient) {
     updatedAt: patient.updatedAt,
   };
 }
+
+export const queryDeletedPatient = { user: { deletedAt: IsNull() } };
