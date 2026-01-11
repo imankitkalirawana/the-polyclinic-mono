@@ -361,6 +361,8 @@ export class QueueService extends BaseTenantService {
       },
     });
 
+    this.logger.debug(`Next queues: ${JSON.stringify(nextQueues)}`);
+
     // add the id of next queue in the each queue
     const next = queueId
       ? nextQueues.filter((queue) => queue.id !== queueId)

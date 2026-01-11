@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -8,6 +8,8 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from '../auth/decorators/current-user.decorator';
+import { formatDoctor } from './doctors.helper';
+import { Request } from 'express';
 
 @Controller('client/doctors')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -27,7 +29,8 @@ export class DoctorsController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async findOne(@Param('id') id: string) {
-    return this.doctorsService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    const doctor = await this.doctorsService.findOne(id);
+    return formatDoctor(doctor, req.user.role);
   }
 }

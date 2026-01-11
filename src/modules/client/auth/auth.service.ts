@@ -21,6 +21,9 @@ import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { CheckEmailDto } from './dto/check-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { Role } from 'src/scripts/types';
+import { DoctorsService } from '../doctors/doctors.service';
+import { Doctor } from '../doctors/entities/doctor.entity';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +33,7 @@ export class AuthService {
   constructor(
     @Inject(REQUEST) private request: Request,
     @Inject(CONNECTION) private connection: DataSource | null,
+    private doctorsService: DoctorsService,
     private jwtService: JwtService,
     private tenantAuthInitService: TenantAuthInitService,
   ) {}
@@ -360,6 +364,15 @@ export class AuthService {
       select: ['id', 'email', 'name', 'role', 'phone'],
     });
 
-    return { user };
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    let doctor: Doctor | null = null;
+    if (user.role === Role.DOCTOR) {
+      doctor = await this.doctorsService.findByUserId(user.id);
+    }
+
+    return { user: { ...user, doctorId: doctor?.id } };
   }
 }

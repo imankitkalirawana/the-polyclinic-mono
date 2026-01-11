@@ -17,6 +17,7 @@ import { PaymentsModule } from './modules/client/payments/payments.module';
 import { DoctorsModule } from './modules/client/doctors/doctors.module';
 import { QueueModule } from './modules/client/appointments/queue/queue.module';
 import { ActivityModule } from './modules/common/activity/activity.module';
+import { CronModule } from './modules/common/cron/cron.module';
 import {
   StandardResponseModule,
   StandardResponseModuleOptions,
@@ -59,6 +60,7 @@ const options: StandardResponseModuleOptions = {};
     QueueModule,
     PaymentsModule,
     ActivityModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [

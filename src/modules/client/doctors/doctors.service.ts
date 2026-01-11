@@ -70,7 +70,7 @@ export class DoctorsService extends BaseTenantService {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
 
-    return formatDoctor(doctor, this.request.user.role);
+    return doctor;
   }
 
   async findByUserId(userId: string) {
@@ -86,7 +86,7 @@ export class DoctorsService extends BaseTenantService {
       throw new NotFoundException(`Doctor with user ID ${userId} not found`);
     }
 
-    return formatDoctor(doctor, this.request.user.role);
+    return doctor;
   }
 
   // update doctor

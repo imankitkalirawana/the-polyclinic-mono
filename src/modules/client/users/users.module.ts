@@ -14,7 +14,7 @@ import { DoctorsModule } from '../doctors/doctors.module';
   imports: [
     TypeOrmModule.forFeature([Tenant], 'default'),
     PassportModule.register({ defaultStrategy: 'tenant-bearer' }),
-    AuthModule,
+    forwardRef(() => AuthModule),
     TenancyModule,
     PatientsModule,
     forwardRef(() => DoctorsModule),

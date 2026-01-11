@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Session } from './entities/session.entity';
+import { Session } from '../../../public/auth/entities/session.entity';
 
 @Injectable()
-export class SessionCleanupService {
+export class PublicSessionCleanupService {
+  private readonly logger = new Logger(PublicSessionCleanupService.name);
+
   constructor(
     @InjectRepository(Session, 'default')
     private sessionRepository: Repository<Session>,
@@ -24,6 +26,6 @@ export class SessionCleanupService {
       .where('expiresAt < :now', { now: new Date() })
       .execute();
 
-    console.log(`Cleaned up ${result.affected || 0} expired sessions`);
+    this.logger.log(`Cleaned up ${result.affected || 0} expired sessions`);
   }
 }

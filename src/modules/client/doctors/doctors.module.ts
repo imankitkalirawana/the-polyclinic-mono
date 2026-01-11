@@ -10,7 +10,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tenant], 'default'),
-    AuthModule,
+    forwardRef(() => AuthModule),
     TenancyModule,
     forwardRef(() => UsersModule),
   ],

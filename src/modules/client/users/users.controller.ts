@@ -50,17 +50,21 @@ export class UsersController {
     const user = await this.usersService.create(createUserDto);
     createUserDto.userId = user.id;
 
+    let linkedId: string | null = null;
+
     if (createUserDto.role === Role.PATIENT) {
-      await this.patientsService.create(createUserDto);
+      const patient = await this.patientsService.create(createUserDto);
+      linkedId = patient.id;
     }
     if (createUserDto.role === Role.DOCTOR) {
-      await this.doctorsService.create(createUserDto);
+      const doctor = await this.doctorsService.create(createUserDto);
+      linkedId = doctor.id;
     }
 
     params.setMessage(
       `${formatLabel(createUserDto.role)} created successfully`,
     );
-    return formatUser(user, req.user.role);
+    return { ...formatUser(user, req.user.role), linked_id: linkedId };
   }
 
   @Get('me')
