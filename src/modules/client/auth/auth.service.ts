@@ -4,14 +4,14 @@ import {
   Inject,
   Logger,
 } from '@nestjs/common';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, MoreThanOrEqual } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import * as bcrypt from 'bcryptjs';
 import { TenantUser } from '../users/entities/tenant-user.entity';
 import { Session } from './entities/session.entity';
-import { Otp } from './entities/otp.entity';
+import { Otp, OtpType } from './entities/otp.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RequestOtpDto } from './dto/request-otp.dto';
@@ -20,6 +20,7 @@ import { JwtPayload } from './strategies/bearer.strategy';
 import { CONNECTION } from '../../tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
 import { CheckEmailDto } from './dto/check-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -96,8 +97,14 @@ export class AuthService {
       where: { email: requestOtpDto.email },
     });
 
-    if (existingUser) {
-      throw new UnauthorizedException('User with this email already exists');
+    if (requestOtpDto.type === OtpType.registration) {
+      if (existingUser) {
+        throw new UnauthorizedException('User with this email already exists');
+      }
+    } else if (requestOtpDto.type === OtpType.forgotPassword) {
+      if (!existingUser) {
+        throw new UnauthorizedException('User with this email does not exist');
+      }
     }
 
     // Generate 6-digit OTP
@@ -109,13 +116,18 @@ export class AuthService {
 
     // Invalidate any existing unverified OTPs for this email
     await otpRepository.update(
-      { email: requestOtpDto.email, verified: false },
+      {
+        email: requestOtpDto.email,
+        verified: false,
+        type: requestOtpDto.type,
+      },
       { verified: true }, // Mark as used/invalid
     );
 
     // Create new OTP
     const otp = otpRepository.create({
       email: requestOtpDto.email,
+      type: requestOtpDto.type,
       code,
       expiresAt,
       verified: false,
@@ -137,6 +149,7 @@ export class AuthService {
         email: verifyOtpDto.email,
         code: verifyOtpDto.code,
         verified: false,
+        type: verifyOtpDto.type,
       },
       order: { createdAt: 'DESC' },
     });
@@ -152,7 +165,6 @@ export class AuthService {
     // Mark OTP as verified
     otp.verified = true;
     await otpRepository.save(otp);
-    return { message: 'OTP verified successfully' };
   }
 
   async checkEmail(checkEmailDto: CheckEmailDto) {
@@ -163,6 +175,7 @@ export class AuthService {
     });
     return { exists: !!user };
   }
+
   async register(registerDto: RegisterDto) {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
@@ -173,6 +186,7 @@ export class AuthService {
       where: {
         email: registerDto.email,
         verified: true,
+        type: OtpType.registration,
       },
       order: { createdAt: 'DESC' },
     });
@@ -291,6 +305,42 @@ export class AuthService {
     await sessionRepository.save(savedSession);
 
     return token;
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    await this.ensureTablesExist();
+    const userRepository = this.getUserRepository();
+    const otpRepository = this.getOtpRepository();
+
+    const verifiedOtp = await otpRepository.findOne({
+      where: {
+        email: forgotPasswordDto.email,
+        verified: true,
+        type: OtpType.forgotPassword,
+        expiresAt: MoreThanOrEqual(new Date()),
+      },
+      order: { createdAt: 'DESC' },
+    });
+    if (!verifiedOtp) {
+      throw new UnauthorizedException('Invalid OTP code');
+    }
+
+    const user = await userRepository.findOne({
+      where: { email: forgotPasswordDto.email },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User with this email does not exist');
+    }
+
+    const hashedPassword = await bcrypt.hash(forgotPasswordDto.password, 10);
+    user.password = hashedPassword;
+    await userRepository.save(user);
+
+    // Clean up verified OTP after successful password reset
+    await otpRepository.delete({
+      email: forgotPasswordDto.email,
+      verified: true,
+    });
   }
 
   async cleanupExpiredSessions() {

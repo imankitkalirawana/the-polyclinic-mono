@@ -138,6 +138,20 @@ export class UsersService {
   async remove(id: string) {
     await this.ensureTablesExist();
     const userRepository = this.getUserRepository();
+    const user = await userRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    await userRepository.delete(id);
+  }
+
+  async softRemove(id: string) {
+    await this.ensureTablesExist();
+    const userRepository = this.getUserRepository();
 
     const user = await userRepository.findOne({
       where: { id },

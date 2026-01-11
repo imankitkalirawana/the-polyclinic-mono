@@ -19,21 +19,31 @@ import {
   CurrentUserPayload,
 } from './decorators/current-user.decorator';
 import { CheckEmailDto } from './dto/check-email.dto';
+import { StandardParams, StandardParam } from 'nest-standard-response';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('client/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('otp/request')
-  @HttpCode(HttpStatus.OK)
-  async requestOtp(@Body() requestOtpDto: RequestOtpDto) {
-    return this.authService.requestOtp(requestOtpDto);
+  async requestOtp(
+    @StandardParam() params: StandardParams,
+    @Body() requestOtpDto: RequestOtpDto,
+  ) {
+    await this.authService.requestOtp(requestOtpDto);
+    params.setMessage(`OTP sent to your email`);
+    return null;
   }
 
   @Post('otp/verify')
-  @HttpCode(HttpStatus.OK)
-  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-    return this.authService.verifyOtp(verifyOtpDto);
+  async verifyOtp(
+    @StandardParam() params: StandardParams,
+    @Body() verifyOtpDto: VerifyOtpDto,
+  ) {
+    await this.authService.verifyOtp(verifyOtpDto);
+    params.setMessage(`OTP verified successfully`);
+    return null;
   }
 
   @Post('check-email')
@@ -51,6 +61,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(
+    @StandardParam() params: StandardParams,
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ) {
+    await this.authService.forgotPassword(forgotPasswordDto);
+    params.setMessage(`Password updated successfully`);
+    return null;
   }
 
   @Get('session')

@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
+import { OtpType } from '../entities/otp.entity';
 
 export class VerifyOtpDto {
   @IsEmail()
@@ -7,4 +8,7 @@ export class VerifyOtpDto {
   @IsString()
   @Length(6, 6, { message: 'OTP must be exactly 6 digits' })
   code: string;
+
+  @IsEnum(OtpType)
+  type: OtpType;
 }

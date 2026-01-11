@@ -6,6 +6,12 @@ import {
   Index,
 } from 'typeorm';
 
+export enum OtpType {
+  registration = 'REGISTRATION',
+  forgotPassword = 'FORGOT_PASSWORD',
+  verification = 'VERIFICATION',
+}
+
 @Entity('otps')
 @Index(['email', 'code'])
 @Index(['email', 'verified'])
@@ -22,6 +28,9 @@ export class Otp {
 
   @Column({ default: false })
   verified: boolean;
+
+  @Column({ type: 'enum', enum: OtpType })
+  type: OtpType;
 
   @Column({ type: 'timestamp' })
   expiresAt: Date;

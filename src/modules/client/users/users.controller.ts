@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
   Req,
 } from '@nestjs/common';
@@ -120,14 +118,13 @@ export class UsersController {
     return formatUser(updatedUser, req.user.role);
   }
 
-  @Delete(':id')
+  @Delete(':id/soft-remove')
   @Roles(Role.ADMIN)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
+  async softRemove(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
   ) {
-    await this.usersService.remove(id);
+    await this.usersService.softRemove(id);
     params.setMessage(`User removed successfully`);
     return null;
   }
@@ -140,6 +137,17 @@ export class UsersController {
   ) {
     await this.usersService.restore(id);
     params.setMessage(`User restored successfully`);
+    return null;
+  }
+
+  @Delete(':id/delete')
+  @Roles(Role.ADMIN)
+  async remove(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+  ) {
+    await this.usersService.remove(id);
+    params.setMessage(`User removed successfully`);
     return null;
   }
 }
