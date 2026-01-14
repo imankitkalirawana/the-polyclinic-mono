@@ -5,6 +5,7 @@ import { Role } from 'src/common/enums/role.enum';
 export function formatDoctor(doctor: Doctor, currentRole: Role) {
   return {
     id: doctor.id,
+    code: doctor.code,
     userId: doctor.userId,
     name: doctor.user.name,
     email: redactField({

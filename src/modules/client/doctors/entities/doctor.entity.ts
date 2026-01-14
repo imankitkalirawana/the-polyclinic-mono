@@ -18,6 +18,9 @@ export class Doctor {
   @Column({ type: 'uuid' })
   userId: string;
 
+  @Column({ type: 'varchar', length: 3, unique: true, nullable: true })
+  code?: string;
+
   @OneToOne(() => TenantUser, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: TenantUser;
