@@ -15,7 +15,13 @@ import { CONNECTION } from '@/tenancy/tenancy.symbols';
 import { TenantAuthInitService } from '@/tenancy/tenant-auth-init.service';
 import { Queue, QueueStatus } from './entities/queue.entity';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
-import { formatQueue, generateReferenceNumber } from './queue.helper';
+import {
+  formatQueue,
+  generateAppointmentId,
+  buildSequenceName,
+  ensureSequenceExists,
+  getNextTokenNumber,
+} from './queue.helper';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { PaymentsService } from '@/client/payments/payments.service';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
@@ -87,6 +93,12 @@ export class QueueService extends BaseTenantService {
 
     const doctor = await this.doctorsService.findOne(createQueueDto.doctorId);
 
+    if (!doctor.code) {
+      throw new BadRequestException(
+        'Doctor code is required for appointment booking',
+      );
+    }
+
     // start transaction
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
@@ -107,22 +119,41 @@ export class QueueService extends BaseTenantService {
         status = QueueStatus.PAYMENT_FAILED;
       }
 
+      // Get tenant schema name
+      const tenantSlug = this.getTenantSlug();
+
+      // Build sequence name for this doctor and appointment date
+      const sequenceName = buildSequenceName(
+        createQueueDto.doctorId,
+        createQueueDto.appointmentDate,
+      );
+
+      // Ensure sequence exists (with advisory lock protection)
+      await ensureSequenceExists(queryRunner, tenantSlug, sequenceName);
+
+      // Get next token number from sequence
+      const sequenceNumber = await getNextTokenNumber(
+        queryRunner,
+        tenantSlug,
+        sequenceName,
+      );
+
+      // Generate appointment ID (aid)
+      const aid = generateAppointmentId(
+        createQueueDto.appointmentDate,
+        doctor.code,
+        sequenceNumber,
+      );
+
       const queue = queryRunner.manager.create(Queue, {
         ...createQueueDto,
-        referenceNumber: generateReferenceNumber(),
-        sequenceNumber: doctor.lastSequenceNumber + 1 || 1,
+        aid,
+        sequenceNumber,
         status,
         bookedBy: this.request.user.userId,
       });
 
       await queryRunner.manager.save(Queue, queue);
-
-      await queryRunner.manager.increment(
-        Doctor,
-        { id: createQueueDto.doctorId },
-        'lastSequenceNumber',
-        1,
-      );
 
       await queryRunner.commitTransaction();
       this.activityService.logCreate(
@@ -543,7 +574,7 @@ export class QueueService extends BaseTenantService {
 
     const queue = await this.findOne(id);
 
-    const url = `${process.env.APP_URL}/appointments/queues/${queue.referenceNumber}`;
+    const url = `${process.env.APP_URL}/appointments/queues/${queue.aid}`;
 
     const qrCode = await this.qrService.generateBase64(url);
 
