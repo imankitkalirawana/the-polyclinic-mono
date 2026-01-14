@@ -27,6 +27,6 @@
     "src/**/*",
     "tailwind.config.ts",
     "commitlint.config.ts",
-    "emails/receipt.tsx"
+    "emails/**/*"
   ]
 }
