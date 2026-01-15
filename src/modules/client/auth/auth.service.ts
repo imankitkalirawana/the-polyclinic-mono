@@ -27,6 +27,7 @@ import { Doctor } from '../doctors/entities/doctor.entity';
 import { EmailService } from '@/common/email/email.service';
 import { render } from '@react-email/render';
 import SendOtp from 'emails/auth/send-otp';
+import React from 'react';
 
 @Injectable()
 export class AuthService {
@@ -143,12 +144,12 @@ export class AuthService {
 
     await otpRepository.save(otp);
 
-    // const html = render(SendOtp());
+    const html = await render(React.createElement(SendOtp, { otp: code }));
 
-    this.emailService.sendEmail({
+    await this.emailService.sendEmail({
       to: requestOtpDto.email,
       subject: 'Your OTP Code',
-      html: `Your OTP code is ${code}. It will expire in 10 minutes.`,
+      html,
     });
   }
 

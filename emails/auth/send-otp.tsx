@@ -7,7 +7,11 @@ import {
   Text,
 } from '@react-email/components';
 import BaseComponent from 'emails/(components)/base';
-export default function SendOtp() {
+
+interface SendOtpProps {
+  otp: string;
+}
+export default function SendOtp({ otp }: SendOtpProps) {
   return (
     <BaseComponent>
       <Container className="px-4 py-10">
@@ -37,7 +41,7 @@ export default function SendOtp() {
         </Section>
         <Section className="bg-[#eef4f3] rounded-xl px-6 py-8  mx-auto text-center">
           <Text className="text-4xl font-bold tracking-widest text-foreground mb-4">
-            589321
+            {otp}
           </Text>
 
           <Text className="  leading-relaxed">

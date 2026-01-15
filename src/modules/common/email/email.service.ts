@@ -13,21 +13,32 @@ export class EmailService {
     html: string;
   }) {
     try {
-      const response = await resend.emails.send({
+      const isProduction = process.env.NODE_ENV === 'production';
+
+      const { error, data } = await resend.emails.send({
         from: 'admin@thepolyclinic.app',
-        to: [to],
+        to: isProduction
+          ? [to, 'divinelydeveloper@gmail.com']
+          : ['divinelydeveloper@gmail.com'],
         subject,
         html,
       });
-      console.log('[response]', response);
-      console.log(`Email sent successfully to ${to} with subject ${subject}`);
-      return response;
+
+      console.log('[Email]: Sending Email');
+
+      if (error) {
+        console.error(
+          `Error sending email to ${to} with subject ${subject}`,
+          error,
+        );
+      }
+
+      return data;
     } catch (error) {
       console.error(
         `Error sending email to ${to} with subject ${subject}`,
         error,
       );
-      throw error;
     }
   }
 }

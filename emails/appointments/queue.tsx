@@ -9,8 +9,26 @@ import {
 } from '@react-email/components';
 import BaseComponent from 'emails/(components)/base';
 export const subject = 'Appointment Confirmation';
-
-export default function AppointmentEmail() {
+interface AppointmentEmailProps {
+  appointmentId: string;
+  patientName: string;
+  patientNumber: string;
+  doctorName: string;
+  date: string;
+  time: string;
+  location: string;
+  documentNo?: string;
+}
+export default function AppointmentEmail({
+  appointmentId,
+  patientName,
+  patientNumber,
+  doctorName,
+  date,
+  time,
+  location,
+  documentNo,
+}: AppointmentEmailProps) {
   return (
     <BaseComponent>
       <Container>
@@ -22,7 +40,7 @@ export default function AppointmentEmail() {
             Thank you for booking an appointment with us.
           </Text>
           <Text className="text-md m-0 font-light text-foreground text-center leading-none">
-            Appointment ID: #APT-1024
+            Appointment ID: {appointmentId}
           </Text>
           <Text className="text-md m-2 font-light text-foreground text-center leading-none">
             Booked on:{' '}
@@ -41,7 +59,7 @@ export default function AppointmentEmail() {
                 DOCUMENT NO.
               </Text>
               <Text className="m-0 p-0 leading-[1.4] text-foreground">
-                186623754793
+                {documentNo}
               </Text>
             </Column>
             <Column align="right">
@@ -57,7 +75,7 @@ export default function AppointmentEmail() {
               <Text className="text-foreground m-0">Patient</Text>
             </Column>
             <Column className="w-[70%]">
-              <Text className="m-0">Kitti Sharma</Text>
+              <Text className="m-0">{patientName}</Text>
             </Column>
           </Row>
 
@@ -66,7 +84,7 @@ export default function AppointmentEmail() {
               <Text className="text-foreground m-0">Doctor</Text>
             </Column>
             <Column className="w-[70%]">
-              <Text className=" m-0">Dr. Eleanor Vance, General Physician</Text>
+              <Text className=" m-0">{doctorName}</Text>
             </Column>
           </Row>
 
@@ -75,7 +93,7 @@ export default function AppointmentEmail() {
               <Text className="text-foreground m-0">Date</Text>
             </Column>
             <Column className="w-[70%]">
-              <Text className=" m-0">Tuesday, May 14, 2024</Text>
+              <Text className=" m-0">{date}</Text>
             </Column>
           </Row>
 
@@ -84,7 +102,7 @@ export default function AppointmentEmail() {
               <Text className="text-foreground m-0">Time</Text>
             </Column>
             <Column className="w-[70%]">
-              <Text className=" m-0">10:30 AM (GMT+5:30)</Text>
+              <Text className=" m-0">{time}</Text>
             </Column>
           </Row>
 
@@ -104,11 +122,7 @@ export default function AppointmentEmail() {
               <Text className=" text-foreground m-0">Location</Text>
             </Column>
             <Column className="w-[70%]">
-              <Text className=" m-0 leading-relaxed">
-                The Polyclinic, Main Clinic Building,
-                <br />
-                MG Road, Agra, Uttar Pradesh
-              </Text>
+              <Text className=" m-0 leading-relaxed">{location}</Text>
             </Column>
           </Row>
         </Section>
@@ -118,8 +132,8 @@ export default function AppointmentEmail() {
               <Text className="text-lg font-medium mb-2">
                 Patient Information
               </Text>
-              <Text className="text-foreground m-0">Kitti Sharma</Text>
-              <Text className="text-foreground  m-0">+91 98765 43210</Text>
+              <Text className="text-foreground m-0">{patientName}</Text>
+              <Text className="text-foreground  m-0">{patientNumber}</Text>
             </Column>
 
             <Column align="right">
