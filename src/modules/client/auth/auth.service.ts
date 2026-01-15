@@ -24,6 +24,9 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { Role } from 'src/scripts/types';
 import { DoctorsService } from '../doctors/doctors.service';
 import { Doctor } from '../doctors/entities/doctor.entity';
+import { EmailService } from '@/common/email/email.service';
+import { render } from '@react-email/render';
+import SendOtp from 'emails/auth/send-otp';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +37,7 @@ export class AuthService {
     @Inject(REQUEST) private request: Request,
     @Inject(CONNECTION) private connection: DataSource | null,
     private doctorsService: DoctorsService,
+    private emailService: EmailService,
     private jwtService: JwtService,
     private tenantAuthInitService: TenantAuthInitService,
   ) {}
@@ -139,9 +143,13 @@ export class AuthService {
 
     await otpRepository.save(otp);
 
-    // TODO: Send OTP via email/SMS service
-    // For now, we'll log it (remove in production)
-    this.logger.log(`OTP for ${requestOtpDto.email}`);
+    // const html = render(SendOtp());
+
+    this.emailService.sendEmail({
+      to: requestOtpDto.email,
+      subject: 'Your OTP Code',
+      html: `Your OTP code is ${code}. It will expire in 10 minutes.`,
+    });
   }
 
   async verifyOtp(verifyOtpDto: VerifyOtpDto) {
