@@ -194,10 +194,12 @@ export async function getNextTokenNumber(
  * Uses djb2 algorithm
  */
 function hashString(str: string): number {
-  let hash = 5381;
+  // Start with djb2 initial value and ensure unsigned 32-bit integer
+  let hash = 5381 >>> 0;
   for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) + hash + str.charCodeAt(i);
-    hash = hash & hash; // Convert to 32-bit integer
+    // djb2: hash * 33 + c, kept in unsigned 32-bit range
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0;
   }
-  return Math.abs(hash);
+  // Return non-negative 32-bit integer suitable for pg_advisory_lock
+  return hash;
 }
