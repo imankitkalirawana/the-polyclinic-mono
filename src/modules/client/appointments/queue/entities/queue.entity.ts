@@ -32,10 +32,10 @@ export interface Counter {
 }
 
 @Entity('appointment_queue')
-@Index(['doctorId', 'aid', 'appointmentDate', 'sequenceNumber'], {
-  unique: true,
-})
+@Index(['doctorId', 'aid', 'appointmentDate', 'sequenceNumber'])
 export class Queue {
+
+  // ...
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

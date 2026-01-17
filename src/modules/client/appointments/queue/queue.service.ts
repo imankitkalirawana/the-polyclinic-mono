@@ -391,7 +391,6 @@ export class QueueService extends BaseTenantService {
       }
     }
 
-    console.debug(`[appointmentDate]: ${appointmentDate}`);
 
     const previousQueues = await this.getRepository(Queue).find({
       where: {
