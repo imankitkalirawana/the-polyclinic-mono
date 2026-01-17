@@ -62,6 +62,10 @@ export class ActivityLog {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
+  @Column({ type: 'jsonb', nullable: true, default: [] })
+  @Index()
+  stakeholders: string[] | null;
+
   @CreateDateColumn({ type: 'timestamp with time zone' })
   @Index()
   createdAt: Date;

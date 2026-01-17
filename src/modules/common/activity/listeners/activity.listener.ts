@@ -67,6 +67,7 @@ export class ActivityListener {
         actor: actor,
         actorRole: payload.actorRole || null,
         description: payload.description || null,
+        stakeholders: payload.stakeholders || [],
       });
 
       await repository.save(activityLog);

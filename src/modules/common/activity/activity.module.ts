@@ -30,4 +30,3 @@ import { TenancyModule } from '@/tenancy/tenancy.module';
   exports: [ActivityService, ActivityLogService],
 })
 export class ActivityModule {}
-

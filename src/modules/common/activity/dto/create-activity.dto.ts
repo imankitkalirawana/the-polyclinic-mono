@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsObject,
   ValidateIf,
+  IsArray,
 } from 'class-validator';
 import { ActivityAction } from '../enums/activity-action.enum';
 import { ActorType } from '../enums/actor-type.enum';
@@ -49,5 +50,10 @@ export class CreateActivityDto {
   @IsOptional()
   @IsString()
   description?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  stakeholders?: string[] | null;
 }
 

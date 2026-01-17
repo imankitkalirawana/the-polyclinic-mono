@@ -187,13 +187,14 @@ export class QueueService extends BaseTenantService {
       await queryRunner.manager.save(Queue, queue);
 
       await queryRunner.commitTransaction();
-      this.activityService.logCreate(
-        'Queue',
-        queue.id,
-        'appointments',
-        queue,
-        `Appointment created`,
-      );
+      this.activityService.logCreate({
+        entityType: 'Queue',
+        entityId: queue.id,
+        module: 'appointments',
+        data: queue,
+        description: `Appointment created`,
+        stakeholders: [queue.patient.user.id, queue.doctor.user.id],
+      });
 
       return queue;
     } catch (error) {
@@ -252,6 +253,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus },
       after: { status: queue.status },
       description: `Payment verified and appointment status updated`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     return queue;
@@ -275,6 +277,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus },
       after: { status: queue.status },
       description: `Appointment cancelled by ${this.request.user?.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
     return queue;
   }
@@ -341,6 +344,7 @@ export class QueueService extends BaseTenantService {
       module: 'appointments',
       before: previousData,
       after: queue,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     return {
@@ -360,13 +364,14 @@ export class QueueService extends BaseTenantService {
     }
 
     await queueRepository.remove(queue);
-    this.activityService.logDelete(
-      'Queue',
-      queue.id,
-      'appointments',
-      queue,
-      `Appointment deleted by ${this.request.user?.name || 'user'}.`,
-    );
+    this.activityService.logDelete({
+      entityType: 'Queue',
+      entityId: queue.id,
+      module: 'appointments',
+      data: queue,
+      description: `Appointment deleted by ${this.request.user?.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
+    });
 
     return {
       message: 'Queue entry deleted successfully',
@@ -492,6 +497,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus, counter: previousCounter },
       after: { status: queue.status, counter: queue.counter },
       description: `Patient called by ${this.request.user?.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     return formatQueue(queue, this.request.user.role);
@@ -533,6 +539,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus, counter: previousCounter },
       after: { status: queue.status, counter: queue.counter },
       description: `Appointment skipped by ${this.request.user?.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     return formatQueue(queue, this.request.user.role);
@@ -567,6 +574,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus, counter: previousCounter },
       after: { status: queue.status, counter: queue.counter },
       description: `Appointment clocked in by ${this.request.user?.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
     return formatQueue(queue, this.request.user.role);
   }
@@ -607,6 +615,7 @@ export class QueueService extends BaseTenantService {
       before: { status: previousStatus },
       after: { status: queue.status },
       description: `Appointment completed by ${user.name || 'user'}.`,
+      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     await queueRepository.save(queue);

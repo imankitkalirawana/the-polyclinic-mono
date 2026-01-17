@@ -15,6 +15,7 @@ interface LogUpdateOptions {
   before: any;
   after: any;
   description?: string;
+  stakeholders?: string[];
 }
 
 interface LogStatusChangeOptions {
@@ -25,6 +26,7 @@ interface LogStatusChangeOptions {
   after: any;
   description?: string;
   additionalFields?: Record<string, { before: any; after: any }>;
+  stakeholders?: string[];
 }
 
 @Injectable()
@@ -56,8 +58,15 @@ export class ActivityService {
   }
 
   logUpdate(options: LogUpdateOptions): void {
-    const { entityType, entityId, module, before, after, description } =
-      options;
+    const {
+      entityType,
+      entityId,
+      module,
+      before,
+      after,
+      description,
+      stakeholders,
+    } = options;
     const changedFields = diffObjects(before, after);
 
     if (Object.keys(changedFields).length === 0) {
@@ -76,6 +85,7 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
@@ -88,6 +98,7 @@ export class ActivityService {
       after,
       description,
       additionalFields = {},
+      stakeholders,
     } = options;
 
     const statusField = 'status';
@@ -127,16 +138,25 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description: defaultDescription,
+      stakeholders,
     });
   }
 
-  logCreate(
-    entityType: string,
-    entityId: string,
-    module: string,
-    data: any,
-    description?: string,
-  ): void {
+  logCreate({
+    entityType,
+    entityId,
+    module,
+    data,
+    description,
+    stakeholders,
+  }: {
+    entityType: string;
+    entityId: string;
+    module: string;
+    data: any;
+    description?: string;
+    stakeholders?: string[];
+  }): void {
     this.logActivity({
       entityType,
       entityId,
@@ -147,16 +167,25 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
-  logDelete(
-    entityType: string,
-    entityId: string,
-    module: string,
-    data: any,
-    description?: string,
-  ): void {
+  logDelete({
+    entityType,
+    entityId,
+    module,
+    data,
+    description,
+    stakeholders,
+  }: {
+    entityType: string;
+    entityId: string;
+    module: string;
+    data: any;
+    description?: string;
+    stakeholders?: string[];
+  }): void {
     this.logActivity({
       entityType,
       entityId,
@@ -167,6 +196,7 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
@@ -176,6 +206,7 @@ export class ActivityService {
     module: string,
     data: any,
     description?: string,
+    stakeholders?: string[],
   ): void {
     this.logActivity({
       entityType,
@@ -187,6 +218,7 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 

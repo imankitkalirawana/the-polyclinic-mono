@@ -13,5 +13,6 @@ export interface ActivityLogPayload {
   actorId?: string | null;
   actorRole?: string | null;
   description?: string | null;
+  stakeholders?: string[] | null;
   tenantSlug?: string;
 }
