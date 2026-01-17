@@ -391,7 +391,6 @@ export class QueueService extends BaseTenantService {
       }
     }
 
-
     const previousQueues = await this.getRepository(Queue).find({
       where: {
         doctorId,
