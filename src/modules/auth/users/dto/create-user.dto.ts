@@ -6,6 +6,7 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Role } from 'src/common/enums/role.enum';
+import { CompanyType } from '../../entities/company.entity';
 
 export class CreateUserDto {
   @IsEmail()
@@ -23,4 +24,16 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
+
+  @IsEnum(CompanyType)
+  @IsOptional()
+  company_type?: CompanyType;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsOptional()
+  time_zone?: string;
 }

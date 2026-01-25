@@ -3,9 +3,9 @@ import { IsEnum, IsUUID } from 'class-validator';
 import { ActivityLogService } from './services/activity-log.service';
 import { EntityType } from './enums/entity-type.enum';
 import { Request } from 'express';
-import { BearerAuthGuard } from '@/client/auth/guards/bearer-auth.guard';
-import { RolesGuard } from '@/client/auth/guards/roles.guard';
-import { Roles } from '@/client/auth/decorators/roles.decorator';
+import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 
 class GetActivityLogsQueryDto {
@@ -17,7 +17,7 @@ class GetActivityLogsQueryDto {
 }
 
 @Controller('activity')
-@UseGuards(BearerAuthGuard, RolesGuard)
+@UseGuards(TenantBearerAuthGuard, RolesGuard)
 export class ActivityController {
   constructor(private readonly activityLogService: ActivityLogService) {}
 

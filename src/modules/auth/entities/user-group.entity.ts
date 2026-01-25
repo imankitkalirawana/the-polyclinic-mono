@@ -3,7 +3,7 @@ import { BaseEntity } from 'src/common/entity/base.entity';
 import { User } from './user.entity';
 import { Group } from './group.entity';
 
-@Entity('user_groups', { schema: 'public' })
+@Entity('login_user_groups', { schema: 'public' })
 @Unique(['user_id', 'group_id'])
 export class UserGroup extends BaseEntity {
   @Column({ type: 'uuid' })
@@ -20,11 +20,11 @@ export class UserGroup extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.groups)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Group, (group) => group.id)
+  @ManyToOne(() => Group, (group) => group.userGroups)
   @JoinColumn({ name: 'group_id' })
   group: Group;
 }

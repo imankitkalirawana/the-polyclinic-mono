@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TenantUser } from '../../users/entities/tenant-user.entity';
+import { User } from '@/auth/entities/user.entity';
 
 @Entity('doctors')
 export class Doctor {
@@ -16,14 +16,17 @@ export class Doctor {
   id: string;
 
   @Column({ type: 'uuid' })
-  userId: string;
+  user_id: string;
 
   @Column({ type: 'varchar', length: 3, unique: true, nullable: true })
   code?: string;
 
-  @OneToOne(() => TenantUser, (user) => user.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
-  user: TenantUser;
+  @OneToOne(() => User, (user) => user.id, {
+    onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ nullable: true })
   specialization?: string;

@@ -46,7 +46,6 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
           name: queue.patient.user?.name ?? null,
           phone: queue.patient.user?.phone ?? null,
           userId: queue.patient.user?.id ?? null,
-          image: queue.patient.user?.image ?? null,
         }
       : null,
 
@@ -61,7 +60,6 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
           }),
           name: queue.doctor.user?.name ?? null,
           userId: queue.doctor.user?.id ?? null,
-          image: queue.doctor.user?.image ?? null,
         }
       : null,
 
@@ -79,7 +77,6 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
             currentRole: role,
             targetRole: queue.bookedByUser.role,
           }),
-          image: queue.bookedByUser.image ?? null,
         }
       : null,
   };

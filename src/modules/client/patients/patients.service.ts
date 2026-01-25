@@ -6,39 +6,46 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { DataSource, ILike } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { BaseTenantService } from '../../tenancy/base-tenant.service';
-import { CONNECTION } from '../../tenancy/tenancy.symbols';
-import { TenantAuthInitService } from '../../tenancy/tenant-auth-init.service';
+import { ILike, Repository } from 'typeorm';
 import { formatPatient } from './patients.helper';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreatePatientDto } from './dto/create-patient.dto';
+import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 @Injectable()
-export class PatientsService extends BaseTenantService {
-  constructor(
-    @Inject(REQUEST) request: Request,
-    @Inject(CONNECTION) connection: DataSource | null,
-    tenantAuthInitService: TenantAuthInitService,
-  ) {
-    super(request, connection, tenantAuthInitService, PatientsService.name);
-  }
+export class PatientsService {
+  constructor(@Inject(REQUEST) private readonly request: Request) {}
 
-  private getPatientRepository() {
-    return this.getRepository(Patient);
-  }
-
-  async create(createPatientDto: CreateUserDto) {
-    if (!createPatientDto.userId) {
-      throw new BadRequestException('User ID is required to create a patient');
+  private getTenantSlug(): string {
+    const tenantSlug = (this.request as any)?.user?.tenantSlug;
+    if (!tenantSlug) {
+      throw new NotFoundException('Tenant schema not available');
     }
-    return await this.getPatientRepository().save(createPatientDto);
+    return tenantSlug;
+  }
+
+  private async getPatientRepository(): Promise<Repository<Patient>> {
+    const connection = await getTenantConnection(this.getTenantSlug());
+    return connection.getRepository(Patient);
+  }
+
+  async create(createPatientDto: CreatePatientDto) {
+    if (!createPatientDto.userId) {
+      throw new BadRequestException(
+        'userId is required. Create the user in global auth first, then link it here.',
+      );
+    }
+    const repo = await this.getPatientRepository();
+    return await repo.save({
+      ...(createPatientDto as any),
+      user_id: createPatientDto.userId,
+    });
   }
 
   async findAll(search?: string) {
-    await this.ensureTablesExist();
-    const patients = await this.getRepository(Patient).find({
+    const repo = await this.getPatientRepository();
+    const patients = await repo.find({
       where: search
         ? [
             { user: { name: ILike(`%${search}%`) } },
@@ -57,10 +64,9 @@ export class PatientsService extends BaseTenantService {
   }
 
   async findByUserId(userId: string) {
-    await this.ensureTablesExist();
-
-    const patient = await this.getRepository(Patient).findOne({
-      where: { userId },
+    const repo = await this.getPatientRepository();
+    const patient = await repo.findOne({
+      where: { user_id: userId },
       relations: ['user'],
     });
 
@@ -72,8 +78,8 @@ export class PatientsService extends BaseTenantService {
   }
 
   async findOne(id: string) {
-    await this.ensureTablesExist();
-    const patient = await this.getRepository(Patient).findOne({
+    const repo = await this.getPatientRepository();
+    const patient = await repo.findOne({
       where: { id },
       relations: ['user'],
     });
@@ -86,9 +92,9 @@ export class PatientsService extends BaseTenantService {
   }
 
   async update(userId: string, updatePatientDto: UpdatePatientDto) {
-    const patientRepository = this.getPatientRepository();
+    const patientRepository = await this.getPatientRepository();
     const patient = await patientRepository.findOne({
-      where: { userId },
+      where: { user_id: userId },
     });
     if (!patient) {
       throw new NotFoundException(`Patient with user ID ${userId} not found`);
@@ -98,26 +104,24 @@ export class PatientsService extends BaseTenantService {
   }
 
   async remove(userId: string) {
-    await this.ensureTablesExist();
-    const patientRepository = this.getPatientRepository();
+    const patientRepository = await this.getPatientRepository();
 
     const patient = await patientRepository.exists({
-      where: { userId },
+      where: { user_id: userId },
     });
 
     if (!patient) {
       throw new NotFoundException(`Patient with user ID ${userId} not found`);
     }
 
-    await patientRepository.softDelete({ userId });
+    await patientRepository.softDelete({ user_id: userId } as any);
   }
 
   async restore(userId: string) {
-    await this.ensureTablesExist();
-    const patientRepository = this.getPatientRepository();
+    const patientRepository = await this.getPatientRepository();
 
     const patient = await patientRepository.exists({
-      where: { userId },
+      where: { user_id: userId },
       withDeleted: true,
     });
 
@@ -125,6 +129,6 @@ export class PatientsService extends BaseTenantService {
       throw new NotFoundException(`Patient with ID ${userId} not found`);
     }
 
-    await patientRepository.restore({ userId });
+    await patientRepository.restore({ user_id: userId } as any);
   }
 }

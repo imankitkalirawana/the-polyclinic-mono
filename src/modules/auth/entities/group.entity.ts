@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { Company, CompanyType } from './company.entity';
-import { User } from './user.entity';
+import { UserGroup } from './user-group.entity';
 
 @Entity('login_groups', { schema: 'public' })
 export class Group extends BaseEntity {
@@ -42,6 +42,6 @@ export class Group extends BaseEntity {
   @JoinColumn({ name: 'company_id' })
   company: Company;
 
-  @OneToMany(() => User, (user) => user.id)
-  users: User[];
+  @OneToMany(() => UserGroup, (userGroup) => userGroup.group)
+  userGroups: UserGroup[];
 }

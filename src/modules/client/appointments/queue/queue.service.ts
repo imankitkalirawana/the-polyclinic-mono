@@ -2,19 +2,19 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, DataSource, Equal, In, MoreThanOrEqual, Not } from 'typeorm';
+import { Between, Equal, In, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
-import { CurrentUserPayload } from '@/client/auth/decorators/current-user.decorator';
-import { BaseTenantService } from '@/tenancy/base-tenant.service';
-import { CONNECTION } from '@/tenancy/tenancy.symbols';
-import { TenantAuthInitService } from '@/tenancy/tenant-auth-init.service';
+import { CurrentUserPayload } from '@/auth/decorators/current-user.decorator';
 import { Queue, QueueStatus } from './entities/queue.entity';
 import { Doctor } from '@/client/doctors/entities/doctor.entity';
+import { Patient } from '@/client/patients/entities/patient.entity';
 import {
   formatQueue,
   generateAppointmentId,
@@ -36,6 +36,7 @@ import { QrService } from '@/client/qr/qr.service';
 import { ActivityService } from '@/common/activity/services/activity.service';
 import { ActivityLogService } from '@/common/activity/services/activity-log.service';
 import { EntityType } from '@/common/activity/enums/entity-type.enum';
+import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -50,23 +51,82 @@ const queueRelations = [
 ];
 
 @Injectable()
-export class QueueService extends BaseTenantService {
+export class QueueService {
+  private readonly logger = new Logger(QueueService.name);
+  private resolvedPatientId: string | undefined;
+  private resolvedDoctorId: string | undefined;
+
   constructor(
-    @Inject(REQUEST) request: Request,
-    @Inject(CONNECTION) connection: DataSource | null,
-    tenantAuthInitService: TenantAuthInitService,
+    @Inject(REQUEST) private readonly request: Request,
     private readonly paymentsService: PaymentsService,
     private readonly doctorsService: DoctorsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
     private readonly activityService: ActivityService,
     private readonly activityLogService: ActivityLogService,
-  ) {
-    super(request, connection, tenantAuthInitService, QueueService.name);
+  ) {}
+
+  private getTenantSlug(): string {
+    const tenantSlug = (this.request as any)?.user?.tenantSlug;
+    if (!tenantSlug) {
+      throw new UnauthorizedException('Tenant schema is required');
+    }
+    return tenantSlug;
+  }
+
+  private async getConnection() {
+    return await getTenantConnection(this.getTenantSlug());
+  }
+
+  private async getRepository<T>(entity: any): Promise<Repository<T>> {
+    const connection = await this.getConnection();
+    return connection.getRepository<T>(entity);
+  }
+
+  private async resolvePatientId(): Promise<string | undefined> {
+    if (this.resolvedPatientId !== undefined) return this.resolvedPatientId;
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    if (user.role !== Role.PATIENT) {
+      this.resolvedPatientId = undefined;
+      return undefined;
+    }
+
+    const repo = await this.getRepository<Patient>(Patient);
+    const patient = await repo.findOne({
+      where: { user_id: user.userId } as any,
+      select: ['id'],
+    });
+    if (!patient) {
+      throw new UnauthorizedException('Patient profile not found for user');
+    }
+    this.resolvedPatientId = patient.id;
+    return patient.id;
+  }
+
+  private async resolveDoctorId(): Promise<string | undefined> {
+    if (this.resolvedDoctorId !== undefined) return this.resolvedDoctorId;
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    if (user.role !== Role.DOCTOR) {
+      this.resolvedDoctorId = undefined;
+      return undefined;
+    }
+
+    const repo = await this.getRepository<Doctor>(Doctor);
+    const doctor = await repo.findOne({
+      where: { user_id: user.userId } as any,
+      select: ['id'],
+    });
+    if (!doctor) {
+      throw new UnauthorizedException('Doctor profile not found for user');
+    }
+    this.resolvedDoctorId = doctor.id;
+    return doctor.id;
   }
 
   private getQueueRepository() {
-    return this.getRepository(Queue);
+    return this.getRepository<Queue>(Queue);
   }
 
   private sortQueuesByPriority(queues: Queue[]): Queue[] {
@@ -102,7 +162,7 @@ export class QueueService extends BaseTenantService {
 
   // check if a queue is already booked for the same doctor and patient for that date
   async checkIfQueueIsBooked(doctorId: string, patientId: string) {
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
       where: { doctorId, patientId, createdAt: Between(todayStart, todayEnd) },
     });
@@ -110,8 +170,6 @@ export class QueueService extends BaseTenantService {
   }
 
   async create(createQueueDto: CreateQueueDto) {
-    await this.ensureTablesExist();
-
     const existingQueue = await this.checkIfQueueIsBooked(
       createQueueDto.doctorId,
       createQueueDto.patientId,
@@ -132,7 +190,8 @@ export class QueueService extends BaseTenantService {
     }
 
     // start transaction
-    const queryRunner = this.connection.createQueryRunner();
+    const connection = await this.getConnection();
+    const queryRunner = connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -199,8 +258,8 @@ export class QueueService extends BaseTenantService {
   }
 
   async createPayment(queueId: string) {
-    await this.ensureTablesExist();
-    const queue = await this.getQueueRepository().findOne({
+    const queueRepository = await this.getQueueRepository();
+    const queue = await queueRepository.findOne({
       where: { id: queueId },
     });
 
@@ -219,11 +278,10 @@ export class QueueService extends BaseTenantService {
   }
 
   async verifyPayment(verifyPaymentDto: VerifyPaymentDto) {
-    await this.ensureTablesExist();
     const payment = await this.paymentsService.verifyPayment(verifyPaymentDto);
 
     // update queue status to booked
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
       where: { id: payment.referenceId },
     });
@@ -254,13 +312,14 @@ export class QueueService extends BaseTenantService {
   async cancelPayment(queueId: string, remark?: string) {
     const queue = await this.findOne(queueId);
 
+    const previousStatus = queue.status;
     queue.status = QueueStatus.CANCELLED;
     queue.cancellationDetails = {
-      by: this.request.user.userId,
+      by: (this.request as any).user.userId,
       remark,
     };
-    const previousStatus = queue.status;
-    await this.getQueueRepository().save(queue);
+    const queueRepository = await this.getQueueRepository();
+    await queueRepository.save(queue);
 
     this.activityService.logStatusChange({
       entityType: EntityType.QUEUE,
@@ -275,16 +334,16 @@ export class QueueService extends BaseTenantService {
   }
 
   async findAll(date?: string) {
-    await this.ensureTablesExist();
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    const patientId = await this.resolvePatientId();
+    const doctorId = await this.resolveDoctorId();
 
-    console.log(
-      `[findAll] user: ${JSON.stringify(this.request.user, null, 2)}`,
-    );
-
-    const qb = await this.getRepository(Queue).find({
+    const repo = await this.getRepository<Queue>(Queue);
+    const qb = await repo.find({
       where: {
-        patientId: this.request.user.patientId,
-        doctorId: this.request.user.doctorId,
+        patientId: patientId,
+        doctorId: doctorId,
         createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
       },
       withDeleted: true,
@@ -294,17 +353,21 @@ export class QueueService extends BaseTenantService {
       },
     });
 
-    return qb.map((queue) => formatQueue(queue, this.request.user.role));
+    return qb.map((queue) => formatQueue(queue, user.role));
   }
 
   async findOne(id: string) {
-    await this.ensureTablesExist();
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    const patientId = await this.resolvePatientId();
+    const doctorId = await this.resolveDoctorId();
 
-    const queue = await this.getQueueRepository().findOne({
+    const queueRepository = await this.getQueueRepository();
+    const queue = await queueRepository.findOne({
       where: {
         id,
-        patientId: this.request.user.patientId,
-        doctorId: this.request.user.doctorId,
+        patientId: patientId,
+        doctorId: doctorId,
       },
       withDeleted: true,
       relations: queueRelations,
@@ -318,30 +381,36 @@ export class QueueService extends BaseTenantService {
   }
 
   async findByAid(aid: string) {
-    await this.ensureTablesExist();
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    const patientId = await this.resolvePatientId();
+    const doctorId = await this.resolveDoctorId();
 
-    const queue = await this.getQueueRepository().findOne({
+    const queueRepository = await this.getQueueRepository();
+    const queue = await queueRepository.findOne({
       where: {
         aid,
-        patientId: this.request.user.patientId,
-        doctorId: this.request.user.doctorId,
+        patientId: patientId,
+        doctorId: doctorId,
       },
       relations: queueRelations,
     });
     if (!queue) {
       throw new NotFoundException(`Queue with AID ${aid} not found`);
     }
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, user.role);
   }
 
   async update(id: string, updateQueueDto: UpdateQueueDto) {
-    await this.ensureTablesExist();
-    const queueRepository = this.getQueueRepository();
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+
+    const queueRepository = await this.getQueueRepository();
 
     const queue = await this.findOne(id);
 
     if (updateQueueDto.doctorId) {
-      const doctorRepository = this.getRepository(Doctor);
+      const doctorRepository = await this.getRepository<Doctor>(Doctor);
       const doctor = await doctorRepository.findOne({
         where: { id: updateQueueDto.doctorId },
       });
@@ -373,8 +442,10 @@ export class QueueService extends BaseTenantService {
   }
 
   async remove(id: string) {
-    await this.ensureTablesExist();
-    const queueRepository = this.getRepository(Queue);
+    const user = (this.request as any).user;
+    if (!user) throw new UnauthorizedException('Unauthorized');
+
+    const queueRepository = await this.getRepository<Queue>(Queue);
 
     const queue = await queueRepository.findOne({ where: { id } });
 
@@ -409,7 +480,8 @@ export class QueueService extends BaseTenantService {
     let requestedQueue: Queue | null = null;
 
     if (queueId) {
-      requestedQueue = await this.getRepository(Queue).findOne({
+      const queueRepository = await this.getRepository<Queue>(Queue);
+      requestedQueue = await queueRepository.findOne({
         where: { id: queueId },
         relations: queueRelations,
       });
@@ -418,7 +490,8 @@ export class QueueService extends BaseTenantService {
       }
     }
 
-    const previousQueues = await this.getRepository(Queue).find({
+    const queueRepository = await this.getRepository<Queue>(Queue);
+    const previousQueues = await queueRepository.find({
       where: {
         doctorId,
         appointmentDate: Equal(appointmentDate),
@@ -431,7 +504,7 @@ export class QueueService extends BaseTenantService {
       },
     });
 
-    const nextQueues = await this.getRepository(Queue).find({
+    const nextQueues = await queueRepository.find({
       where: {
         doctorId,
         appointmentDate: Equal(appointmentDate),
@@ -468,11 +541,15 @@ export class QueueService extends BaseTenantService {
 
     return {
       previous: previousQueues.map((queue) =>
-        formatQueue(queue, this.request.user.role),
+        formatQueue(queue, (this.request as any).user.role),
       ),
-      current: current ? formatQueue(current, this.request.user.role) : null,
+      current: current
+        ? formatQueue(current, (this.request as any).user.role)
+        : null,
       next: next
-        ? next.map((queue) => formatQueue(queue, this.request.user.role))
+        ? next.map((queue) =>
+            formatQueue(queue, (this.request as any).user.role),
+          )
         : null,
 
       metaData: {
@@ -485,7 +562,7 @@ export class QueueService extends BaseTenantService {
 
   // Call queue by id
   async callQueue(id: string) {
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
     const queue = await this.findOne(id);
 
     if (
@@ -517,12 +594,12 @@ export class QueueService extends BaseTenantService {
       stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, (this.request as any).user.role);
   }
 
   // skip queue by id
   async skipQueue(id: string) {
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
     const queue = await this.findOne(id);
 
     if (
@@ -559,12 +636,12 @@ export class QueueService extends BaseTenantService {
       stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, (this.request as any).user.role);
   }
 
   // clock in
   async clockIn(id: string) {
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
     const queue = await this.findOne(id);
 
     if (queue.status !== QueueStatus.CALLED) {
@@ -593,7 +670,7 @@ export class QueueService extends BaseTenantService {
       description: `Appointment clocked in by ${this.request.user?.name || 'user'}.`,
       stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, (this.request as any).user.role);
   }
 
   // complete appointment queue
@@ -602,7 +679,7 @@ export class QueueService extends BaseTenantService {
     completeQueueDto: CompleteQueueDto,
     user: CurrentUserPayload,
   ) {
-    const queueRepository = this.getQueueRepository();
+    const queueRepository = await this.getQueueRepository();
 
     const queue = await this.findOne(id);
 
@@ -636,12 +713,10 @@ export class QueueService extends BaseTenantService {
     });
 
     await queueRepository.save(queue);
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, (this.request as any).user.role);
   }
 
   async appointmentReceiptPdf(id: string) {
-    await this.ensureTablesExist();
-
     const queue = await this.findOne(id);
 
     const url = `${process.env.APP_URL}/appointments/queues/${queue.aid}`;

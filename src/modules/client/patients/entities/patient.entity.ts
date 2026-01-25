@@ -8,7 +8,7 @@ import {
   JoinColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { TenantUser } from '../../users/entities/tenant-user.entity';
+import { User } from '@/auth/entities/user.entity';
 
 export enum Gender {
   MALE = 'MALE',
@@ -23,11 +23,14 @@ export class Patient {
 
   // 🔑 Foreign key column
   @Column({ type: 'uuid' })
-  userId: string;
+  user_id: string;
 
-  @OneToOne(() => TenantUser, (user) => user.id, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' }) // <-- FK lives here
-  user: TenantUser;
+  @OneToOne(() => User, (user) => user.id, {
+    onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'user_id' }) // cross-schema reference (public.login_users)
+  user: User;
 
   @Column({
     type: 'enum',

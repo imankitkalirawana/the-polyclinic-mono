@@ -47,7 +47,9 @@ export class ActivityService {
     }
 
     try {
-      const tenantSlug = (this.request as any)?.tenantSlug;
+      const tenantSlug =
+        (this.request as any)?.user?.tenantSlug ??
+        (this.request as any)?.tenantSlug;
       const eventPayload = {
         ...payload,
         tenantSlug,

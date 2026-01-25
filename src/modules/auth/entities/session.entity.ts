@@ -16,20 +16,20 @@ export class Session extends BaseEntity {
   logged_in: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  logged_out_at: Date;
+  logged_out_at: Date | null;
 
   @Column({ type: 'timestamp' })
   @Index()
   expires_at: Date;
 
   @Column({ type: 'varchar', length: 45, nullable: true })
-  ip: string;
+  ip: string | null;
 
   @Column({ type: 'text', nullable: true })
-  user_agent: string;
+  user_agent: string | null;
 
   @ManyToOne(() => User, (user) => user.sessions)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   isValid(): boolean {

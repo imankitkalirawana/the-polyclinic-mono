@@ -14,15 +14,15 @@ import {
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
-import { BearerAuthGuard } from '../../auth/guards/bearer-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { FieldRestrictionsGuard } from '@/public/auth/guards/field-restrictions.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
+import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
-} from '../../auth/decorators/current-user.decorator';
+} from '@/auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 import { Response } from 'express';
@@ -31,7 +31,7 @@ import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
 
 @Controller('client/appointments/queue')
-@UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
+@UseGuards(TenantBearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
 export class QueueController {
   private readonly logger = new Logger(QueueController.name);
   constructor(private readonly queueService: QueueService) {}

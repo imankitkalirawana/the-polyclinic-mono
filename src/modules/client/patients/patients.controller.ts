@@ -11,30 +11,30 @@ import {
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { BearerAuthGuard } from '../auth/guards/bearer-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
-} from '../auth/decorators/current-user.decorator';
+} from '@/auth/decorators/current-user.decorator';
 import { StandardParam, StandardParams } from 'nest-standard-response';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreatePatientDto } from './dto/create-patient.dto';
 
 @Controller('client/patients')
-@UseGuards(BearerAuthGuard, RolesGuard)
+@UseGuards(TenantBearerAuthGuard, RolesGuard)
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Post()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
   async create(
-    @Body() createUserDto: CreateUserDto,
+    @Body() createPatientDto: CreatePatientDto,
     @StandardParam() params: StandardParams,
   ) {
     params.setMessage(`Patient created successfully`);
-    return this.patientsService.create(createUserDto);
+    return this.patientsService.create(createPatientDto);
   }
 
   @Get()

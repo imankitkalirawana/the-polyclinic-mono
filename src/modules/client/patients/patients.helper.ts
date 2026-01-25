@@ -64,11 +64,10 @@ export const generatePassword = (len = 12) =>
 export function formatPatient(patient: Patient) {
   return {
     id: patient.id,
-    userId: patient.userId,
+    userId: patient.user_id,
     name: patient.user?.name,
     email: patient.user?.email,
     phone: patient.user?.phone ?? null,
-    image: patient.user?.image ?? null,
     age: patient.age,
     gender: patient.gender,
     address: patient.address,

@@ -10,7 +10,6 @@ import { Repository, DataSource } from 'typeorm';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { Tenant } from './entities/tenant.entity';
-import { TenantAuthInitService } from 'src/modules/tenancy/tenant-auth-init.service';
 
 @Injectable()
 export class TenantsService implements OnModuleInit {
@@ -21,7 +20,6 @@ export class TenantsService implements OnModuleInit {
     private readonly tenantRepository: Repository<Tenant>,
     @Inject(DataSource)
     private readonly dataSource: DataSource,
-    private readonly tenantAuthInitService: TenantAuthInitService,
   ) {}
 
   async onModuleInit() {
@@ -64,8 +62,11 @@ export class TenantsService implements OnModuleInit {
     const tenant = this.tenantRepository.create(createTenantDto);
     const savedTenant = await this.tenantRepository.save(tenant);
 
-    // Initialize auth tables for the tenant (production-ready SQL DDL)
-    await this.tenantAuthInitService.initializeTenantAuth(savedTenant.slug);
+    // Keep tenant provisioning minimal (auth is global now).
+    // Ensure schema exists for tenant data.
+    await this.dataSource.query(
+      `CREATE SCHEMA IF NOT EXISTS "${savedTenant.slug}"`,
+    );
 
     return savedTenant;
   }
@@ -108,19 +109,22 @@ export class TenantsService implements OnModuleInit {
   }
 
   /**
-   * Initialize auth tables for an existing tenant
-   * Useful for fixing tenants that were created before auth was implemented
+   * Legacy: keep endpoint but no-op (auth is global now)
    */
   async initializeAuth(slug: string): Promise<void> {
     await this.findOne(slug); // Verify tenant exists
-    await this.tenantAuthInitService.initializeTenantAuth(slug);
+    await this.dataSource.query(`CREATE SCHEMA IF NOT EXISTS "${slug}"`);
   }
 
   /**
-   * Initialize auth tables for all existing tenants
-   * Useful for migration or fixing existing tenants
+   * Legacy: ensure schemas exist for all tenants
    */
   async initializeAllAuth(): Promise<void> {
-    await this.tenantAuthInitService.initializeAllTenantsAuth();
+    const tenants = await this.tenantRepository.find();
+    for (const tenant of tenants) {
+      await this.dataSource.query(
+        `CREATE SCHEMA IF NOT EXISTS "${tenant.slug}"`,
+      );
+    }
   }
 }

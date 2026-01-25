@@ -6,7 +6,7 @@ export function formatDoctor(doctor: Doctor, currentRole: Role) {
   return {
     id: doctor.id,
     code: doctor.code,
-    userId: doctor.userId,
+    userId: doctor.user_id,
     name: doctor.user.name,
     email: redactField({
       value: doctor.user.email,
@@ -18,7 +18,6 @@ export function formatDoctor(doctor: Doctor, currentRole: Role) {
       currentRole,
       targetRole: currentRole,
     }),
-    image: doctor.user.image,
     specialization: doctor.specialization,
     education: doctor.education,
     designation: doctor.designation,
