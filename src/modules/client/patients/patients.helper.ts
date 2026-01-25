@@ -1,4 +1,3 @@
-import { formatLabel } from 'src/common/utils/text-transform.util';
 import { Patient } from './entities/patient.entity';
 import { IsNull } from 'typeorm';
 
@@ -71,7 +70,7 @@ export function formatPatient(patient: Patient) {
     phone: patient.user?.phone ?? null,
     image: patient.user?.image ?? null,
     age: patient.age,
-    gender: formatLabel(patient.gender),
+    gender: patient.gender,
     address: patient.address,
     createdAt: patient.createdAt,
     updatedAt: patient.updatedAt,
