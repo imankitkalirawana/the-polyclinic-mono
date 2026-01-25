@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 type CacheEntry = {
@@ -26,7 +23,8 @@ export class SchemaValidatorService {
 
     const cached = this.cache.get(schema);
     if (cached && cached.expiresAtMs > Date.now()) {
-      if (!cached.allowed) throw new BadRequestException('Schema does not exist');
+      if (!cached.allowed)
+        throw new BadRequestException('Schema does not exist');
       return schema;
     }
 

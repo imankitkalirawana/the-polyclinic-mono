@@ -54,16 +54,12 @@ async function run(app: INestApplicationContext) {
 
   const companyCode = (getArg('--company-code') ?? 'DEMO').trim().toUpperCase();
   const schemaName = assertSafeSchemaName(getArg('--schema') ?? 'demo');
-  const groupUniqueId = (getArg('--group-uid') ?? 'demo').trim();
   const internalCompanyCode = (getArg('--internal-company-code') ?? 'TPC')
     .trim()
     .toUpperCase();
   const internalSchemaName = assertSafeSchemaName(
     getArg('--internal-schema') ?? 'app',
   );
-  const internalGroupUniqueId = (
-    getArg('--internal-group-uid') ?? 'app'
-  ).trim();
   const password =
     getArg('--password') ?? process.env.DEMO_PASSWORD ?? 'Password@123';
 
@@ -131,15 +127,15 @@ async function run(app: INestApplicationContext) {
   ];
 
   const clientUsers: DemoUser[] = [
-    { email: 'admin@demo.local', name: 'Demo Admin', role: Role.ADMIN },
-    { email: 'doctor@demo.local', name: 'Demo Doctor', role: Role.DOCTOR },
-    { email: 'nurse@demo.local', name: 'Demo Nurse', role: Role.NURSE },
+    { email: 'admin@demo.com', name: 'Demo Admin', role: Role.ADMIN },
+    { email: 'doctor@demo.com', name: 'Demo Doctor', role: Role.DOCTOR },
+    { email: 'nurse@demo.com', name: 'Demo Nurse', role: Role.NURSE },
     {
-      email: 'receptionist@demo.local',
+      email: 'receptionist@demo.com',
       name: 'Demo Receptionist',
       role: Role.RECEPTIONIST,
     },
-    { email: 'patient@demo.local', name: 'Demo Patient', role: Role.PATIENT },
+    { email: 'patient@demo.com', name: 'Demo Patient', role: Role.PATIENT },
   ];
 
   const created: Array<{ email: string; id: string; role: Role }> = [];
@@ -174,7 +170,9 @@ async function run(app: INestApplicationContext) {
       });
       user = await userRepo.save(user);
     } else {
-      const existingCompanies = Array.isArray(user.companies) ? user.companies : [];
+      const existingCompanies = Array.isArray(user.companies)
+        ? user.companies
+        : [];
       const normalized = existingCompanies
         .map((c) => String(c).trim().toLowerCase())
         .filter(Boolean);

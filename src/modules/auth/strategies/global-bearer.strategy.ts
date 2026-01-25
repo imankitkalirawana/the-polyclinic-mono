@@ -81,8 +81,7 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
   private async assertTenantIfRequired(request: Request, user: User) {
     const path = request.originalUrl || request.url || '';
     const needsTenant =
-      path.startsWith('/api/v1/client/') ||
-      path.startsWith('/api/v1/activity');
+      path.startsWith('/api/v1/client/') || path.startsWith('/api/v1/activity');
 
     if (!needsTenant) {
       return;
@@ -96,7 +95,9 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
     }
 
     const normalized = tenantSlug.trim().toLowerCase();
-    const allowedCompanies = Array.isArray(user.companies) ? user.companies : [];
+    const allowedCompanies = Array.isArray(user.companies)
+      ? user.companies
+      : [];
     const allowed = allowedCompanies
       .map((c) => String(c).trim().toLowerCase())
       .filter(Boolean);
