@@ -67,7 +67,7 @@ export class QueueService {
   ) {}
 
   private getTenantSlug(): string {
-    const tenantSlug = (this.request as any)?.user?.tenantSlug;
+    const tenantSlug = (this.request as any)?.tenantSlug;
     if (!tenantSlug) {
       throw new UnauthorizedException('Tenant schema is required');
     }

@@ -14,7 +14,7 @@ import {
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
-import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
@@ -31,7 +31,7 @@ import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
 
 @Controller('client/appointments/queue')
-@UseGuards(TenantBearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
+@UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
 export class QueueController {
   private readonly logger = new Logger(QueueController.name);
   constructor(private readonly queueService: QueueService) {}

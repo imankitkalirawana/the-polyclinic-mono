@@ -1,6 +1,5 @@
-import { Entity, Column, OneToMany, Index } from 'typeorm';
+import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
-import { Group } from './group.entity';
 
 export enum CompanyType {
   THE_POLYCLINIC = 'THE_POLYCLINIC',
@@ -32,7 +31,4 @@ export class Company extends BaseEntity {
 
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
-
-  @OneToMany(() => Group, (group) => group.company)
-  groups: Group[];
 }

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
@@ -23,7 +23,7 @@ import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CreatePatientDto } from './dto/create-patient.dto';
 
 @Controller('client/patients')
-@UseGuards(TenantBearerAuthGuard, RolesGuard)
+@UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 

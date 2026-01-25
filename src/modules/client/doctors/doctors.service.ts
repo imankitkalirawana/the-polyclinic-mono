@@ -18,7 +18,7 @@ export class DoctorsService {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
 
   private getTenantSlug(): string {
-    const tenantSlug = (this.request as any)?.user?.tenantSlug;
+    const tenantSlug = (this.request as any)?.tenantSlug;
     if (!tenantSlug) {
       throw new NotFoundException('Tenant schema not available');
     }

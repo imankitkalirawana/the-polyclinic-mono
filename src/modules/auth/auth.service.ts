@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,17 +10,17 @@ import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
 import { User } from './entities/user.entity';
 import { Session } from './entities/session.entity';
-import { Group } from './entities/group.entity';
-import { UserGroup } from './entities/user-group.entity';
 import { LoginDto } from './dto/login.dto';
-import { IssueTenantTokenDto } from './dto/issue-tenant-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { SchemaValidatorService } from './schema/schema-validator.service';
 import { CompanyType } from './entities/company.entity';
+import {
+  assertRoleAllowedForCompanyType,
+  CLIENT_ROLES,
+} from './utils/company-role.util';
 
 type GlobalToken = { token: string; expiresIn: string };
-type TenantToken = { token: string; expiresIn: string; tenantSlug: string };
 
 @Injectable()
 export class AuthService {
@@ -32,10 +31,6 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
-    @InjectRepository(Group)
-    private readonly groupRepository: Repository<Group>,
-    @InjectRepository(UserGroup)
-    private readonly userGroupRepository: Repository<UserGroup>,
   ) {}
 
   async login(dto: LoginDto): Promise<GlobalToken> {
@@ -52,10 +47,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { token, expiresAt } = await this.createSessionAndToken({
-      user,
-      type: 'global',
-    });
+    const { token, expiresAt } = await this.createSessionAndToken({ user });
 
     return { token, expiresIn: this.formatExpiresIn(expiresAt) };
   }
@@ -66,30 +58,81 @@ export class AuthService {
     { user: Pick<User, 'id' | 'email' | 'name' | 'role'> } & GlobalToken
   > {
     const email = dto.email.trim().toLowerCase();
-    const existing = await this.userRepository.findOne({ where: { email } });
+    const schema = await this.schemaValidator.assertSchemaExists(dto.schema);
+
+    const existing = await this.userRepository.findOne({
+      where: { email },
+    });
     if (existing) {
-      throw new ConflictException('User with this email already exists');
+      if (existing.deleted) {
+        throw new ConflictException('User account is deleted');
+      }
+
+      const ok = await bcrypt.compare(dto.password, existing.password_digest);
+      if (!ok) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const currentCompanies = Array.isArray(existing.companies)
+        ? existing.companies
+        : [];
+      const normalizedCompanies = currentCompanies
+        .map((c) => String(c).trim().toLowerCase())
+        .filter(Boolean);
+
+      if (normalizedCompanies.includes(schema)) {
+        throw new ConflictException('User already registered for this schema');
+      }
+
+      existing.companies = [...new Set([...normalizedCompanies, schema])];
+      if (dto.phone) existing.phone = dto.phone.trim();
+      if (dto.name) existing.name = dto.name.trim();
+
+      const savedUser = await this.userRepository.save(existing);
+      const { token, expiresAt } = await this.createSessionAndToken({
+        user: savedUser,
+      });
+
+      return {
+        user: {
+          id: savedUser.id,
+          email: savedUser.email,
+          name: savedUser.name,
+          role: savedUser.role,
+        },
+        token,
+        expiresIn: this.formatExpiresIn(expiresAt),
+      };
     }
 
     const password_digest = await bcrypt.hash(dto.password, 10);
+    // Registration is for client users (patients) by default.
+    const companyType = CompanyType.CLIENT;
+    const role = Role.PATIENT;
+    // Defensive: ensure rules stay consistent if enums change.
+    assertRoleAllowedForCompanyType(role, companyType);
+    if (!CLIENT_ROLES.has(role)) {
+      throw new ConflictException('Registration role is not allowed');
+    }
+
     const user = this.userRepository.create({
       email,
       name: dto.name.trim(),
       phone: dto.phone?.trim() || null,
       password_digest,
-      role: Role.PATIENT,
-      company_type: CompanyType.THE_POLYCLINIC,
+      role,
+      company_type: companyType,
       email_verified: false,
       deleted: false,
       time_zone: 'UTC',
       permissions: {},
+      companies: [schema],
     });
 
     const savedUser = await this.userRepository.save(user);
 
     const { token, expiresAt } = await this.createSessionAndToken({
       user: savedUser,
-      type: 'global',
     });
 
     return {
@@ -102,39 +145,6 @@ export class AuthService {
       token,
       expiresIn: this.formatExpiresIn(expiresAt),
     };
-  }
-
-  async issueTenantToken(
-    currentUserId: string,
-    dto: IssueTenantTokenDto,
-  ): Promise<TenantToken> {
-    const group = await this.groupRepository.findOne({
-      where: { id: dto.group_id, deleted: false },
-    });
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
-
-    const membership = await this.userGroupRepository.findOne({
-      where: { user_id: currentUserId, group_id: group.id, deleted: false },
-    });
-    if (!membership) {
-      throw new UnauthorizedException('User not assigned to this group');
-    }
-
-    const tenantSlug = await this.schemaValidator.assertAllowedTenantSchema(
-      group.schema,
-    );
-
-    const { token, expiresAt } = await this.createSessionAndToken({
-      user: await this.getUserOrThrow(currentUserId),
-      type: 'tenant',
-      tenantSlug,
-      groupId: group.id,
-      companyId: group.company_id,
-    });
-
-    return { token, expiresIn: this.formatExpiresIn(expiresAt), tenantSlug };
   }
 
   async logout(sessionId: string, currentUserId: string): Promise<void> {
@@ -152,10 +162,10 @@ export class AuthService {
 
   async getMe(
     userId: string,
-  ): Promise<Pick<User, 'id' | 'email' | 'name' | 'role'>> {
+  ): Promise<Pick<User, 'id' | 'email' | 'name' | 'role' | 'companies'>> {
     const user = await this.userRepository.findOne({
       where: { id: userId, deleted: false },
-      select: ['id', 'email', 'name', 'role'],
+      select: ['id', 'email', 'name', 'role', 'companies'],
     });
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -175,10 +185,6 @@ export class AuthService {
 
   private async createSessionAndToken(args: {
     user: User;
-    type: 'global' | 'tenant';
-    tenantSlug?: string;
-    groupId?: string;
-    companyId?: string;
   }): Promise<{ token: string; expiresAt: Date }> {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -188,17 +194,7 @@ export class AuthService {
       userId: args.user.id,
       email: args.user.email,
       role: (args.user.role ?? Role.OPS) as Role,
-      type: args.type,
     };
-
-    if (args.type === 'tenant') {
-      if (!args.tenantSlug) {
-        throw new ConflictException('Missing tenant schema');
-      }
-      basePayload.tenantSlug = args.tenantSlug;
-      if (args.groupId) basePayload.groupId = args.groupId;
-      if (args.companyId) basePayload.companyId = args.companyId;
-    }
 
     // Create session row first (digest computed after sign)
     const session: Session = this.sessionRepository.create({

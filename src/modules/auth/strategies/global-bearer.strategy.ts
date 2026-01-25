@@ -8,18 +8,19 @@ import { createHash } from 'crypto';
 import { Session } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
 import { Role } from 'src/common/enums/role.enum';
+import { SchemaValidatorService } from '../schema/schema-validator.service';
 
 export interface GlobalJwtPayload {
   sessionId: string;
   userId: string;
   email: string;
   role: Role;
-  type: 'global';
 }
 
 @Injectable()
 export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
   constructor(
+    private readonly schemaValidator: SchemaValidatorService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
     @InjectRepository(User)
@@ -40,9 +41,6 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
     }
 
     const jwt = payload as Partial<GlobalJwtPayload>;
-    if (jwt.type !== 'global') {
-      throw new UnauthorizedException('Invalid token type');
-    }
     if (!jwt.sessionId || !jwt.userId) {
       throw new UnauthorizedException('Invalid token payload');
     }
@@ -68,6 +66,8 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
       throw new UnauthorizedException('User not found');
     }
 
+    await this.assertTenantIfRequired(request, user);
+
     return {
       userId: user.id,
       email: user.email,
@@ -75,7 +75,37 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
       phone: user.phone ?? null,
       role: user.role,
       sessionId: session.id,
-      type: 'global' as const,
     };
+  }
+
+  private async assertTenantIfRequired(request: Request, user: User) {
+    const path = request.originalUrl || request.url || '';
+    const needsTenant =
+      path.startsWith('/api/v1/client/') ||
+      path.startsWith('/api/v1/activity');
+
+    if (!needsTenant) {
+      return;
+    }
+
+    const tenantSlug = (request as any).tenantSlug as string | undefined;
+    if (!tenantSlug) {
+      throw new UnauthorizedException(
+        'x-tenant header is required for this endpoint',
+      );
+    }
+
+    const normalized = tenantSlug.trim().toLowerCase();
+    const allowedCompanies = Array.isArray(user.companies) ? user.companies : [];
+    const allowed = allowedCompanies
+      .map((c) => String(c).trim().toLowerCase())
+      .filter(Boolean);
+
+    if (!allowed.includes(normalized)) {
+      throw new UnauthorizedException('User is not allowed for this tenant');
+    }
+
+    // Ensure schema exists in DB (cached)
+    await this.schemaValidator.assertSchemaExists(normalized);
   }
 }

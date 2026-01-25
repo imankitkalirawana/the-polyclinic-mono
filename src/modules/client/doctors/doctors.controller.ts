@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
-import { TenantBearerAuthGuard } from '@/auth/guards/tenant-bearer-auth.guard';
+import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
@@ -12,7 +12,7 @@ import { formatDoctor } from './doctors.helper';
 import { Request } from 'express';
 
 @Controller('client/doctors')
-@UseGuards(TenantBearerAuthGuard, RolesGuard)
+@UseGuards(BearerAuthGuard, RolesGuard)
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}
 

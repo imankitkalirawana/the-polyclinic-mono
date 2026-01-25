@@ -3,7 +3,6 @@ import { BaseEntity } from 'src/common/entity/base.entity';
 import { CompanyType } from './company.entity';
 import { Role } from 'src/common/enums/role.enum';
 import { Session } from './session.entity';
-import { UserGroup } from './user-group.entity';
 
 @Entity('login_users', { schema: 'public' })
 export class User extends BaseEntity {
@@ -39,9 +38,15 @@ export class User extends BaseEntity {
   @Column({ type: 'jsonb', default: {} })
   permissions: Record<string, any>;
 
+  /**
+   * List of tenant schema slugs this user can access (normalized lowercase).
+   * Example: ['app', 'demo']
+   *
+   * NOTE: In production, prefer adding a migration and a GIN index.
+   */
+  @Column('text', { array: true, default: () => 'ARRAY[]::text[]' })
+  companies: string[];
+
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
-
-  @OneToMany(() => UserGroup, (userGroup) => userGroup.user)
-  groups: UserGroup[];
 }

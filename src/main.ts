@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { CloudLoggerService } from './modules/common/logging/cloud-logger.service';
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import * as express from 'express';
 
 async function bootstrap() {
@@ -20,6 +21,9 @@ async function bootstrap() {
     '/api/v1/payments/webhook',
     express.raw({ type: 'application/json' }),
   );
+
+  // Extract tenant schema from x-tenant header (if present)
+  app.use(new TenantMiddleware().use.bind(new TenantMiddleware()));
 
   app.enableCors({
     origin: (origin, callback) => {

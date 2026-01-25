@@ -1,11 +1,8 @@
 import {
   BadRequestException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { Group } from '../entities/group.entity';
+import { DataSource } from 'typeorm';
 
 type CacheEntry = {
   allowed: boolean;
@@ -17,34 +14,27 @@ export class SchemaValidatorService {
   private readonly cache = new Map<string, CacheEntry>();
   private readonly ttlMs = 60_000;
 
-  constructor(
-    private readonly dataSource: DataSource,
-    @InjectRepository(Group)
-    private readonly groupRepository: Repository<Group>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   /**
-   * Validates the tenant schema name and ensures it is allowed by auth `login_groups`.
+   * Validates the schema name and ensures it exists in Postgres.
    * - safe identifier (prevents SQL injection / reserved schemas)
    * - exists in Postgres
-   * - present in `public.login_groups` and not deleted
    */
-  async assertAllowedTenantSchema(rawSchema: string): Promise<string> {
-    const schema = this.normalizeAndValidateSchemaName(rawSchema);
+  async assertSchemaExists(rawSchema: string): Promise<string> {
+    const schema = this.normalizeAndValidateSchemaName(rawSchema).toLowerCase();
 
     const cached = this.cache.get(schema);
     if (cached && cached.expiresAtMs > Date.now()) {
-      if (!cached.allowed) {
-        throw new UnauthorizedException('Schema is not allowed');
-      }
+      if (!cached.allowed) throw new BadRequestException('Schema does not exist');
       return schema;
     }
 
-    const allowed = await this.isSchemaAllowed(schema);
+    const allowed = await this.schemaExists(schema);
     this.cache.set(schema, { allowed, expiresAtMs: Date.now() + this.ttlMs });
 
     if (!allowed) {
-      throw new UnauthorizedException('Schema is not allowed');
+      throw new BadRequestException('Schema does not exist');
     }
 
     return schema;
@@ -84,16 +74,7 @@ export class SchemaValidatorService {
     return schema;
   }
 
-  private async isSchemaAllowed(schema: string): Promise<boolean> {
-    // 1) Allow-list via auth groups
-    const groupExists = await this.groupRepository.exists({
-      where: { schema, deleted: false },
-    });
-    if (!groupExists) {
-      return false;
-    }
-
-    // 2) Actual schema existence in DB
+  private async schemaExists(schema: string): Promise<boolean> {
     const result = await this.dataSource.query(
       `
       SELECT EXISTS(

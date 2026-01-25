@@ -1,9 +1,10 @@
 import {
+  IsArray,
   IsEmail,
-  IsString,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
-  IsEnum,
+  IsString,
 } from 'class-validator';
 import { Role } from 'src/common/enums/role.enum';
 import { CompanyType } from '../../entities/company.entity';
@@ -36,4 +37,12 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   time_zone?: string;
+
+  /**
+   * Optional list of tenant schema slugs this user can access.
+   * Values are normalized/validated server-side.
+   */
+  @IsArray()
+  @IsOptional()
+  companies?: string[];
 }

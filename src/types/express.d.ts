@@ -11,13 +11,6 @@ declare global {
       phone: string | null;
       role: Role;
       sessionId: string;
-      type: 'global' | 'tenant';
-      /**
-       * Present only when `type === 'tenant'`.
-       */
-      tenantSlug?: string;
-      groupId?: string;
-      companyId?: string;
     }
 
     interface Request {
