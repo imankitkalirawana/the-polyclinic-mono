@@ -32,7 +32,7 @@ export class User extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
 
-  @Column({ type: 'varchar', length: 100, default: 'UTC' })
+  @Column({ type: 'varchar', length: 100, default: 'Asia/Kolkata' })
   time_zone: string;
 
   @Column({ type: 'jsonb', default: {} })

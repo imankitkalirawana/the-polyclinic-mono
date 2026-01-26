@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -65,7 +66,13 @@ export class AuthService {
     });
     if (existing) {
       if (existing.deleted) {
-        throw new ConflictException('User account is deleted');
+        throw new ConflictException(
+          'User account is deleted, please contact support',
+        );
+      }
+
+      if (existing.role !== Role.PATIENT) {
+        throw new ForbiddenException('Only patients can register');
       }
 
       const ok = await bcrypt.compare(dto.password, existing.password_digest);
@@ -160,9 +167,18 @@ export class AuthService {
     await this.sessionRepository.save(session);
   }
 
-  async getMe(
-    userId: string,
-  ): Promise<Pick<User, 'id' | 'email' | 'name' | 'role' | 'companies'>> {
+  async checkEmail(email: string): Promise<{ exists: boolean }> {
+    const user = await this.userRepository.findOne({
+      where: { email, deleted: false },
+    });
+    return {
+      exists: !!user,
+    };
+  }
+
+  async getSession(userId: string): Promise<{
+    user: Pick<User, 'id' | 'email' | 'name' | 'role' | 'companies'>;
+  }> {
     const user = await this.userRepository.findOne({
       where: { id: userId, deleted: false },
       select: ['id', 'email', 'name', 'role', 'companies'],
@@ -170,17 +186,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return user;
-  }
-
-  private async getUserOrThrow(userId: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId, deleted: false },
-    });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user;
+    return { user };
   }
 
   private async createSessionAndToken(args: {

@@ -22,7 +22,7 @@ export class Patient {
   id: string;
 
   // 🔑 Foreign key column
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', unique: true })
   user_id: string;
 
   @OneToOne(() => User, (user) => user.id, {
@@ -40,7 +40,7 @@ export class Patient {
   gender: Gender;
 
   @Column({ nullable: true })
-  age: number;
+  dob: Date;
 
   @Column({ nullable: true })
   address: string;

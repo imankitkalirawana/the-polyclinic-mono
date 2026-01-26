@@ -1,11 +1,12 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,12 +19,16 @@ import {
   inferCompanyTypeForRole,
 } from '../utils/company-role.util';
 import { SchemaValidatorService } from '../schema/schema-validator.service';
+import { getNameFromEmail, generatePassword } from '@/auth/users/users.utils';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   constructor(
+    @Inject(REQUEST) private readonly request: Request,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly schemaValidator: SchemaValidatorService,
@@ -45,7 +50,11 @@ export class UsersService {
     const role = dto.role ?? defaultRoleForCompanyType(company_type);
     assertRoleAllowedForCompanyType(role, company_type);
 
-    const companies = await this.normalizeCompanies(dto.companies ?? []);
+    const tenantSlug = this.request.tenantSlug?.toLowerCase();
+    const companies = await this.normalizeCompanies([
+      ...(dto.companies ?? []),
+      ...(tenantSlug ? [tenantSlug] : []),
+    ]);
 
     const password_digest = await bcrypt.hash(dto.password, 10);
     const user = this.userRepository.create({
@@ -66,7 +75,12 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find({ where: { deleted: false } });
+    return await this.userRepository.find({
+      where: {
+        deleted: false,
+        companies: ArrayContains([this.request.tenantSlug]),
+      },
+    });
   }
 
   async findOne(id: string): Promise<User> {
@@ -77,6 +91,86 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     return user;
+  }
+
+  async findOneByEmail(email: string): Promise<User> {
+    const tenantSlug = this.request.tenantSlug?.toLowerCase();
+    if (!tenantSlug) {
+      throw new NotFoundException('Tenant schema not available');
+    }
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email.trim().toLowerCase(),
+        deleted: false,
+        companies: ArrayContains([tenantSlug]),
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async findOneByEmailOrId(emailOrId: string): Promise<User> {
+    const value = emailOrId.trim().toLowerCase();
+    const user = await this.userRepository.findOne({
+      where: [
+        { email: value, deleted: false },
+        { id: emailOrId, deleted: false },
+      ],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async findOneOrCreateByEmail({
+    email,
+    name = getNameFromEmail(email),
+    phone,
+    password = generatePassword(12),
+  }: {
+    email: string;
+    name?: string;
+    phone?: string;
+    password?: string;
+  }): Promise<User> {
+    const tenantSlug = this.request.tenantSlug?.toLowerCase();
+    if (!tenantSlug) {
+      throw new NotFoundException('Tenant schema not available');
+    }
+
+    const existing = await this.userRepository.findOne({
+      where: { email, deleted: false, companies: ArrayContains([tenantSlug]) },
+    });
+
+    if (!existing) {
+      return await this.create({
+        email,
+        password,
+        role: Role.PATIENT,
+        name,
+        phone,
+        companies: [tenantSlug],
+      });
+    }
+
+    // Ensure this user can access current tenant
+    const nextCompanies = await this.normalizeCompanies([
+      ...(existing.companies ?? []),
+      tenantSlug,
+    ]);
+    const currentCompanies = existing.companies ?? [];
+    const needsUpdate =
+      currentCompanies.length !== nextCompanies.length ||
+      currentCompanies.some((c, i) => c !== nextCompanies[i]);
+    if (needsUpdate) {
+      existing.companies = nextCompanies;
+      return await this.userRepository.save(existing);
+    }
+
+    return existing;
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {

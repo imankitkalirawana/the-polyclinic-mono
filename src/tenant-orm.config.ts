@@ -2,6 +2,7 @@ import { join } from 'path';
 import { DataSourceOptions } from 'typeorm';
 import { ActivityLog } from './modules/common/activity/entities/activity-log.entity';
 import { User } from './modules/auth/entities/user.entity';
+import { Session } from './modules/auth/entities/session.entity';
 
 export function getTenantConnectionConfig(
   tenantSlug: string,
@@ -19,6 +20,8 @@ export function getTenantConnectionConfig(
       ActivityLog,
       // Allow tenant schema entities to reference global users in public schema
       User,
+      // Needed because User has relations to Session
+      Session,
     ],
     synchronize: true,
     logging: process.env.NODE_ENV === 'development',

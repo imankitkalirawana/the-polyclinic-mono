@@ -1,6 +1,7 @@
 import { Role } from 'src/common/enums/role.enum';
 import { Queue } from './entities/queue.entity';
 import { redactField } from 'src/common/utils/redact.util';
+import { calculateAge } from 'src/modules/client/patients/patients.helper';
 
 interface FormattedQueue extends Queue {
   nextQueueId?: string;
@@ -41,7 +42,7 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
       ? {
           id: queue.patient.id,
           gender: queue.patient.gender,
-          age: queue.patient.age,
+          age: calculateAge(queue.patient.dob),
           email: queue.patient.user?.email ?? null,
           name: queue.patient.user?.name ?? null,
           phone: queue.patient.user?.phone ?? null,

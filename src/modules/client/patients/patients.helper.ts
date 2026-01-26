@@ -1,5 +1,6 @@
 import { Patient } from './entities/patient.entity';
 import { IsNull } from 'typeorm';
+import { differenceInYears } from 'date-fns';
 
 export function areNamesSimilar(
   nameA: string,
@@ -54,13 +55,6 @@ function levenshteinDistance(a: string, b: string): number {
   return prev[b.length];
 }
 
-export const generatePassword = (len = 12) =>
-  Array.from({ length: len }, () =>
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?'.charAt(
-      Math.floor(Math.random() * 85),
-    ),
-  ).join('');
-
 export function formatPatient(patient: Patient) {
   return {
     id: patient.id,
@@ -68,12 +62,18 @@ export function formatPatient(patient: Patient) {
     name: patient.user?.name,
     email: patient.user?.email,
     phone: patient.user?.phone ?? null,
-    age: patient.age,
+    age: calculateAge(patient.dob),
     gender: patient.gender,
     address: patient.address,
     createdAt: patient.createdAt,
     updatedAt: patient.updatedAt,
   };
+}
+
+export function calculateAge(dob: string | Date): number {
+  const birthDate = new Date(dob);
+  const age = differenceInYears(new Date(), birthDate);
+  return age;
 }
 
 export const queryDeletedPatient = { user: { deletedAt: IsNull() } };

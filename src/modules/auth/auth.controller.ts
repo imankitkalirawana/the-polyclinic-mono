@@ -22,6 +22,11 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('check-email')
+  async checkEmail(@Body() { email }: { email: string }) {
+    return await this.authService.checkEmail(email);
+  }
+
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
@@ -38,10 +43,10 @@ export class AuthController {
     return result;
   }
 
-  @Get('me')
+  @Get('session')
   @UseGuards(BearerAuthGuard)
-  async me(@CurrentUser() user: CurrentUserPayload) {
-    return await this.authService.getMe(user.userId);
+  async session(@CurrentUser() user: CurrentUserPayload) {
+    return await this.authService.getSession(user.userId);
   }
 
   @Delete('logout')

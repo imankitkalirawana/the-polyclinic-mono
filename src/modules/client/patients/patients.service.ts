@@ -12,13 +12,20 @@ import { ILike, Repository } from 'typeorm';
 import { formatPatient } from './patients.helper';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
+import { subYears } from 'date-fns';
+import { UsersService } from '@/auth/users/users.service';
+import { Role } from 'src/scripts/types';
 
 @Injectable()
 export class PatientsService {
-  constructor(@Inject(REQUEST) private readonly request: Request) {}
+  constructor(
+    @Inject(REQUEST) private readonly request: Request,
+    private readonly usersService: UsersService,
+  ) {}
 
   private getTenantSlug(): string {
-    const tenantSlug = (this.request as any)?.tenantSlug;
+    console.log('Tenant slug:', this.request.tenantSlug);
+    const tenantSlug = this.request.tenantSlug;
     if (!tenantSlug) {
       throw new NotFoundException('Tenant schema not available');
     }
@@ -30,16 +37,44 @@ export class PatientsService {
     return connection.getRepository(Patient);
   }
 
+  private calculateDob(age: number): Date {
+    const currentDate = new Date();
+    const dob = subYears(currentDate, age);
+    return dob;
+  }
+
   async create(createPatientDto: CreatePatientDto) {
-    if (!createPatientDto.userId) {
-      throw new BadRequestException(
-        'userId is required. Create the user in global auth first, then link it here.',
+    const patientRepository = await this.getPatientRepository();
+
+    const user = await this.usersService.findOneOrCreateByEmail({
+      email: createPatientDto.email,
+      name: createPatientDto.name,
+      phone: createPatientDto.phone,
+      password: createPatientDto.password,
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with email ${createPatientDto.email} not found`,
       );
     }
-    const repo = await this.getPatientRepository();
-    return await repo.save({
-      ...(createPatientDto as any),
-      user_id: createPatientDto.userId,
+
+    if (user.role !== Role.PATIENT) {
+      throw new BadRequestException('User is not a patient');
+    }
+
+    // check if patient already exists
+    const existingPatient = await patientRepository.findOne({
+      where: { user_id: user.id },
+    });
+    if (existingPatient) {
+      throw new BadRequestException('Patient already exists');
+    }
+
+    return await patientRepository.save({
+      ...createPatientDto,
+      user_id: user.id,
+      dob: this.calculateDob(createPatientDto.age),
     });
   }
 
