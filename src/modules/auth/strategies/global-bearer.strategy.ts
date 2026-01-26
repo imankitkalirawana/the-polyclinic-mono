@@ -87,7 +87,7 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
       return;
     }
 
-    const tenantSlug = (request as any).tenantSlug as string | undefined;
+    const tenantSlug = request.tenantSlug;
     if (!tenantSlug) {
       throw new UnauthorizedException(
         'x-tenant header is required for this endpoint',

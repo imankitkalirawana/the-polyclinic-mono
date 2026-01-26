@@ -5,7 +5,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TenantsModule } from '@/public/tenants/tenants.module';
 import { publicOrmConfig } from './orm.config';
 import { DatabaseInitService } from './common/database-init.service';
 import { PatientsModule } from './modules/client/patients/patients.module';
@@ -49,7 +48,6 @@ const options: StandardResponseModuleOptions = {};
       signOptions: { expiresIn: '1h' },
       global: true,
     }),
-    TenantsModule,
     AuthModule,
     PatientsModule,
     DoctorsModule,
