@@ -2,18 +2,17 @@ import {
   Injectable,
   NotFoundException,
   Inject,
-  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { formatPatient } from './patients.helper';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { subYears } from 'date-fns';
 import { UsersService } from '@/auth/users/users.service';
-import { Role } from 'src/common/enums/role.enum';
 import { Patient } from '@/public/patients/entities/patient.entity';
 import {
   PatientTenantMembership,
@@ -201,94 +200,62 @@ export class PatientsService {
     return { shareMedicalHistory: membership.shareMedicalHistory };
   }
 
-  async create(createPatientDto: CreatePatientDto) {
+  async checkPatientExists(patientId: string, earlyReturn?: boolean) {
     const patientRepository = await this.getPatientRepository();
-    const membershipRepository = await this.getMembershipRepository();
-    const tenantSlug = this.getTenantSlug().trim().toLowerCase();
-
-    const user = await this.usersService.findOneOrCreateByEmail({
-      email: createPatientDto.email,
-      name: createPatientDto.name,
-      phone: createPatientDto.phone,
-      password: createPatientDto.password,
-    });
-
-    if (!user) {
-      throw new NotFoundException(
-        `User with email ${createPatientDto.email} not found`,
-      );
-    }
-
-    if (user.role !== Role.PATIENT) {
-      throw new BadRequestException('User is not a patient');
-    }
-
-    let patient = await patientRepository.findOne({
-      where: { user_id: user.id },
-      relations: ['user'],
-    });
-
-    if (!patient) {
-      patient = await patientRepository.save({
-        user_id: user.id,
-        gender: createPatientDto.gender,
-        address: createPatientDto.address,
-        dob: createPatientDto.age
-          ? this.calculateDob(createPatientDto.age)
-          : createPatientDto.dob
-            ? new Date(createPatientDto.dob)
-            : null,
-      });
-    }
-
-    const existingMembership = await membershipRepository.findOne({
-      where: { patientId: patient.id, tenantSlug },
-    });
-
-    if (!existingMembership) {
-      await membershipRepository.save({
-        patientId: patient.id,
-        tenantSlug,
-        status: PatientTenantMembershipStatus.ACTIVE,
-        shareMedicalHistory: true,
-      });
-      await this.auditMembershipChange({
-        patientId: patient.id,
-        tenantSlug,
-        action: PatientMembershipAuditAction.MEMBERSHIP_CREATED,
-        after: {
-          status: PatientTenantMembershipStatus.ACTIVE,
-          shareMedicalHistory: true,
+    const patient = await patientRepository.findOne({
+      where: {
+        id: patientId,
+        user: {
+          companies: ArrayContains([this.getTenantSlug()]),
         },
-      });
-    } else if (
-      existingMembership.status !== PatientTenantMembershipStatus.ACTIVE
-    ) {
-      const before = {
-        status: existingMembership.status,
-        shareMedicalHistory: existingMembership.shareMedicalHistory,
-      };
-      existingMembership.status = PatientTenantMembershipStatus.ACTIVE;
-      await membershipRepository.save(existingMembership);
-      await this.auditMembershipChange({
-        patientId: patient.id,
-        tenantSlug,
-        action: PatientMembershipAuditAction.MEMBERSHIP_RESTORED,
-        before,
-        after: {
-          status: existingMembership.status,
-          shareMedicalHistory: existingMembership.shareMedicalHistory,
-        },
-      });
+      },
+    });
+
+    if (earlyReturn && !patient) {
+      throw new NotFoundException('Patient not found');
     }
 
-    // Ensure tenant-scoped response always respects membership
-    await this.assertActiveMembership(patient.id);
-    const created = await patientRepository.findOne({
-      where: { id: patient.id },
-      relations: ['user'],
+    return {
+      exists: !!patient,
+      patient,
+    };
+  }
+
+  async checkPatientExistsByEmail(email: string, earlyReturn?: boolean) {
+    const patientRepository = await this.getPatientRepository();
+    const patient = await patientRepository.findOne({
+      where: {
+        user: {
+          email,
+          companies: ArrayContains([this.getTenantSlug()]),
+        },
+      },
     });
-    return created ? formatPatient(created) : formatPatient(patient);
+
+    if (earlyReturn && patient) {
+      throw new ConflictException('Patient with this email already exists');
+    }
+
+    return {
+      exists: !!patient,
+      patient,
+    };
+  }
+
+  async create(createPatientDto: CreatePatientDto) {
+    await this.checkPatientExistsByEmail(createPatientDto.email, true);
+
+    const user = await this.usersService.findOneByEmail(createPatientDto.email);
+
+    const patientRepository = await this.getPatientRepository();
+    const patient = await patientRepository.save({
+      user_id: user.id,
+      gender: createPatientDto.gender,
+      dob: createPatientDto.dob,
+      address: createPatientDto.address,
+    });
+
+    return patient;
   }
 
   async findAll(search?: string) {
@@ -339,7 +306,7 @@ export class PatientsService {
   async findOne(id: string) {
     const repo = await this.getPatientRepository();
     const patient = await repo.findOne({
-      where: { id },
+      where: { id, user: { companies: ArrayContains([this.getTenantSlug()]) } },
       relations: ['user'],
     });
 
@@ -351,50 +318,7 @@ export class PatientsService {
     return formatPatient(patient);
   }
 
-  async update(patientId: string, updatePatientDto: UpdatePatientDto) {
-    const patientRepository = await this.getPatientRepository();
-    const patient = await patientRepository.findOne({
-      where: { id: patientId },
-    });
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
-
-    await this.assertActiveMembership(patient.id);
-
-    // Update global patient profile fields
-    if (updatePatientDto.gender !== undefined)
-      patient.gender = updatePatientDto.gender;
-    if (updatePatientDto.address !== undefined)
-      patient.address = updatePatientDto.address;
-    if (updatePatientDto.age !== undefined)
-      patient.dob = this.calculateDob(updatePatientDto.age);
-    if (updatePatientDto.dob !== undefined)
-      patient.dob = updatePatientDto.dob
-        ? new Date(updatePatientDto.dob)
-        : null;
-
-    // TODO: Remove this once we have a global user service
-    const userUpdate: any = {};
-    if (updatePatientDto.email !== undefined)
-      userUpdate.email = updatePatientDto.email;
-    if (updatePatientDto.name !== undefined)
-      userUpdate.name = updatePatientDto.name;
-    if (updatePatientDto.phone !== undefined)
-      userUpdate.phone = updatePatientDto.phone;
-    if (updatePatientDto.password !== undefined)
-      userUpdate.password = updatePatientDto.password;
-    if (Object.keys(userUpdate).length > 0) {
-      await this.usersService.update(patient.user_id, userUpdate);
-    }
-
-    await patientRepository.save(patient);
-    const updated = await patientRepository.findOne({
-      where: { id: patient.id },
-      relations: ['user'],
-    });
-    return updated ? formatPatient(updated) : formatPatient(patient);
-  }
+  async update(patientId: string, updatePatientDto: UpdatePatientDto) {}
 
   async remove(patientId: string) {
     const tenantSlug = this.getTenantSlug().trim().toLowerCase();

@@ -16,6 +16,9 @@ export class Doctor {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'varchar', length: 3, nullable: true })
+  code?: string | null;
+
   @Column({ type: 'uuid', unique: true })
   @Index()
   user_id: string;

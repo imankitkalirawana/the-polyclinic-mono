@@ -7,14 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, Equal, In, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import { Between, Equal, In, MoreThanOrEqual, Not } from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { UpdateQueueDto } from './dto/update-queue.dto';
 import { CurrentUserPayload } from '@/auth/decorators/current-user.decorator';
 import { Queue, QueueStatus } from './entities/queue.entity';
-import { Doctor } from '@/public/doctors/entities/doctor.entity';
-import { Patient } from '@/public/patients/entities/patient.entity';
 import {
   formatQueue,
   generateAppointmentId,
@@ -37,18 +34,8 @@ import { ActivityService } from '@/common/activity/services/activity.service';
 import { ActivityLogService } from '@/common/activity/services/activity-log.service';
 import { EntityType } from '@/common/activity/enums/entity-type.enum';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
-import {
-  PatientTenantMembership,
-  PatientTenantMembershipStatus,
-} from '@/public/patients/entities/patient-tenant-membership.entity';
-import {
-  ClinicalRecord,
-  ClinicalRecordType,
-} from '@/public/clinical/entities/clinical-record.entity';
-import {
-  DoctorTenantMembership,
-  DoctorTenantMembershipStatus,
-} from '@/public/doctors/entities/doctor-tenant-membership.entity';
+
+import { PatientsService } from '@/client/patients/patients.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -65,12 +52,11 @@ const queueRelations = [
 @Injectable()
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
-  private resolvedPatientId: string | undefined;
-  private resolvedDoctorId: string | undefined;
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     private readonly paymentsService: PaymentsService,
+    private readonly patientsService: PatientsService,
     private readonly doctorsService: DoctorsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
@@ -90,93 +76,9 @@ export class QueueService {
     return await getTenantConnection(this.getTenantSlug());
   }
 
-  private async getRepository<T>(entity: any): Promise<Repository<T>> {
+  private async getQueueRepository() {
     const connection = await this.getConnection();
-    return connection.getRepository<T>(entity);
-  }
-
-  private async assertActivePatientMembership(patientId: string) {
-    const tenantSlug = this.getTenantSlug().trim().toLowerCase();
-    const repo = await this.getRepository<PatientTenantMembership>(
-      PatientTenantMembership,
-    );
-    const membership = await repo.findOne({
-      where: {
-        patientId,
-        tenantSlug,
-        status: PatientTenantMembershipStatus.ACTIVE,
-      },
-    });
-    if (!membership) {
-      throw new NotFoundException('Patient not found');
-    }
-    return membership;
-  }
-
-  private async assertActiveDoctorMembership(doctorId: string) {
-    const tenantSlug = this.getTenantSlug().trim().toLowerCase();
-    const repo = await this.getRepository<DoctorTenantMembership>(
-      DoctorTenantMembership,
-    );
-    const membership = await repo.findOne({
-      where: {
-        doctorId,
-        tenantSlug,
-        status: DoctorTenantMembershipStatus.ACTIVE,
-      },
-    });
-    if (!membership) {
-      throw new NotFoundException('Doctor not found');
-    }
-    return membership;
-  }
-
-  private async resolvePatientId(): Promise<string | undefined> {
-    if (this.resolvedPatientId !== undefined) return this.resolvedPatientId;
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-    if (user.role !== Role.PATIENT) {
-      this.resolvedPatientId = undefined;
-      return undefined;
-    }
-
-    const repo = await this.getRepository<Patient>(Patient);
-    const patient = await repo.findOne({
-      where: { user_id: user.userId },
-      select: ['id'],
-    });
-    if (!patient) {
-      throw new UnauthorizedException('Patient profile not found for user');
-    }
-    await this.assertActivePatientMembership(patient.id);
-    this.resolvedPatientId = patient.id;
-    return patient.id;
-  }
-
-  private async resolveDoctorId(): Promise<string | undefined> {
-    if (this.resolvedDoctorId !== undefined) return this.resolvedDoctorId;
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-    if (user.role !== Role.DOCTOR) {
-      this.resolvedDoctorId = undefined;
-      return undefined;
-    }
-
-    const repo = await this.getRepository<Doctor>(Doctor);
-    const doctor = await repo.findOne({
-      where: { user_id: user.userId },
-      select: ['id'],
-    });
-    if (!doctor) {
-      throw new UnauthorizedException('Doctor profile not found for user');
-    }
-    await this.assertActiveDoctorMembership(doctor.id);
-    this.resolvedDoctorId = doctor.id;
-    return doctor.id;
-  }
-
-  private getQueueRepository() {
-    return this.getRepository<Queue>(Queue);
+    return connection.getRepository(Queue);
   }
 
   private sortQueuesByPriority(queues: Queue[]): Queue[] {
@@ -219,18 +121,29 @@ export class QueueService {
     return queue;
   }
 
-  async create(createQueueDto: CreateQueueDto) {
-    // Prevent cross-tenant patient references
-    await this.assertActivePatientMembership(createQueueDto.patientId);
-    // Prevent cross-tenant doctor references
-    const doctorMembership = await this.assertActiveDoctorMembership(
-      createQueueDto.doctorId,
-    );
+  private async checkDoctorExists(doctorId: string) {
+    const doctor = await this.doctorsService.findOne(doctorId);
+    if (!doctor) {
+      throw new BadRequestException('Doctor not found');
+    }
+    return doctor;
+  }
 
+  async create(createQueueDto: CreateQueueDto) {
     const existingQueue = await this.checkIfQueueIsBooked(
       createQueueDto.doctorId,
       createQueueDto.patientId,
     );
+
+    if (createQueueDto.appointmentDate < new Date()) {
+      throw new BadRequestException('Cannot book appointment in the past');
+    }
+
+    await this.patientsService.checkPatientExists(
+      createQueueDto.patientId,
+      true,
+    );
+    await this.checkDoctorExists(createQueueDto.doctorId);
 
     if (existingQueue && this.request.user.role === Role.PATIENT) {
       throw new BadRequestException(
@@ -239,12 +152,6 @@ export class QueueService {
     }
 
     const doctor = await this.doctorsService.findOne(createQueueDto.doctorId);
-    const doctorCode = doctor?.code ?? doctorMembership.code;
-    if (!doctorCode) {
-      throw new BadRequestException(
-        'Doctor code is required for appointment booking',
-      );
-    }
 
     // start transaction
     const connection = await this.getConnection();
@@ -289,7 +196,7 @@ export class QueueService {
       // Generate appointment ID (aid)
       const aid = generateAppointmentId(
         createQueueDto.appointmentDate,
-        doctorCode,
+        doctor.code,
         sequenceNumber,
       );
 
@@ -393,14 +300,10 @@ export class QueueService {
   async findAll(date?: string) {
     const user = this.request.user;
     if (!user) throw new UnauthorizedException('Unauthorized');
-    const patientId = await this.resolvePatientId();
-    const doctorId = await this.resolveDoctorId();
 
-    const repo = await this.getRepository<Queue>(Queue);
+    const repo = await this.getQueueRepository();
     const qb = await repo.find({
       where: {
-        patientId: patientId,
-        doctorId: doctorId,
         createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
       },
       withDeleted: true,
@@ -416,15 +319,11 @@ export class QueueService {
   async findOne(id: string) {
     const user = this.request.user;
     if (!user) throw new UnauthorizedException('Unauthorized');
-    const patientId = await this.resolvePatientId();
-    const doctorId = await this.resolveDoctorId();
 
     const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
       where: {
         id,
-        patientId: patientId,
-        doctorId: doctorId,
       },
       withDeleted: true,
       relations: queueRelations,
@@ -440,15 +339,11 @@ export class QueueService {
   async findByAid(aid: string) {
     const user = this.request.user;
     if (!user) throw new UnauthorizedException('Unauthorized');
-    const patientId = await this.resolvePatientId();
-    const doctorId = await this.resolveDoctorId();
 
     const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
       where: {
         aid,
-        patientId: patientId,
-        doctorId: doctorId,
       },
       relations: queueRelations,
     });
@@ -458,42 +353,11 @@ export class QueueService {
     return formatQueue(queue, user.role);
   }
 
-  async update(id: string, updateQueueDto: UpdateQueueDto) {
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-
-    const queueRepository = await this.getQueueRepository();
-
-    const queue = await this.findOne(id);
-
-    if (updateQueueDto.doctorId) {
-      await this.assertActiveDoctorMembership(updateQueueDto.doctorId);
-    }
-
-    const previousData = { ...queue };
-    Object.assign(queue, updateQueueDto);
-    await queueRepository.save(queue);
-
-    this.activityService.logUpdate({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: previousData,
-      after: queue,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
-
-    return {
-      message: 'Queue entry updated successfully',
-      data: await this.findOne(id),
-    };
-  }
-
   async remove(id: string) {
     const user = this.request.user;
     if (!user) throw new UnauthorizedException('Unauthorized');
 
-    const queueRepository = await this.getRepository<Queue>(Queue);
+    const queueRepository = await this.getQueueRepository();
 
     const queue = await queueRepository.findOne({ where: { id } });
 
@@ -525,13 +389,10 @@ export class QueueService {
     queueId?: string;
     appointmentDate?: Date;
   }) {
-    // Prevent cross-tenant doctor access
-    await this.assertActiveDoctorMembership(doctorId);
-
     let requestedQueue: Queue | null = null;
 
     if (queueId) {
-      const queueRepository = await this.getRepository<Queue>(Queue);
+      const queueRepository = await this.getQueueRepository();
       requestedQueue = await queueRepository.findOne({
         where: { id: queueId },
         relations: queueRelations,
@@ -541,7 +402,7 @@ export class QueueService {
       }
     }
 
-    const queueRepository = await this.getRepository<Queue>(Queue);
+    const queueRepository = await this.getQueueRepository();
     const previousQueues = await queueRepository.find({
       where: {
         doctorId,
@@ -760,83 +621,6 @@ export class QueueService {
     });
 
     await queueRepository.save(queue);
-
-    // Write shared clinical records (public schema), idempotent by encounterRef+type
-    try {
-      const tenantSlug = this.getTenantSlug().trim().toLowerCase();
-      const clinicalRepo =
-        await this.getRepository<ClinicalRecord>(ClinicalRecord);
-      const occurredAt = queue.completedAt ?? new Date();
-
-      const notesPayload = {
-        title: queue.title ?? null,
-        notes: queue.notes ?? null,
-        doctorId: queue.doctorId,
-        aid: queue.aid,
-        queueId: queue.id,
-        appointmentDate: queue.appointmentDate,
-      };
-
-      const prescriptionPayload = {
-        prescription: queue.prescription ?? null,
-        title: queue.title ?? null,
-        doctorId: queue.doctorId,
-        aid: queue.aid,
-        queueId: queue.id,
-        appointmentDate: queue.appointmentDate,
-      };
-
-      const toInsert: Array<Partial<ClinicalRecord>> = [];
-
-      if (queue.title || queue.notes) {
-        const exists = await clinicalRepo.findOne({
-          where: {
-            patientId: queue.patientId,
-            encounterRef: queue.id,
-            recordType: ClinicalRecordType.APPOINTMENT_NOTE,
-          },
-          select: ['id'],
-        });
-        if (!exists) {
-          toInsert.push({
-            patientId: queue.patientId,
-            sourceTenantSlug: tenantSlug,
-            encounterRef: queue.id,
-            occurredAt,
-            recordType: ClinicalRecordType.APPOINTMENT_NOTE,
-            payload: notesPayload,
-          });
-        }
-      }
-
-      if (queue.prescription) {
-        const exists = await clinicalRepo.findOne({
-          where: {
-            patientId: queue.patientId,
-            encounterRef: queue.id,
-            recordType: ClinicalRecordType.PRESCRIPTION,
-          },
-          select: ['id'],
-        });
-        if (!exists) {
-          toInsert.push({
-            patientId: queue.patientId,
-            sourceTenantSlug: tenantSlug,
-            encounterRef: queue.id,
-            occurredAt,
-            recordType: ClinicalRecordType.PRESCRIPTION,
-            payload: prescriptionPayload,
-          });
-        }
-      }
-
-      if (toInsert.length > 0) {
-        await clinicalRepo.save(toInsert);
-      }
-    } catch (e) {
-      // Non-fatal: appointment completion should succeed even if history write fails.
-      this.logger.error(e);
-    }
 
     return formatQueue(queue, this.request.user.role);
   }

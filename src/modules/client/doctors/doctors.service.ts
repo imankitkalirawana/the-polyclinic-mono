@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { Doctor } from '@/public/doctors/entities/doctor.entity';
 import {
   DoctorTenantMembership,
@@ -113,105 +113,7 @@ export class DoctorsService {
     return this.assertActiveDoctorMembership(doctorId);
   }
 
-  async create(createDoctorDto: CreateDoctorDto) {
-    const actorRole = this.request?.user?.role;
-    if (actorRole !== Role.ADMIN) {
-      throw new ForbiddenException('Only admins can create doctors');
-    }
-
-    const tenantSlug = this.getTenantSlug();
-    const doctorRepo = await this.getDoctorRepository();
-    const membershipRepo = await this.getMembershipRepository();
-
-    const user = await this.usersService.findOneOrCreateByEmail({
-      email: createDoctorDto.email,
-      name: createDoctorDto.name,
-      phone: createDoctorDto.phone,
-      password: createDoctorDto.password,
-      role: Role.DOCTOR,
-    });
-
-    if (!user) {
-      throw new NotFoundException(
-        `User with email ${createDoctorDto.email} not found`,
-      );
-    }
-    if (user.role !== Role.DOCTOR) {
-      throw new BadRequestException('User is not a doctor');
-    }
-
-    let doctor = await doctorRepo.findOne({
-      where: { user_id: user.id },
-      relations: ['user'],
-    });
-
-    if (!doctor) {
-      doctor = await doctorRepo.save({
-        user_id: user.id,
-        specialization: createDoctorDto.specialization,
-        experience: createDoctorDto.experience,
-        education: createDoctorDto.education,
-        biography: createDoctorDto.biography,
-      });
-    }
-
-    const existingMembership = await membershipRepo.findOne({
-      where: { doctorId: doctor.id, tenantSlug },
-    });
-
-    if (!existingMembership) {
-      const before = {};
-      await membershipRepo.save({
-        doctorId: doctor.id,
-        tenantSlug,
-        status: DoctorTenantMembershipStatus.ACTIVE,
-        code: createDoctorDto.code ?? null,
-        designation: createDoctorDto.designation ?? null,
-        seating: createDoctorDto.seating ?? null,
-        departments: createDoctorDto.departments ?? null,
-      });
-      await this.auditMembershipChange({
-        doctorId: doctor.id,
-        tenantSlug,
-        action: DoctorMembershipAuditAction.MEMBERSHIP_CREATED,
-        before,
-        after: {
-          status: DoctorTenantMembershipStatus.ACTIVE,
-          code: createDoctorDto.code ?? null,
-        },
-      });
-    } else if (
-      existingMembership.status !== DoctorTenantMembershipStatus.ACTIVE
-    ) {
-      const before = {
-        status: existingMembership.status,
-        code: existingMembership.code,
-      };
-      existingMembership.status = DoctorTenantMembershipStatus.ACTIVE;
-      if (createDoctorDto.code !== undefined)
-        existingMembership.code = createDoctorDto.code;
-      if (createDoctorDto.designation !== undefined)
-        existingMembership.designation = createDoctorDto.designation;
-      if (createDoctorDto.seating !== undefined)
-        existingMembership.seating = createDoctorDto.seating;
-      if (createDoctorDto.departments !== undefined)
-        existingMembership.departments = createDoctorDto.departments;
-      await membershipRepo.save(existingMembership);
-      await this.auditMembershipChange({
-        doctorId: doctor.id,
-        tenantSlug,
-        action: DoctorMembershipAuditAction.MEMBERSHIP_RESTORED,
-        before,
-        after: {
-          status: existingMembership.status,
-          code: existingMembership.code,
-        },
-      });
-    }
-
-    const membership = await this.assertActiveDoctorMembership(doctor.id);
-    return formatDoctor(membership.doctor, this.request.user.role, membership);
-  }
+  async create(createDoctorDto: CreateDoctorDto) {}
 
   async findAll(search?: string) {
     const tenantSlug = this.getTenantSlug();
@@ -242,8 +144,13 @@ export class DoctorsService {
   }
 
   async findOne(id: string) {
-    const membership = await this.assertActiveDoctorMembership(id);
-    return formatDoctor(membership.doctor, this.request.user.role, membership);
+    const doctorRepository = await this.getDoctorRepository();
+    const doctor = await doctorRepository.findOne({
+      where: { id, user: { companies: ArrayContains([this.getTenantSlug()]) } },
+      relations: ['user'],
+    });
+    if (!doctor) throw new NotFoundException('Doctor not found');
+    return doctor;
   }
 
   async findByUserId(userId: string) {

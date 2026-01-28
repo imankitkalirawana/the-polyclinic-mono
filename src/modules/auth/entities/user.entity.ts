@@ -2,7 +2,7 @@ import { Entity, Column, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { CompanyType } from './company.entity';
 import { Role } from 'src/common/enums/role.enum';
-import { Session } from './session.entity';
+import type { Session } from './session.entity';
 
 @Entity('login_users', { schema: 'public' })
 export class User extends BaseEntity {
@@ -47,6 +47,6 @@ export class User extends BaseEntity {
   @Column('text', { array: true, default: () => 'ARRAY[]::text[]' })
   companies: string[];
 
-  @OneToMany(() => Session, (session) => session.user)
+  @OneToMany('Session', 'user')
   sessions: Session[];
 }

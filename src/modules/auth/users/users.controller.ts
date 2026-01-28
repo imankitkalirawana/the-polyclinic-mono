@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -56,16 +55,5 @@ export class UsersController {
     const user = await this.usersService.update(id, dto);
     params.setMessage('User updated successfully');
     return user;
-  }
-
-  @Delete(':id/soft-remove')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  async softRemove(
-    @StandardParam() params: StandardParams,
-    @Param('id') id: string,
-  ) {
-    await this.usersService.softRemove(id);
-    params.setMessage('User removed successfully');
-    return null;
   }
 }

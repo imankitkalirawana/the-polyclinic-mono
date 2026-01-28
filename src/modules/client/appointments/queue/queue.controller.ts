@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { UpdateQueueDto } from './dto/update-queue.dto';
 import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
@@ -106,12 +105,6 @@ export class QueueController {
   async findOne(@Param('id') id: string) {
     const queue = await this.queueService.findOne(id);
     return formatQueue(queue);
-  }
-
-  @Patch(':id')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
-  update(@Param('id') id: string, @Body() updateQueueDto: UpdateQueueDto) {
-    return this.queueService.update(id, updateQueueDto);
   }
 
   @Delete(':id')
