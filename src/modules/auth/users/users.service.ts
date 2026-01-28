@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -33,17 +39,33 @@ export class UsersService {
 
   async checkUserExistsByEmailAndFail(email: string) {
     const userRepository = await this.getUserRepository();
-    await userRepository.findOneOrFail({
+    const user = await userRepository.findOne({
       where: {
         email,
         companies: ArrayContains([this.request.tenantSlug]),
       },
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  // safely check if the email is not already taken
+  async checkEmailIsNotTaken(email: string) {
+    const userRepository = await this.getUserRepository();
+    const user = await userRepository.findOne({
+      where: { email, companies: ArrayContains([this.request.tenantSlug]) },
+    });
+    if (user) {
+      throw new ConflictException('Email already taken');
+    }
   }
 
   async create(dto: CreateUserDto) {
     const userRepository = await this.getUserRepository();
-    await this.checkUserExistsByEmailAndFail(dto.email);
+
+    await this.checkEmailIsNotTaken(dto.email);
 
     const user = userRepository.create(dto);
     await this.updatePassword(user.id, dto.password);
