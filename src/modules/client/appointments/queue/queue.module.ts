@@ -10,6 +10,7 @@ import { PaymentsModule } from '../../payments/payments.module';
 import { PdfModule } from '../../pdf/pdf.module';
 import { DoctorsModule } from '../../doctors/doctors.module';
 import { QrModule } from '../../qr/qr.module';
+import { PatientsModule } from '../../patients/patients.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { QrModule } from '../../qr/qr.module';
     TenancyModule,
     PaymentsModule,
     PdfModule,
+    PatientsModule,
     DoctorsModule,
     QrModule,
   ],

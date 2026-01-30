@@ -59,7 +59,7 @@ export class PatientsService extends BaseTenantService {
   async findByUserId(userId: string) {
     await this.ensureTablesExist();
 
-    const patient = await this.getRepository(Patient).findOne({
+    const patient = await this.getPatientRepository().findOne({
       where: { userId },
       relations: ['user'],
     });

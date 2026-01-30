@@ -5,7 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, DataSource, Equal, In, MoreThanOrEqual, Not } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  Equal,
+  In,
+  LessThan,
+  MoreThanOrEqual,
+  Not,
+} from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { UpdateQueueDto } from './dto/update-queue.dto';
@@ -36,6 +44,7 @@ import { QrService } from '@/client/qr/qr.service';
 import { ActivityService } from '@/common/activity/services/activity.service';
 import { ActivityLogService } from '@/common/activity/services/activity-log.service';
 import { EntityType } from '@/common/activity/enums/entity-type.enum';
+import { PatientsService } from '@/client/patients/patients.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -57,6 +66,7 @@ export class QueueService extends BaseTenantService {
     tenantAuthInitService: TenantAuthInitService,
     private readonly paymentsService: PaymentsService,
     private readonly doctorsService: DoctorsService,
+    private readonly patientService: PatientsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
     private readonly activityService: ActivityService,
@@ -277,10 +287,6 @@ export class QueueService extends BaseTenantService {
   async findAll(date?: string) {
     await this.ensureTablesExist();
 
-    console.log(
-      `[findAll] user: ${JSON.stringify(this.request.user, null, 2)}`,
-    );
-
     const qb = await this.getRepository(Queue).find({
       where: {
         patientId: this.request.user.patientId,
@@ -476,11 +482,82 @@ export class QueueService extends BaseTenantService {
         : null,
 
       metaData: {
-        appointmentDate: appointmentDate,
         totalPrevious: previousQueues.length,
         totalNext: next.length,
       },
     };
+  }
+
+  async getQueueForPatient() {
+    const queueRepo = this.getRepository(Queue);
+    const now = new Date();
+    const userId = this.request.user.userId;
+    const patient = await this.patientService.findByUserId(userId);
+
+    const previousQueues = await queueRepo.find({
+      where: [
+        {
+          patientId: patient.id,
+          status: In([QueueStatus.COMPLETED, QueueStatus.CANCELLED]),
+        },
+        {
+          patientId: patient.id,
+          appointmentDate: LessThan(now),
+        },
+      ],
+      relations: queueRelations,
+      order: {
+        appointmentDate: 'DESC',
+      },
+    });
+
+    const nextQueues = await queueRepo.find({
+      where: {
+        patientId: patient.id,
+        status: Not(In([QueueStatus.COMPLETED, QueueStatus.CANCELLED])),
+        appointmentDate: MoreThanOrEqual(now),
+      },
+      relations: queueRelations,
+      order: {
+        appointmentDate: 'ASC',
+      },
+    });
+
+    // latest upcoming appointment
+    const latestUpcomingAppointment = nextQueues[0];
+
+    return {
+      previous: previousQueues.map((queue) =>
+        formatQueue(queue, this.request.user.role),
+      ),
+      current: formatQueue(latestUpcomingAppointment, this.request.user.role),
+      next: nextQueues
+        .slice(1)
+        .map((queue) => formatQueue(queue, this.request.user.role)),
+      metaData: {
+        totalPrevious: previousQueues.length,
+        totalNext: nextQueues.length - 1,
+      },
+    };
+  }
+
+  //get appointment by aid
+  async getAppointmentByAid(aid: string) {
+    const userId = this.request.user.userId;
+
+    let patientId = undefined;
+    if (this.request.user.role === Role.PATIENT) {
+      patientId = (await this.patientService.findByUserId(userId)).id;
+    }
+
+    const queue = await this.getQueueRepository().findOne({
+      where: { aid, patientId },
+      relations: queueRelations,
+    });
+    if (!queue) {
+      throw new NotFoundException(`Appointment with AID ${aid} not found`);
+    }
+    return formatQueue(queue, this.request.user.role);
   }
 
   // Call queue by id

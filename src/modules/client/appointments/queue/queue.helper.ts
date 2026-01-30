@@ -59,9 +59,16 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
             currentRole: role,
             targetRole: queue.doctor.user?.role,
           }),
+          phone: redactField({
+            value: queue.doctor.user.phone ?? null,
+            currentRole: role,
+            targetRole: queue.doctor.user?.role,
+          }),
           name: queue.doctor.user?.name ?? null,
           userId: queue.doctor.user?.id ?? null,
           image: queue.doctor.user?.image ?? null,
+          seating: queue.doctor.seating ?? null,
+          // phone: queue.doctor.phone ?? null,
         }
       : null,
 
