@@ -1,4 +1,4 @@
-import { Patient } from '@/public/patients/entities/patient.entity';
+import { Patient } from '@/common/patients/entities/patient.entity';
 import { IsNull } from 'typeorm';
 import { differenceInYears } from 'date-fns';
 
@@ -63,6 +63,7 @@ export function formatPatient(patient: Patient) {
     email: patient.user?.email,
     phone: patient.user?.phone ?? null,
     age: calculateAge(patient.dob),
+    companies: patient.user?.companies,
     gender: patient.gender,
     address: patient.address,
     createdAt: patient.createdAt,

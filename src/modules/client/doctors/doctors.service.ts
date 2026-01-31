@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { ArrayContains, Repository } from 'typeorm';
-import { Doctor } from '@/public/doctors/entities/doctor.entity';
+import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { formatDoctor } from './doctors.helper';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';

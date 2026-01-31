@@ -14,8 +14,7 @@ import { CompanyModule } from './companies/company.module';
 import { SchemaValidatorService } from './schema/schema-validator.service';
 import { GlobalBearerStrategy } from './strategies/bearer.strategy';
 import { RolesGuard } from './guards/roles.guard';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Global()
 @Module({
@@ -41,10 +40,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     SchemaValidatorService,
     GlobalBearerStrategy,
     RolesGuard,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
   ],
   exports: [
     AuthService,

@@ -1,4 +1,4 @@
-import { Doctor } from '@/public/doctors/entities/doctor.entity';
+import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { redactField } from 'src/common/utils/redact.util';
 import { Role } from 'src/common/enums/role.enum';
 

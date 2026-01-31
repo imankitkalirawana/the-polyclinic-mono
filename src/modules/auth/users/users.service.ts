@@ -28,8 +28,7 @@ export class UsersService {
   }
 
   private async getConnection() {
-    const schema = this.schema;
-    return await getTenantConnection(schema);
+    return await getTenantConnection(this.schema);
   }
 
   private async getUserRepository() {
@@ -65,9 +64,8 @@ export class UsersService {
     return user;
   }
 
-  // safely check if the email is not already taken
+  // safely check if the email is not already taken in this company
   async checkEmailIsNotTaken(email: string) {
-    console.log('checkEmailIsNotTaken', email, this.schema);
     const userRepository = await this.getUserRepository();
     const user = await userRepository.findOne({
       where: {
@@ -81,12 +79,31 @@ export class UsersService {
     return true;
   }
 
+  // find user by email in the shared users table (any company)
+  private async findUserByEmailGlobally(email: string): Promise<User | null> {
+    const userRepository = await this.getUserRepository();
+    return userRepository.findOne({
+      where: { email },
+    });
+  }
+
   async create(dto: CreateUserDto) {
     const userRepository = await this.getUserRepository();
 
-    await this.checkEmailIsNotTaken(dto.email);
-    dto.companies = [this.schema];
+    const existingUser = await this.findUserByEmailGlobally(dto.email);
+    if (existingUser) {
+      const alreadyInCompany = existingUser.companies?.includes(this.schema);
+      if (alreadyInCompany) {
+        throw new ConflictException('Email already taken');
+      }
+      // User exists but not in this company: add this company
+      const companies = [...(existingUser.companies || []), this.schema];
+      await userRepository.update(existingUser.id, { companies });
+      await this.updatePassword(existingUser.id, dto.password);
+      return userRepository.findOneOrFail({ where: { id: existingUser.id } });
+    }
 
+    dto.companies = [this.schema];
     const user = userRepository.create(dto);
     if (!user) {
       throw new NotFoundException('Could not create user');

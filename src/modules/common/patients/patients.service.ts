@@ -6,48 +6,32 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains } from 'typeorm';
 import { formatPatient } from './patients.helper';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { subYears } from 'date-fns';
 import { UsersService } from '@/auth/users/users.service';
-import { Patient } from '@/public/patients/entities/patient.entity';
-
-import {
-  ClinicalRecord,
-  ClinicalRecordType,
-} from '@/public/clinical/entities/clinical-record.entity';
+import { Patient } from '@/common/patients/entities/patient.entity';
 
 @Injectable()
 export class PatientsService {
-  constructor(
-    @Inject(REQUEST) private readonly request: Request,
-    private readonly usersService: UsersService,
-  ) {}
+  private readonly schema: string;
 
-  private getTenantSlug(): string {
-    const schema = this.request.schema;
-    if (!schema) {
-      throw new NotFoundException('Schema not available');
-    }
-    return schema;
+  constructor(
+    @Inject(REQUEST) private request: Request,
+    private readonly usersService: UsersService,
+  ) {
+    this.schema = this.request.schema;
   }
 
   private async getConnection() {
-    return await getTenantConnection(this.getTenantSlug());
+    return await getTenantConnection(this.schema);
   }
 
-  private async getPatientRepository(): Promise<Repository<Patient>> {
+  private async getPatientRepository() {
     const connection = await this.getConnection();
     return connection.getRepository(Patient);
-  }
-
-  private async getClinicalRecordRepository(): Promise<
-    Repository<ClinicalRecord>
-  > {
-    const connection = await this.getConnection();
-    return connection.getRepository(ClinicalRecord);
   }
 
   private getActor() {
@@ -72,37 +56,13 @@ export class PatientsService {
     });
   }
 
-  async getClinicalRecords(patientId: string) {
-    const repo = await this.getClinicalRecordRepository();
-
-    const qb = repo
-      .createQueryBuilder('record')
-      .where('record.patient_id = :patientId', { patientId })
-      .orderBy('record.occurred_at', 'DESC')
-      .take(100);
-
-    const records = await qb.getMany();
-    return records.map((r) => ({
-      id: r.id,
-      patientId: r.patientId,
-      sourceTenantSlug: r.sourceTenantSlug,
-      encounterRef: r.encounterRef,
-      occurredAt: r.occurredAt,
-      recordType: r.recordType as ClinicalRecordType,
-      payload: r.payload ?? {},
-      amendedRecordId: r.amendedRecordId ?? null,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-    }));
-  }
-
   async checkPatientExists(patientId: string, earlyReturn?: boolean) {
     const patientRepository = await this.getPatientRepository();
     const patient = await patientRepository.findOne({
       where: {
         id: patientId,
         user: {
-          companies: ArrayContains([this.getTenantSlug()]),
+          companies: ArrayContains([this.schema]),
         },
       },
     });
@@ -123,7 +83,7 @@ export class PatientsService {
       where: {
         user: {
           email,
-          companies: ArrayContains([this.getTenantSlug()]),
+          companies: ArrayContains([this.schema]),
         },
       },
     });
@@ -154,7 +114,35 @@ export class PatientsService {
     return patient;
   }
 
-  async findAll(_search?: string) {}
+  async findAll(search?: string) {
+    const repo = await this.getPatientRepository();
+    const baseWhere = {
+      user: { companies: ArrayContains([this.schema]) },
+    };
+
+    if (search?.trim()) {
+      const term = `%${search.trim()}%`;
+
+      return repo
+        .createQueryBuilder('patient')
+        .leftJoinAndSelect('patient.user', 'user')
+        .where('user.companies @> :companies', {
+          companies: [this.schema],
+        })
+        .andWhere(
+          `(user.name ILIKE :term 
+            OR user.email ILIKE :term 
+            OR user.phone ILIKE :term)`,
+        )
+        .setParameter('term', term)
+        .getMany();
+    }
+    const patients = await repo.find({
+      where: baseWhere,
+      relations: ['user'],
+    });
+    return patients;
+  }
 
   async findByUserId(userId: string) {
     const repo = await this.getPatientRepository();
@@ -173,7 +161,7 @@ export class PatientsService {
   async findOne(id: string) {
     const repo = await this.getPatientRepository();
     const patient = await repo.findOne({
-      where: { id, user: { companies: ArrayContains([this.getTenantSlug()]) } },
+      where: { id, user: { companies: ArrayContains([this.schema]) } },
       relations: ['user'],
     });
 
@@ -181,6 +169,19 @@ export class PatientsService {
       throw new NotFoundException('Patient not found');
     }
 
+    return formatPatient(patient);
+  }
+
+  // find one by user email
+  async findOneByUserEmail(email: string) {
+    const repo = await this.getPatientRepository();
+    const patient = await repo.findOne({
+      where: { user: { email, companies: ArrayContains([this.schema]) } },
+      relations: ['user'],
+    });
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
     return formatPatient(patient);
   }
 

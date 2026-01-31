@@ -3,9 +3,8 @@ import { DataSourceOptions } from 'typeorm';
 import { ActivityLog } from './modules/common/activity/entities/activity-log.entity';
 import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
-import { Patient } from './modules/public/patients/entities/patient.entity';
-import { ClinicalRecord } from './modules/public/clinical/entities/clinical-record.entity';
-import { Doctor } from './modules/public/doctors/entities/doctor.entity';
+import { Patient } from './modules/common/patients/entities/patient.entity';
+import { Doctor } from './modules/client/doctors/entities/doctor.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
   // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public
@@ -30,7 +29,6 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
       // Needed because User has relations to Session
       Session,
       Patient,
-      ClinicalRecord,
       Doctor,
     ],
     synchronize: true,

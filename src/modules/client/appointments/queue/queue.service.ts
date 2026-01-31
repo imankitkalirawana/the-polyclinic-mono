@@ -35,7 +35,7 @@ import { ActivityLogService } from '@/common/activity/services/activity-log.serv
 import { EntityType } from '@/common/activity/enums/entity-type.enum';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { PatientsService } from '@/client/patients/patients.service';
+import { PatientsService } from '@/common/patients/patients.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));

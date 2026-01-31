@@ -8,7 +8,7 @@ import { AppService } from './app.service';
 import { publicOrmConfig } from './orm.config';
 import { DatabaseInitService } from './common/database-init.service';
 import { SchemaMiddleware } from './common/middleware/schema.middleware';
-import { PatientsModule } from './modules/client/patients/patients.module';
+import { PatientsModule } from './modules/common/patients/patients.module';
 import { PaymentsModule } from './modules/client/payments/payments.module';
 import { DoctorsModule } from './modules/client/doctors/doctors.module';
 import { QueueModule } from './modules/client/appointments/queue/queue.module';

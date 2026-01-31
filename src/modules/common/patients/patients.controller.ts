@@ -19,11 +19,16 @@ import {
 } from '@/auth/decorators/current-user.decorator';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CreatePatientDto } from './dto/create-patient.dto';
+import { formatPatient } from './patients.helper';
+import { UsersService } from '@/auth/users/users.service';
 
-@Controller('client/patients')
+@Controller('patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(
+    private readonly patientsService: PatientsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
@@ -31,14 +36,17 @@ export class PatientsController {
     @Body() createPatientDto: CreatePatientDto,
     @StandardParam() params: StandardParams,
   ) {
+    // create user first
     params.setMessage(`Patient created successfully`);
+
     return this.patientsService.create(createPatientDto);
   }
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
   async findAll(@Query('search') search?: string) {
-    return this.patientsService.findAll(search);
+    const patients = await this.patientsService.findAll(search);
+    return patients.map(formatPatient);
   }
 
   @Get('me')
@@ -46,23 +54,10 @@ export class PatientsController {
     return this.patientsService.findByUserId(user.user_id);
   }
 
-  @Get('me/clinical-records')
-  @Roles(Role.PATIENT)
-  async getMyClinicalRecords(@CurrentUser() user: CurrentUserPayload) {
-    const patient = await this.patientsService.findByUserId(user.user_id);
-    return this.patientsService.getClinicalRecords(patient.id);
-  }
-
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async findOne(@Param('id') id: string) {
     return this.patientsService.findOne(id);
-  }
-
-  @Get(':id/clinical-records')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async getClinicalRecords(@Param('id') id: string) {
-    return this.patientsService.getClinicalRecords(id);
   }
 
   @Delete(':id')

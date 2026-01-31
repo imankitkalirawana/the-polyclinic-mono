@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Patient } from '@/public/patients/entities/patient.entity';
-import { Doctor } from '@/public/doctors/entities/doctor.entity';
+import { Patient } from '@/common/patients/entities/patient.entity';
+import { Doctor } from '@/client/doctors/entities/doctor.entity';
 import { User } from '@/auth/entities/user.entity';
 import { PaymentMode } from '../enums/queue.enum';
 

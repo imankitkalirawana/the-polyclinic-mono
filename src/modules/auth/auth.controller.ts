@@ -18,9 +18,8 @@ import { VerifyOtpDto } from './users/dto/verify-otp.dto';
 import { VerifyTokenDto } from './users/dto/verify-token.dto';
 import { VerificationService } from './verification.service';
 import { VerificationType } from './entities/verification.entity';
-import { SkipThrottle } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
-@SkipThrottle()
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -33,7 +32,7 @@ export class AuthController {
     return await this.authService.checkEmail(email);
   }
 
-  @SkipThrottle({ default: false })
+  @UseGuards(ThrottlerGuard)
   @Post('send-otp')
   async sendOtp(
     @StandardParam() params: StandardParams,
