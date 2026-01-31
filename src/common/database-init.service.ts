@@ -13,7 +13,8 @@ export class DatabaseInitService implements OnModuleInit {
 
   private async ensureTablesExist() {
     try {
-      const tables = ['appointment_queue'];
+      // Only tables that must exist in public schema (appointment_queue lives in tenant schemas only)
+      const tables: string[] = [];
 
       for (const tableName of tables) {
         await this.ensureTableExists(tableName);

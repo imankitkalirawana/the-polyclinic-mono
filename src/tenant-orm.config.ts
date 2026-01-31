@@ -12,6 +12,12 @@ import { DoctorTenantMembership } from './modules/public/doctors/entities/doctor
 import { DoctorMembershipAuditLog } from './modules/public/doctors/entities/doctor-membership-audit.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
+  // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public
+  const clientEntities =
+    schema === 'public'
+      ? []
+      : [join(__dirname, './modules/client/**/entities/*.entity.{ts,js}')];
+
   return {
     type: 'postgres',
     host: process.env.DB_HOST,
@@ -21,7 +27,7 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
     database: process.env.DB_NAME,
     schema,
     entities: [
-      join(__dirname, './modules/client/**/entities/*.entity.{ts,js}'),
+      ...clientEntities,
       ActivityLog,
       // Allow tenant schema entities to reference global users in public schema
       User,
