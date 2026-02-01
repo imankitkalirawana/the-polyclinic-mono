@@ -33,7 +33,7 @@ export default function AppointmentEmail({
     <BaseComponent>
       <Container>
         <Section>
-          <Text className="font-Roboto text-lg">The polyclinic</Text>
+          <Text className="font-Roboto text-lg">The Polyclinic</Text>
         </Section>
         <Section align="center">
           <Text className="text-4xl text-brand leading-tight text-center">
