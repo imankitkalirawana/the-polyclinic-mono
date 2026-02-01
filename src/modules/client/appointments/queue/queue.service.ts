@@ -299,11 +299,8 @@ export class QueueService {
   }
 
   async findAll(date?: string) {
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-
     const repo = await this.getQueueRepository();
-    const qb = await repo.find({
+    const queues = await repo.find({
       where: {
         createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
       },
@@ -314,7 +311,7 @@ export class QueueService {
       },
     });
 
-    return qb.map((queue) => formatQueue(queue, user.role));
+    return queues;
   }
 
   async findOne(id: string) {

@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   Logger,
+  Req,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
@@ -24,7 +25,7 @@ import {
 } from '@/auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
@@ -69,8 +70,9 @@ export class QueueController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  findAll(@Query('date') date?: string) {
-    return this.queueService.findAll(date);
+  async findAll(@Req() req: Request, @Query('date') date?: string) {
+    const queues = await this.queueService.findAll(date);
+    return queues.map((queue) => formatQueue(queue, req.user.role));
   }
 
   @Get('aid/:aid')
