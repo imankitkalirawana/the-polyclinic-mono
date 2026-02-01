@@ -137,7 +137,7 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const basePayload: any = {
+    const basePayload = {
       sessionId: '',
       userId: args.user.id,
       email: args.user.email,

@@ -7,7 +7,7 @@ export const AppDataSource = new DataSource({
   ...publicOrmConfig,
   entities: [
     ...(Array.isArray(publicOrmConfig.entities)
-      ? (publicOrmConfig.entities as any[])
+      ? publicOrmConfig.entities
       : []),
   ],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],

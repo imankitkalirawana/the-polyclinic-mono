@@ -106,7 +106,7 @@ export class PaymentsService {
     return savedPayment;
   }
 
-  async handleWebhookEvent(webhookPayload: any) {
+  async handleWebhookEvent(webhookPayload: Record<string, unknown>) {
     const paymentRepo = await this.getPaymentRepository();
     const queueRepo = await this.getQueueRepository();
 
@@ -122,6 +122,7 @@ export class PaymentsService {
   }
 
   private async handlePaymentCaptured(
+    // TODO: Fix this type
     webhookPayload: any,
     paymentRepo: Repository<Payment>,
     queueRepo: Repository<Queue>,
@@ -166,6 +167,7 @@ export class PaymentsService {
   }
 
   private async handlePaymentFailed(
+    // TODO: fix this type
     webhookPayload: any,
     paymentRepo: Repository<Payment>,
   ) {

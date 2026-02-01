@@ -1,4 +1,7 @@
-export function diffObjects(before: any, after: any): Record<string, any> {
+export function diffObjects(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): Record<string, unknown> {
   if (!before && !after) {
     return {};
   }
@@ -11,7 +14,7 @@ export function diffObjects(before: any, after: any): Record<string, any> {
     return before || {};
   }
 
-  const changedFields: Record<string, any> = {};
+  const changedFields: Record<string, unknown> = {};
   const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
   const excludedFields = new Set(['createdAt', 'updatedAt', 'id']);

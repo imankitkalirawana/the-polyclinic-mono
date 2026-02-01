@@ -33,7 +33,7 @@ export class User extends BaseEntity {
   time_zone: string;
 
   @Column({ type: 'jsonb', default: {} })
-  permissions: Record<string, any>;
+  permissions: Record<string, unknown>;
 
   /**
    * List of tenant schema slugs this user can access (normalized lowercase).

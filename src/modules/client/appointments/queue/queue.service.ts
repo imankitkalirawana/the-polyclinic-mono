@@ -368,7 +368,8 @@ export class QueueService {
       entityType: EntityType.QUEUE,
       entityId: queue.id,
       module: 'appointments',
-      data: queue,
+      // TODO: Fix this type
+      data: queue as unknown as Record<string, unknown>,
       description: `Appointment deleted by ${this.request.user?.name || 'user'}.`,
       stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
