@@ -50,13 +50,15 @@ export class PatientsController {
 
   @Get('me')
   async getMe(@CurrentUser() user: CurrentUserPayload) {
-    return this.patientsService.findByUserId(user.user_id);
+    const patient = await this.patientsService.findByUserId(user.user_id);
+    return formatPatient(patient);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async findOne(@Param('id') id: string) {
-    return this.patientsService.findOne(id);
+    const patient = await this.patientsService.findOne(id);
+    return formatPatient(patient);
   }
 
   @Delete(':id')

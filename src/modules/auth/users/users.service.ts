@@ -64,6 +64,16 @@ export class UsersService {
     return user;
   }
 
+  async checkUserExistsByIdAndFail(id: string) {
+    const userRepository = await this.getUserRepository();
+    const user = await userRepository.findOne({
+      where: { id, companies: ArrayContains([this.schema]) },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found with id: ' + id);
+    }
+  }
+
   // safely check if the email is not already taken in this company
   async checkEmailIsNotTaken(email: string) {
     const userRepository = await this.getUserRepository();
@@ -163,6 +173,7 @@ export class UsersService {
   }
 
   async updatePassword(id: string, password: string) {
+    await this.checkUserExistsByIdAndFail(id);
     const userRepository = await this.getUserRepository();
     await userRepository.update(id, {
       password_digest: await bcrypt.hash(password, 10),

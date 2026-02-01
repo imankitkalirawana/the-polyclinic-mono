@@ -16,6 +16,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
+import { ResetPasswordDto } from '../dto/reset-password-dto';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -55,5 +56,18 @@ export class UsersController {
     const user = await this.usersService.update(id, dto);
     params.setMessage('User updated successfully');
     return user;
+  }
+
+  // reset password
+  @Post(':id/reset-password')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  async resetPassword(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+    @Body() dto: ResetPasswordDto,
+  ) {
+    await this.usersService.updatePassword(id, dto.password);
+    params.setMessage('Password reset successfully');
+    return null;
   }
 }

@@ -7,7 +7,6 @@ import {
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { ArrayContains } from 'typeorm';
-import { formatPatient } from './patients.helper';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { subYears } from 'date-fns';
@@ -162,7 +161,7 @@ export class PatientsService {
       throw new NotFoundException('Patient not found');
     }
 
-    return formatPatient(patient);
+    return patient;
   }
 
   async findOne(id: string) {
@@ -176,7 +175,7 @@ export class PatientsService {
       throw new NotFoundException('Patient not found');
     }
 
-    return formatPatient(patient);
+    return patient;
   }
 
   // find one by user email
@@ -189,7 +188,7 @@ export class PatientsService {
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
-    return formatPatient(patient);
+    return patient;
   }
 
   async update(id: string, updatePatientDto: UpdatePatientDto) {

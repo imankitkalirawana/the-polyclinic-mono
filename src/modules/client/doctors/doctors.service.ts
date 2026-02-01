@@ -33,7 +33,35 @@ export class DoctorsService {
     };
   }
 
-  async findAll(_search?: string) {}
+  async findAll(search?: string) {
+    const repo = await this.getDoctorRepository();
+    const baseWhere = {
+      user: { companies: ArrayContains([this.request.schema]) },
+    };
+
+    if (search?.trim()) {
+      const term = `%${search.trim()}%`;
+
+      return repo
+        .createQueryBuilder('doctor')
+        .leftJoinAndSelect('doctor.user', 'user')
+        .where('user.companies @> :companies', {
+          companies: [this.request.schema],
+        })
+        .andWhere(
+          `(user.name ILIKE :term 
+            OR user.email ILIKE :term 
+            OR user.phone ILIKE :term)`,
+        )
+        .setParameter('term', term)
+        .getMany();
+    }
+    const doctors = await repo.find({
+      where: baseWhere,
+      relations: ['user'],
+    });
+    return doctors;
+  }
 
   async findOne(id: string) {
     const doctorRepository = await this.getDoctorRepository();
