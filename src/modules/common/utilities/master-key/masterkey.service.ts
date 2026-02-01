@@ -4,11 +4,14 @@ import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { generatePassword } from '@/auth/users/users.utils';
+import { SlackService } from '@/common/slack/slack.service';
+import { formatDate } from 'date-fns';
 
 export class MasterKeyService {
   constructor(
     @InjectRepository(MasterKeyEntity)
     private readonly masterKeyRepository: Repository<MasterKeyEntity>,
+    private readonly slackService: SlackService,
   ) {}
 
   private readonly globalMasterKeyKey = 'global_master_key';
@@ -41,14 +44,9 @@ export class MasterKeyService {
       value_digest: await this.generateRandomString(password),
       description: this.globalMasterKeyDescription,
     });
-
-    return {
-      key: this.globalMasterKeyKey,
-      password,
-    };
   }
 
-  async generateGlobalMasterKey() {
+  async rotateGlobalMasterKey() {
     const password = generatePassword();
 
     const result = await this.masterKeyRepository.update(
@@ -57,11 +55,19 @@ export class MasterKeyService {
     );
 
     if (result.affected === 0) {
-      return await this.createGlobalMasterKey(password);
+      await this.createGlobalMasterKey(password);
     }
+    await this.slackService.sendMessage(
+      `Masterkey for ${formatDate(new Date(), 'dd-MM-yyyy')}: \`${password}\``,
+    );
+  }
+
+  //   verify master key
+  async verifyGlobalMasterKey(password: string) {
+    const masterKey = await this.getGlobalMasterKey();
+
     return {
-      key: this.globalMasterKeyKey,
-      password,
+      isValid: await bcrypt.compare(password, masterKey.value_digest),
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { MasterKeyService } from './masterkey.service';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 
@@ -13,8 +13,13 @@ export class MasterKeyController {
 
   @Post('global')
   async createGlobalMasterKey(@StandardParam() params: StandardParams) {
-    const result = await this.masterKeyService.generateGlobalMasterKey();
+    await this.masterKeyService.rotateGlobalMasterKey();
     params.setMessage('Global master key generated successfully');
-    return result;
+    return null;
+  }
+
+  @Post('global/verify')
+  async verifyGlobalMasterKey(@Body() body: { password: string }) {
+    return this.masterKeyService.verifyGlobalMasterKey(body.password);
   }
 }

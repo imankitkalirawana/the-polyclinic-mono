@@ -33,6 +33,7 @@
     "@commitlint/config-conventional": "^20.2.0",
     "@commitlint/types": "^20.2.0",
     "@google-cloud/logging": "^11.2.1",
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.0",

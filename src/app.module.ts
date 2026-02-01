@@ -20,6 +20,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SchemaModule } from './libs/schema/schema.module';
 import { ConfigModule } from '@nestjs/config';
 import { MasterKeyModule } from './modules/common/utilities/master-key/masterkey.module';
+import { SlackModule } from './modules/common/slack/slack.module';
 
 import {
   StandardResponseModule,
@@ -67,6 +68,7 @@ const options: StandardResponseModuleOptions = {};
     LoggingModule,
     SchemaModule,
     MasterKeyModule,
+    SlackModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseInitService, SchemaMiddleware],
