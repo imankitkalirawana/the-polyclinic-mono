@@ -19,8 +19,7 @@ import { LoggingModule } from './modules/common/logging/logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SchemaModule } from './libs/schema/schema.module';
 import { ConfigModule } from '@nestjs/config';
-import { MasterKeyModule } from './modules/common/utilities/master-key/masterkey.module';
-import { SlackModule } from './modules/common/slack/slack.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 import {
   StandardResponseModule,
@@ -38,6 +37,7 @@ const options: StandardResponseModuleOptions = {};
     //   },
     // ]),
     StandardResponseModule.forRoot(options),
+    MongooseModule.forRoot(process.env.MONGODB_URI),
     TypeOrmModule.forRoot({
       ...publicOrmConfig,
       entities: [
@@ -67,8 +67,6 @@ const options: StandardResponseModuleOptions = {};
     EmailModule,
     LoggingModule,
     SchemaModule,
-    MasterKeyModule,
-    SlackModule,
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseInitService, SchemaMiddleware],

@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MasterKeyService } from './masterkey.service';
-import { MasterKeyEntity } from './entities/masterkey.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { MasterKeyController } from './masterkey.controller';
 import { SlackModule } from '@/common/slack/slack.module';
+import { MasterKeySchema } from './schemas/masterkey.schema';
+import { MongooseModule } from '@nestjs/mongoose';
+import { MasterKey } from './schemas/masterkey.schema';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MasterKeyEntity]), SlackModule],
+  imports: [
+    SlackModule,
+    MongooseModule.forFeature([
+      { name: MasterKey.name, schema: MasterKeySchema },
+    ]),
+  ],
   controllers: [MasterKeyController],
   providers: [MasterKeyService],
   exports: [MasterKeyService],

@@ -1,21 +1,21 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { MasterKeyEntity } from './entities/masterkey.entity';
-import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { generatePassword } from '@/auth/users/users.utils';
 import { SlackService } from '@/common/slack/slack.service';
 import { formatDate } from 'date-fns';
+import { InjectModel } from '@nestjs/mongoose';
+import { MasterKey } from './schemas/masterkey.schema';
+import { Model } from 'mongoose';
 
+@Injectable()
 export class MasterKeyService {
   constructor(
-    @InjectRepository(MasterKeyEntity)
-    private readonly masterKeyRepository: Repository<MasterKeyEntity>,
+    @InjectModel(MasterKey.name)
+    private masterKeyModel: Model<MasterKey>,
     private readonly slackService: SlackService,
   ) {}
 
   private readonly globalMasterKeyKey = 'global_master_key';
-  private readonly globalMasterKeyLength = 32;
   private readonly globalMasterKeyDescription =
     'Global master key for the application to authenticate requests';
 
@@ -24,13 +24,8 @@ export class MasterKeyService {
   }
 
   async getGlobalMasterKey() {
-    const masterKey = await this.masterKeyRepository.findOne({
-      where: { key: this.globalMasterKeyKey },
-      select: {
-        value_digest: true,
-        key: true,
-        description: true,
-      },
+    const masterKey = await this.masterKeyModel.findOne({
+      key: this.globalMasterKeyKey,
     });
     if (!masterKey) {
       throw new NotFoundException('Master key not found');
@@ -39,7 +34,7 @@ export class MasterKeyService {
   }
 
   private async createGlobalMasterKey(password: string) {
-    this.masterKeyRepository.create({
+    await this.masterKeyModel.create({
       key: this.globalMasterKeyKey,
       value_digest: await this.generateRandomString(password),
       description: this.globalMasterKeyDescription,
@@ -49,12 +44,12 @@ export class MasterKeyService {
   async rotateGlobalMasterKey() {
     const password = generatePassword();
 
-    const result = await this.masterKeyRepository.update(
+    const result = await this.masterKeyModel.updateOne(
       { key: this.globalMasterKeyKey },
       { value_digest: await this.generateRandomString(password) },
     );
 
-    if (result.affected === 0) {
+    if (result.modifiedCount === 0) {
       await this.createGlobalMasterKey(password);
     }
     await this.slackService.sendMessage(
