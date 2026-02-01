@@ -84,33 +84,30 @@ export class UsersService {
     const userRepository = await this.getUserRepository();
     return userRepository.findOne({
       where: { email },
+      withDeleted: true,
     });
   }
 
   async create(dto: CreateUserDto) {
     const userRepository = await this.getUserRepository();
-
     const existingUser = await this.findUserByEmailGlobally(dto.email);
-    if (existingUser) {
-      const alreadyInCompany = existingUser.companies?.includes(this.schema);
-      if (alreadyInCompany) {
-        throw new ConflictException('Email already taken');
-      }
-      // User exists but not in this company: add this company
-      const companies = [...(existingUser.companies || []), this.schema];
-      await userRepository.update(existingUser.id, { companies });
-      await this.updatePassword(existingUser.id, dto.password);
-      return userRepository.findOneOrFail({ where: { id: existingUser.id } });
+
+    console.log('existingUser', existingUser);
+
+    if (existingUser?.companies?.includes(this.schema)) {
+      throw new ConflictException('User already exists in this company');
     }
 
-    dto.companies = [this.schema];
-    const user = userRepository.create(dto);
-    if (!user) {
-      throw new NotFoundException('Could not create user');
+    if (existingUser) {
+      await this.addUserToCompany(dto.email, this.schema);
+      if (existingUser.deletedAt) {
+        await this.restore(existingUser.id);
+      }
+
+      return existingUser;
     }
-    const saved = await userRepository.save(user);
-    await this.updatePassword(saved.id, dto.password);
-    return saved;
+    const user = userRepository.create(dto);
+    return await userRepository.save(user);
   }
 
   async findAll(): Promise<User[]> {
@@ -119,6 +116,20 @@ export class UsersService {
         companies: ArrayContains([this.schema]),
       },
     });
+  }
+
+  async addUserToCompany(email: string, schema: string) {
+    const user = await this.findUserByEmailGlobally(email);
+    const companies = [...new Set([...(user.companies || []), schema])];
+    await this.userRepository.update(user.id, { companies });
+    return user;
+  }
+
+  async removeUserFromCompany(email: string, schema: string) {
+    const user = await this.findOneByEmail(email);
+    const companies = user.companies.filter((c) => c !== schema);
+    await this.userRepository.update(user.id, { companies });
+    return user;
   }
 
   async findOne(id: string): Promise<User> {
@@ -156,5 +167,15 @@ export class UsersService {
     await userRepository.update(id, {
       password_digest: await bcrypt.hash(password, 10),
     });
+  }
+
+  async softDelete(id: string) {
+    const userRepository = await this.getUserRepository();
+    await userRepository.softDelete(id);
+  }
+
+  async restore(id: string) {
+    const userRepository = await this.getUserRepository();
+    await userRepository.restore(id);
   }
 }

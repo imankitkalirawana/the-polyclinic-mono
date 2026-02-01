@@ -23,7 +23,7 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(Role.SUPER_ADMIN)
   async create(
     @StandardParam() params: StandardParams,
     @Body() dto: CreateCompanyDto,

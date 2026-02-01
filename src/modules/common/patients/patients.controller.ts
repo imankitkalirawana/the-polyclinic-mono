@@ -36,7 +36,6 @@ export class PatientsController {
     @Body() createPatientDto: CreatePatientDto,
     @StandardParam() params: StandardParams,
   ) {
-    // create user first
     params.setMessage(`Patient created successfully`);
 
     return this.patientsService.create(createPatientDto);

@@ -13,6 +13,8 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { subYears } from 'date-fns';
 import { UsersService } from '@/auth/users/users.service';
 import { Patient } from '@/common/patients/entities/patient.entity';
+import { Role } from 'src/scripts/types';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Injectable()
 export class PatientsService {
@@ -99,9 +101,14 @@ export class PatientsService {
   }
 
   async create(createPatientDto: CreatePatientDto) {
-    await this.checkPatientExistsByEmail(createPatientDto.email, true);
-
-    const user = await this.usersService.findOneByEmail(createPatientDto.email);
+    const user = await this.usersService.create({
+      email: createPatientDto.email,
+      name: createPatientDto.name,
+      phone: createPatientDto.phone,
+      password: createPatientDto.password,
+      role: Role.PATIENT,
+      companies: [this.schema],
+    });
 
     const patientRepository = await this.getPatientRepository();
     const patient = await patientRepository.save({
@@ -183,6 +190,17 @@ export class PatientsService {
       throw new NotFoundException('Patient not found');
     }
     return formatPatient(patient);
+  }
+
+  async update(id: string, updatePatientDto: UpdatePatientDto) {
+    const repo = await this.getPatientRepository();
+    const updatedPatient = await repo.update(id, updatePatientDto);
+
+    if (updatedPatient.affected === 0) {
+      throw new NotFoundException('Patient not found');
+    }
+
+    return this.findOne(id);
   }
 
   async remove(_patientId: string) {}

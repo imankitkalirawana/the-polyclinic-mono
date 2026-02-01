@@ -24,12 +24,7 @@ export class CompanyService {
       throw new ConflictException('Company code already exists');
     }
 
-    const company = this.companyRepository.create({
-      ...dto,
-      schema: dto.schema ?? null,
-      currency: dto.currency ?? 'INR',
-      time_zone: dto.time_zone ?? 'Asia/Kolkata',
-    });
+    const company = this.companyRepository.create(dto);
     return await this.companyRepository.save(company);
   }
 
