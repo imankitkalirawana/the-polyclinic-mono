@@ -23,7 +23,7 @@ import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { PaymentsService } from '@/client/payments/payments.service';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 import { PdfService } from '@/client/pdf/pdf.service';
-import { DoctorsService } from '@/client/doctors/doctors.service';
+import { DoctorsService } from '@/common/doctors/doctors.service';
 import { PaymentReferenceType } from '@/client/payments/entities/payment.entity';
 import { Currency } from '@/client/payments/dto/create-payment.dto';
 import { Role } from 'src/common/enums/role.enum';

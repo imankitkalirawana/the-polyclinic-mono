@@ -11,6 +11,8 @@ import { RegisterDto } from './dto/register.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UsersService } from './users/users.service';
+import { Role } from 'src/scripts/types';
+import { DoctorsService } from '@/common/doctors/doctors.service';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -20,6 +22,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly doctorsService: DoctorsService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
     @Inject(REQUEST) private request: Request,
@@ -77,9 +80,18 @@ export class AuthService {
   }
 
   async getSession(): Promise<{
-    user: Pick<User, 'id' | 'email' | 'name' | 'role' | 'phone' | 'companies'>;
+    user: Pick<
+      User,
+      'id' | 'email' | 'name' | 'role' | 'phone' | 'companies'
+    > & { integrated_user_id: string | null };
   }> {
     const user = await this.usersService.findOne(this.request.user.userId);
+    let integrated_user_id = null;
+    if (user.role === Role.DOCTOR) {
+      const doctor = await this.doctorsService.findByUserId(user.id);
+      integrated_user_id = doctor.id;
+    }
+
     return {
       user: {
         id: user.id,
@@ -88,6 +100,7 @@ export class AuthService {
         role: user.role,
         phone: user.phone,
         companies: user.companies,
+        integrated_user_id,
       },
     };
   }

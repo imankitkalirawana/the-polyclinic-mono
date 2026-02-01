@@ -11,7 +11,7 @@ import {
 import { formatDoctor } from './doctors.helper';
 import { Request } from 'express';
 
-@Controller('client/doctors')
+@Controller('doctors')
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}

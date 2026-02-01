@@ -102,8 +102,6 @@ export class UsersService {
     const userRepository = await this.getUserRepository();
     const existingUser = await this.findUserByEmailGlobally(dto.email);
 
-    console.log('existingUser', existingUser);
-
     if (existingUser?.companies?.includes(this.schema)) {
       throw new ConflictException('User already exists in this company');
     }
@@ -116,7 +114,13 @@ export class UsersService {
 
       return existingUser;
     }
-    const user = userRepository.create(dto);
+    const user = userRepository.create({
+      ...dto,
+      password_digest: dto.password
+        ? await bcrypt.hash(dto.password, 10)
+        : undefined,
+      companies: [this.schema],
+    });
     return await userRepository.save(user);
   }
 

@@ -15,6 +15,7 @@ import { SchemaValidatorService } from './schema/schema-validator.service';
 import { GlobalBearerStrategy } from './strategies/bearer.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { DoctorsModule } from '@/common/doctors/doctors.module';
 
 @Global()
 @Module({
@@ -32,6 +33,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     }),
     UsersModule,
     CompanyModule,
+    DoctorsModule,
   ],
   controllers: [AuthController],
   providers: [

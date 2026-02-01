@@ -4,7 +4,7 @@ import { ActivityLog } from './modules/common/activity/entities/activity-log.ent
 import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
 import { Patient } from './modules/common/patients/entities/patient.entity';
-import { Doctor } from './modules/client/doctors/entities/doctor.entity';
+import { Doctor } from './modules/common/doctors/entities/doctor.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
   // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public

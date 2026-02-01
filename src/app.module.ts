@@ -10,7 +10,7 @@ import { DatabaseInitService } from './common/database-init.service';
 import { SchemaMiddleware } from './common/middleware/schema.middleware';
 import { PatientsModule } from './modules/common/patients/patients.module';
 import { PaymentsModule } from './modules/client/payments/payments.module';
-import { DoctorsModule } from './modules/client/doctors/doctors.module';
+import { DoctorsModule } from './modules/common/doctors/doctors.module';
 import { QueueModule } from './modules/client/appointments/queue/queue.module';
 import { ActivityModule } from './modules/common/activity/activity.module';
 import { CronModule } from './modules/common/cron/cron.module';
