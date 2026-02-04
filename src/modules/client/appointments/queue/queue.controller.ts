@@ -44,7 +44,9 @@ export class QueueController {
   ) {
     let queue = null;
     if (createQueueDto.queueId) {
-      queue = await this.queueService.findOne(createQueueDto.queueId);
+      queue = await this.queueService.find_by_and_fail({
+        id: createQueueDto.queueId,
+      });
     } else {
       queue = await this.queueService.create(createQueueDto);
     }
@@ -71,14 +73,14 @@ export class QueueController {
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
   async findAll(@Req() req: Request, @Query('date') date?: string) {
-    const queues = await this.queueService.findAll(date);
+    const queues = await this.queueService.find_all_by_date(date);
     return queues.map((queue) => formatQueue(queue, req.user.role));
   }
 
   @Get('aid/:aid')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
   findByAid(@Param('aid') aid: string) {
-    return this.queueService.findByAid(aid);
+    return this.queueService.find_by_and_fail({ aid });
   }
 
   @Get('doctor/:doctorId/queue')
@@ -117,7 +119,7 @@ export class QueueController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async findOne(@Param('id') id: string) {
-    const queue = await this.queueService.findOne(id);
+    const queue = await this.queueService.find_by_and_fail({ id });
     return formatQueue(queue);
   }
 
