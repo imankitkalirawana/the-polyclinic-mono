@@ -33,7 +33,9 @@ export class PatientsService {
 
   async find_by(
     where: FindOptionsWhere<Patient>,
-    options: PatientFindOptions = {},
+    options: PatientFindOptions = {
+      relations: { user: true },
+    },
   ): Promise<Patient | null> {
     const { globally, ...rest } = options;
     const patientRepository = await this.getPatientRepository();
@@ -60,7 +62,9 @@ export class PatientsService {
   // find_all
   async find_all(
     where: FindOptionsWhere<Patient>,
-    options: PatientFindOptions = {},
+    options: PatientFindOptions = {
+      relations: { user: true },
+    },
   ): Promise<Patient[]> {
     const { globally, ...rest } = options;
     const patientRepository = await this.getPatientRepository();

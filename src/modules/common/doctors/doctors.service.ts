@@ -26,7 +26,9 @@ export class DoctorsService {
 
   async find_by(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {},
+    options: DoctorFindOptions = {
+      relations: { user: true },
+    },
   ): Promise<Doctor | null> {
     const { globally, ...rest } = options;
     const doctorRepository = await this.getDoctorRepository();
@@ -41,7 +43,9 @@ export class DoctorsService {
 
   async find_by_and_fail(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {},
+    options: DoctorFindOptions = {
+      relations: { user: true },
+    },
   ): Promise<Doctor> {
     const doctor = await this.find_by(where, options);
     if (!doctor) {
@@ -52,7 +56,9 @@ export class DoctorsService {
 
   async find_all(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {},
+    options: DoctorFindOptions = {
+      relations: { user: true },
+    },
   ): Promise<Doctor[]> {
     const { globally, ...rest } = options;
     const doctorRepository = await this.getDoctorRepository();
@@ -79,6 +85,7 @@ export class DoctorsService {
    */
   async create_for_user(userId: string, dto: UpdateDoctorProfileDto) {
     const repo = await this.getDoctorRepository();
+
     const doctor = repo.create({
       user_id: userId,
       ...dto,

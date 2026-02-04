@@ -6,6 +6,7 @@ import { DoctorsService } from '@/common/doctors/doctors.service';
 import { PatientsService } from '@/common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
+import { generateDoctorCode } from '@/common/doctors/doctors.helper';
 
 export type UserProfileResponse =
   | {
@@ -110,6 +111,9 @@ export class UserProfileService {
     switch (user.role) {
       case Role.DOCTOR:
         if (dto.doctor) {
+          if (!dto.doctor.code) {
+            dto.doctor.code = generateDoctorCode(user.name);
+          }
           await this.doctorsService.create_for_user(user.id, dto.doctor);
         }
         break;

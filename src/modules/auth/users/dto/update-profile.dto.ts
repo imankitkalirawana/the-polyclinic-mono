@@ -31,6 +31,10 @@ export class UpdateUserProfileDto {
 export class UpdateDoctorProfileDto {
   @IsString()
   @IsOptional()
+  code?: string;
+
+  @IsString()
+  @IsOptional()
   specialization?: string;
 
   @IsString()
