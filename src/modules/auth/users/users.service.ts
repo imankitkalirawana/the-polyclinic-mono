@@ -9,7 +9,6 @@ import { ArrayContains, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
@@ -89,6 +88,26 @@ export class UsersService {
     return true;
   }
 
+  /** For updates: ensure email is not taken by another user (excluding excludeUserId). */
+  async ensureEmailNotTakenByOtherUser(email: string, excludeUserId: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+        companies: ArrayContains([this.schema]),
+      },
+    });
+
+    if (user && user.id !== excludeUserId) {
+      throw new ConflictException('Email already taken');
+    }
+  }
+
+  async update(id: string, dto: Partial<User>) {
+    const user = await this.findOne(id);
+    Object.assign(user, dto);
+    return this.userRepository.save(user);
+  }
+
   // find user by email in the shared users table (any company)
   private async findUserByEmailGlobally(email: string): Promise<User | null> {
     const userRepository = await this.getUserRepository();
@@ -129,6 +148,9 @@ export class UsersService {
       where: {
         companies: ArrayContains([this.schema]),
       },
+      order: {
+        name: 'ASC',
+      },
     });
   }
 
@@ -167,13 +189,6 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     return user;
-  }
-
-  async update(id: string, dto: UpdateUserDto) {
-    await this.checkUserExistsByEmailAndFail(dto.email);
-    const user = await this.findOne(id);
-    Object.assign(user, dto);
-    return await this.userRepository.save(user);
   }
 
   async updatePassword(id: string, password: string) {

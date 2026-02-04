@@ -30,6 +30,12 @@ export class Doctor {
   user: User;
 
   @Column({ nullable: true })
+  designation?: string;
+
+  @Column({ nullable: true })
+  seating?: string;
+
+  @Column({ nullable: true })
   specialization?: string;
 
   @Column({ type: 'integer', nullable: true })

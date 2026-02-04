@@ -3,11 +3,10 @@ import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { ArrayContains, Repository } from 'typeorm';
 import { Doctor } from '@/common/doctors/entities/doctor.entity';
-import { formatDoctor } from './doctors.helper';
-import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { UsersService } from '@/auth/users/users.service';
+import { UpdateDoctorProfileDto } from '@/auth/users/dto/update-profile.dto';
 
 @Injectable()
 export class DoctorsService {
@@ -85,9 +84,14 @@ export class DoctorsService {
       relations: ['user'],
     });
     if (!doctor) throw new NotFoundException('Doctor not found');
-    return formatDoctor(doctor, this.request.user.role);
+    return doctor;
   }
 
-  // update doctor
-  async update(_userId: string, _updateDoctorDto: UpdateDoctorDto) {}
+  async updateByUserId(userId: string, dto: UpdateDoctorProfileDto) {
+    const repo = await this.getDoctorRepository();
+    if (dto && Object.keys(dto).length > 0) {
+      await repo.update({ user_id: userId }, dto);
+    }
+    return this.findByUserId(userId);
+  }
 }

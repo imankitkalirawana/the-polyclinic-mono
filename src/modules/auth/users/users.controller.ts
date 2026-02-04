@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UserProfileService } from './user-profile.service';
 import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
@@ -15,13 +16,17 @@ import { Roles } from '../decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userProfileService: UserProfileService,
+  ) {}
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -44,6 +49,39 @@ export class UsersController {
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
   async findOne(@Param('id') id: string) {
     return await this.usersService.findOne(id);
+  }
+
+  /** Get user + integrated role profile (Doctor/Patient) for the "Update a User" form. */
+  @Get(':id/profile')
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.MODERATOR,
+    Role.DOCTOR,
+    Role.PATIENT,
+  )
+  async getProfile(@Param('id') id: string) {
+    return await this.userProfileService.getProfile(id);
+  }
+
+  /** Update both user (name, email, phone) and role-specific profile in one request. */
+  @Patch(':id/profile')
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.MODERATOR,
+    Role.DOCTOR,
+    Role.PATIENT,
+  )
+  async updateProfile(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    console.log('dto in users.controller.ts', dto);
+    const result = await this.userProfileService.updateProfile(id, dto);
+    params.setMessage('Profile updated successfully');
+    return result;
   }
 
   @Patch(':id')

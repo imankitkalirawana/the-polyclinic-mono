@@ -14,6 +14,7 @@ import { UsersService } from '@/auth/users/users.service';
 import { Patient } from '@/common/patients/entities/patient.entity';
 import { Role } from 'src/scripts/types';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { UpdatePatientProfileDto } from '@/auth/users/dto/update-profile.dto';
 
 @Injectable()
 export class PatientsService {
@@ -200,6 +201,15 @@ export class PatientsService {
     }
 
     return this.findOne(id);
+  }
+
+  /** Update patient profile by user id (used by profile service). */
+  async updateByUserId(userId: string, dto: UpdatePatientProfileDto) {
+    const repo = await this.getPatientRepository();
+    if (dto && Object.keys(dto).length > 0) {
+      await repo.update({ user_id: userId }, dto);
+    }
+    return this.findByUserId(userId);
   }
 
   async remove(_patientId: string) {}
