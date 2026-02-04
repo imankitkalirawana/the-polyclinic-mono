@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { UsersService } from './users/users.service';
+import { UserService } from './users/users.service';
 import { Role } from 'src/scripts/types';
 import { DoctorsService } from '@/common/doctors/doctors.service';
 import { MasterKeyService } from '@/common/utilities/master-key/masterkey.service';
@@ -22,7 +22,7 @@ export class AuthService {
   private readonly schema: string;
   constructor(
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly doctorsService: DoctorsService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
@@ -34,7 +34,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<GlobalToken> {
     const email = dto.email.trim().toLowerCase();
-    const user = await this.usersService.checkUserExistsByEmailAndFail(email);
+    const user = await this.userService.find_by_and_fail({ email });
 
     const ok = await bcrypt.compare(dto.password, user.password_digest);
 
@@ -57,7 +57,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const user = await this.usersService.create(dto);
+    const user = await this.userService.create(dto);
     const { token, expiresAt } = await this.createSessionAndToken({
       user,
     });
@@ -71,7 +71,7 @@ export class AuthService {
 
   // method to check if user is current user
   async isCurrentUser(userId: string): Promise<boolean> {
-    const user = await this.usersService.findOne(userId);
+    const user = await this.userService.find_by_and_fail({ id: userId });
 
     const isCurrentUser = user?.id === this.request.user.userId;
     if (!isCurrentUser) {
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   async checkEmail(email: string): Promise<{ exists: boolean }> {
-    const user = await this.usersService.checkUserExistsByEmail(email);
+    const user = await this.userService.find_by({ email });
     return { exists: !!user };
   }
 
@@ -91,7 +91,9 @@ export class AuthService {
       'id' | 'email' | 'name' | 'role' | 'phone' | 'companies'
     > & { integrated_user_id: string | null };
   }> {
-    const user = await this.usersService.findOne(this.request.user.userId);
+    const user = await this.userService.find_by_and_fail({
+      id: this.request.user.userId,
+    });
     let integrated_user_id = null;
     if (user.role === Role.DOCTOR) {
       const doctor = await this.doctorsService.findByUserId(user.id);

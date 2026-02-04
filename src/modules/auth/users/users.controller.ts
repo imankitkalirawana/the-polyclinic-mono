@@ -7,7 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
 import { UserProfileService } from './user-profile.service';
 import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
@@ -24,7 +24,7 @@ import { ResetPasswordDto } from '../dto/reset-password-dto';
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
 export class UsersController {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
   ) {}
 
@@ -41,14 +41,14 @@ export class UsersController {
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
-  async findAll() {
-    return await this.usersService.findAll();
+  async find_all() {
+    return await this.userService.find_all({}, { order: { name: 'ASC' } });
   }
 
   @Get(':id')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
-  async findOne(@Param('id') id: string) {
-    return await this.usersService.findOne(id);
+  async find_one(@Param('id') id: string) {
+    return await this.userService.find_by_and_fail({ id });
   }
 
   /** Get user + integrated role profile (Doctor/Patient) for the "Update a User" form. */
@@ -60,7 +60,7 @@ export class UsersController {
     Role.DOCTOR,
     Role.PATIENT,
   )
-  async getProfile(@Param('id') id: string) {
+  async get_profile(@Param('id') id: string) {
     return await this.userProfileService.getProfile(id);
   }
 
@@ -91,7 +91,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
-    const user = await this.usersService.update(id, dto);
+    const user = await this.userService.update(id, dto);
     params.setMessage('User updated successfully');
     return user;
   }
@@ -104,7 +104,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() dto: ResetPasswordDto,
   ) {
-    await this.usersService.updatePassword(id, dto.password);
+    await this.userService.updatePassword(id, dto.password);
     params.setMessage('Password reset successfully');
     return null;
   }

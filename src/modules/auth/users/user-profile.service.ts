@@ -1,9 +1,7 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
 import { Role } from 'src/common/enums/role.enum';
 import { User } from '../entities/user.entity';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
 import { DoctorsService } from '@/common/doctors/doctors.service';
 import { PatientsService } from '@/common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -29,25 +27,17 @@ export type UserProfileResponse =
 @Injectable()
 export class UserProfileService {
   constructor(
-    @Inject(REQUEST) private readonly request: Request,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly doctorsService: DoctorsService,
     private readonly patientsService: PatientsService,
   ) {}
-
-  private get schema(): string {
-    return this.request.schema;
-  }
 
   /**
    * Get user and integrated role profile for the "Update a User" form.
    * Returns user + doctor or user + patient based on user.role.
    */
   async getProfile(userId: string): Promise<UserProfileResponse> {
-    const user = await this.usersService.findOne(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const user = await this.userService.find_by_and_fail({ id: userId });
 
     switch (user.role) {
       case Role.DOCTOR:
@@ -70,13 +60,10 @@ export class UserProfileService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<UserProfileResponse> {
-    const user = await this.usersService.findOne(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const user = await this.userService.find_by_and_fail({ id: userId });
 
     if (dto.user?.email && dto.user?.email !== user.email) {
-      await this.usersService.ensureEmailNotTakenByOtherUser(
+      await this.userService.ensure_email_not_taken_by_other_user(
         dto.user?.email,
         userId,
       );
@@ -88,7 +75,7 @@ export class UserProfileService {
       phone: dto.user?.phone,
     };
     if (Object.keys(base).length > 0) {
-      await this.usersService.update(userId, base);
+      await this.userService.update(userId, base);
     }
 
     console.debug('dto in user-profile.service.ts', dto);
@@ -111,7 +98,7 @@ export class UserProfileService {
    */
   async createProfile(dto: CreateProfileDto): Promise<UserProfileResponse> {
     // First create the base user
-    const user = await this.usersService.create(dto.user);
+    const user = await this.userService.create(dto.user);
 
     // Then create role-specific profile based on the created user's role
     switch (user.role) {

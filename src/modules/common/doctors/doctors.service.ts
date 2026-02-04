@@ -5,14 +5,14 @@ import { ArrayContains, Repository } from 'typeorm';
 import { Doctor } from '@/common/doctors/entities/doctor.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { UsersService } from '@/auth/users/users.service';
+import { UserService } from '@/auth/users/users.service';
 import { UpdateDoctorProfileDto } from '@/auth/users/dto/update-profile.dto';
 
 @Injectable()
 export class DoctorsService {
   constructor(
     @Inject(REQUEST) private readonly request: Request,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   private async getConnection() {

@@ -20,14 +20,14 @@ import {
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { formatPatient } from './patients.helper';
-import { UsersService } from '@/auth/users/users.service';
+import { UserService } from '@/auth/users/users.service';
 
 @Controller('patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
   constructor(
     private readonly patientsService: PatientsService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   @Post()

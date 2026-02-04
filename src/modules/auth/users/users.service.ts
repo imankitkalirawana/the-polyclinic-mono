@@ -13,9 +13,10 @@ import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
+import { UserFindOptions } from './users.types';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   private readonly schema: string;
 
   constructor(
@@ -35,53 +36,61 @@ export class UsersService {
     return connection.getRepository(User);
   }
 
-  async checkUserExistsByEmail(email: string) {
+  /**
+   * Generic single user finder that allows calls like:
+   * `userService.find_by({ email: 'test@example.com' })`
+   *
+   * Always scopes the query to the current company (`schema`) by
+   * enforcing `companies` to contain the active schema.
+   */
+  async find_by(
+    where: Partial<User>,
+    options?: UserFindOptions,
+  ): Promise<User | null> {
     const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
+    return userRepository.findOne({
       where: {
-        email,
-        companies: ArrayContains([this.schema]),
+        ...where,
+        ...(!options?.globally && { companies: ArrayContains([this.schema]) }),
       },
     });
-    return user;
   }
 
-  async checkUserExistsByEmailAndFail(email: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
+  // find_by_and_fail
+  async find_by_and_fail(
+    where: Partial<User>,
+    options?: UserFindOptions,
+  ): Promise<User> {
+    const user = await this.find_by(where, options);
     if (!user) {
-      throw new NotFoundException(
-        'User not found with email: ' + email,
-        'schema: ' + this.schema,
-      );
+      throw new NotFoundException('User not found');
     }
     return user;
   }
 
-  async checkUserExistsByIdAndFail(id: string) {
+  /**
+   * Generic multiple users finder that allows calls like:
+   * `userService.find_all({ email: 'test@example.com' })`
+   *
+   * Always scopes the query to the current company (`schema`) by
+   * enforcing `companies` to contain the active schema.
+   */
+  async find_all(
+    where: Partial<User>,
+    options?: UserFindOptions,
+  ): Promise<User[]> {
     const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: { id, companies: ArrayContains([this.schema]) },
+    return userRepository.find({
+      where: {
+        ...where,
+        ...(!options?.globally && { companies: ArrayContains([this.schema]) }),
+      },
     });
-    if (!user) {
-      throw new NotFoundException('User not found with id: ' + id);
-    }
   }
 
   // safely check if the email is not already taken in this company
   async checkEmailIsNotTaken(email: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
+    const user = await this.find_by({ email }, { globally: true });
     if (user) {
       throw new ConflictException('Email already taken');
     }
@@ -89,13 +98,11 @@ export class UsersService {
   }
 
   /** For updates: ensure email is not taken by another user (excluding excludeUserId). */
-  async ensureEmailNotTakenByOtherUser(email: string, excludeUserId: string) {
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
+  async ensure_email_not_taken_by_other_user(
+    email: string,
+    excludeUserId: string,
+  ) {
+    const user = await this.find_by({ email }, { globally: true });
 
     if (user && user.id !== excludeUserId) {
       throw new ConflictException('Email already taken');
@@ -103,23 +110,17 @@ export class UsersService {
   }
 
   async update(id: string, dto: Partial<User>) {
-    const user = await this.findOne(id);
+    const user = await this.find_by_and_fail({ id });
     Object.assign(user, dto);
     return this.userRepository.save(user);
   }
 
-  // find user by email in the shared users table (any company)
-  private async findUserByEmailGlobally(email: string): Promise<User | null> {
-    const userRepository = await this.getUserRepository();
-    return userRepository.findOne({
-      where: { email },
-      withDeleted: true,
-    });
-  }
-
   async create(dto: CreateUserDto) {
     const userRepository = await this.getUserRepository();
-    const existingUser = await this.findUserByEmailGlobally(dto.email);
+    const existingUser = await this.find_by(
+      { email: dto.email },
+      { globally: true },
+    );
 
     if (existingUser?.companies?.includes(this.schema)) {
       throw new ConflictException('User already exists in this company');
@@ -144,56 +145,22 @@ export class UsersService {
     return await userRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find({
-      where: {
-        companies: ArrayContains([this.schema]),
-      },
-      order: {
-        name: 'ASC',
-      },
-    });
-  }
-
   async addUserToCompany(email: string, schema: string) {
-    const user = await this.findUserByEmailGlobally(email);
+    const user = await this.find_by({ email }, { globally: true });
     const companies = [...new Set([...(user.companies || []), schema])];
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
   async removeUserFromCompany(email: string, schema: string) {
-    const user = await this.findOneByEmail(email);
+    const user = await this.find_by({ email });
     const companies = user.companies.filter((c) => c !== schema);
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
-  async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { id, companies: ArrayContains([this.schema]) },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
-  async findOneByEmail(email: string) {
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
   async updatePassword(id: string, password: string) {
-    await this.checkUserExistsByIdAndFail(id);
+    await this.find_by_and_fail({ id });
     const userRepository = await this.getUserRepository();
     await userRepository.update(id, {
       password_digest: await bcrypt.hash(password, 10),

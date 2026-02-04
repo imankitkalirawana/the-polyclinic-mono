@@ -10,7 +10,7 @@ import { ArrayContains } from 'typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { subYears } from 'date-fns';
-import { UsersService } from '@/auth/users/users.service';
+import { UserService } from '@/auth/users/users.service';
 import { Patient } from '@/common/patients/entities/patient.entity';
 import { Role } from 'src/scripts/types';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -22,7 +22,7 @@ export class PatientsService {
 
   constructor(
     @Inject(REQUEST) private request: Request,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {
     this.schema = this.request.schema;
   }
@@ -101,7 +101,7 @@ export class PatientsService {
   }
 
   async create(createPatientDto: CreatePatientDto) {
-    const user = await this.usersService.create({
+    const user = await this.userService.create({
       email: createPatientDto.email,
       name: createPatientDto.name,
       phone: createPatientDto.phone,
