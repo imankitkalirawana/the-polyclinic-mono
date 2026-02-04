@@ -212,6 +212,19 @@ export class PatientsService {
     return this.findByUserId(userId);
   }
 
+  /**
+   * Create patient profile for an already created user.
+   * Used by the unified user profile creation flow.
+   */
+  async createForUser(userId: string, dto: UpdatePatientProfileDto) {
+    const repo = await this.getPatientRepository();
+    const patient = repo.create({
+      user_id: userId,
+      ...dto,
+    });
+    return repo.save(patient);
+  }
+
   async remove(_patientId: string) {}
 
   async restore(_patientId: string) {}

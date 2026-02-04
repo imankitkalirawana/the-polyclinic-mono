@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
 
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
@@ -133,7 +133,8 @@ export class UsersService {
 
       return existingUser;
     }
-    const user = userRepository.create({
+    const user = new User();
+    Object.assign(user, {
       ...dto,
       password_digest: dto.password
         ? await bcrypt.hash(dto.password, 10)

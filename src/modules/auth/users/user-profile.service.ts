@@ -7,6 +7,7 @@ import { UsersService } from './users.service';
 import { DoctorsService } from '@/common/doctors/doctors.service';
 import { PatientsService } from '@/common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 
 export type UserProfileResponse =
   | {
@@ -102,5 +103,30 @@ export class UserProfileService {
     }
 
     return this.getProfile(userId);
+  }
+
+  /**
+   * Create a new user and the corresponding role-specific profile (doctor/patient)
+   * in a single unified flow.
+   */
+  async createProfile(dto: CreateProfileDto): Promise<UserProfileResponse> {
+    // First create the base user
+    const user = await this.usersService.create(dto.user);
+
+    // Then create role-specific profile based on the created user's role
+    switch (user.role) {
+      case Role.DOCTOR:
+        if (dto.doctor) {
+          await this.doctorsService.createForUser(user.id, dto.doctor);
+        }
+        break;
+      case Role.PATIENT:
+        if (dto.patient) {
+          await this.patientsService.createForUser(user.id, dto.patient);
+        }
+        break;
+    }
+
+    return this.getProfile(user.id);
   }
 }

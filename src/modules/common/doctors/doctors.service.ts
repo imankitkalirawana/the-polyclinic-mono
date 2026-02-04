@@ -94,4 +94,17 @@ export class DoctorsService {
     }
     return this.findByUserId(userId);
   }
+
+  /**
+   * Create doctor profile for an already created user.
+   * Used by the unified user profile creation flow.
+   */
+  async createForUser(userId: string, dto: UpdateDoctorProfileDto) {
+    const repo = await this.getDoctorRepository();
+    const doctor = repo.create({
+      user_id: userId,
+      ...dto,
+    });
+    return repo.save(doctor);
+  }
 }

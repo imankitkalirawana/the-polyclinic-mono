@@ -14,9 +14,9 @@ import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
 
@@ -32,11 +32,11 @@ export class UsersController {
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   async create(
     @StandardParam() params: StandardParams,
-    @Body() dto: CreateUserDto,
+    @Body() dto: CreateProfileDto,
   ) {
-    const user = await this.usersService.create(dto);
-    params.setMessage('User created successfully');
-    return user;
+    const result = await this.userProfileService.createProfile(dto);
+    params.setMessage('Profile created successfully');
+    return result;
   }
 
   @Get()
