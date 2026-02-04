@@ -123,7 +123,7 @@ export class QueueService {
   }
 
   private async checkDoctorExists(doctorId: string) {
-    const doctor = await this.doctorsService.findOne(doctorId);
+    const doctor = await this.doctorsService.find_by_and_fail({ id: doctorId });
     if (!doctor) {
       throw new BadRequestException('Doctor not found');
     }
@@ -140,10 +140,9 @@ export class QueueService {
       throw new BadRequestException('Cannot book appointment in the past');
     }
 
-    await this.patientsService.checkPatientExists(
-      createQueueDto.patientId,
-      true,
-    );
+    await this.patientsService.find_by_and_fail({
+      id: createQueueDto.patientId,
+    });
     await this.checkDoctorExists(createQueueDto.doctorId);
 
     if (existingQueue && this.request.user.role === Role.PATIENT) {
@@ -152,7 +151,9 @@ export class QueueService {
       );
     }
 
-    const doctor = await this.doctorsService.findOne(createQueueDto.doctorId);
+    const doctor = await this.doctorsService.find_by_and_fail({
+      id: createQueueDto.doctorId,
+    });
 
     // start transaction
     const connection = await this.getConnection();
@@ -470,7 +471,9 @@ export class QueueService {
     const queueRepo = await this.getQueueRepository();
     const now = new Date();
     const userId = this.request.user.userId;
-    const patient = await this.patientService.findByUserId(userId);
+    const patient = await this.patientService.find_by_and_fail({
+      user_id: userId,
+    });
 
     const previousQueues = await queueRepo.find({
       where: [
@@ -525,7 +528,9 @@ export class QueueService {
 
     let patientId = undefined;
     if (this.request.user.role === Role.PATIENT) {
-      patientId = (await this.patientService.findByUserId(userId)).id;
+      patientId = (
+        await this.patientService.find_by_and_fail({ user_id: userId })
+      ).id;
     }
 
     const queueRepository = await this.getQueueRepository();

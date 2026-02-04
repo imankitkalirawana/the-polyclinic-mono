@@ -73,7 +73,7 @@ export class UsersController {
     Role.DOCTOR,
     Role.PATIENT,
   )
-  async updateProfile(
+  async update_profile(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() dto: UpdateProfileDto,
@@ -86,7 +86,7 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  async update(
+  async update_user(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
@@ -99,12 +99,12 @@ export class UsersController {
   // reset password
   @Post(':id/reset-password')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  async resetPassword(
+  async reset_password(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() dto: ResetPasswordDto,
   ) {
-    await this.userService.updatePassword(id, dto.password);
+    await this.userService.update_password(id, dto.password);
     params.setMessage('Password reset successfully');
     return null;
   }

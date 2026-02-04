@@ -1,8 +1,6 @@
-import { FindOptionsOrder } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { FindOptions } from 'src/types';
 
-export type UserFindOptions = {
+export type UserFindOptions = FindOptions<User> & {
   globally?: boolean;
-  withDeleted?: boolean;
-  order?: FindOptionsOrder<User> | FindOptionsOrder<User>[];
 };

@@ -96,7 +96,9 @@ export class AuthService {
     });
     let integrated_user_id = null;
     if (user.role === Role.DOCTOR) {
-      const doctor = await this.doctorsService.findByUserId(user.id);
+      const doctor = await this.doctorsService.find_by_and_fail({
+        user_id: user.id,
+      });
       integrated_user_id = doctor.id;
     }
 

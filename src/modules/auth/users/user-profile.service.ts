@@ -10,12 +10,14 @@ import { CreateProfileDto } from './dto/create-profile.dto';
 export type UserProfileResponse =
   | {
       user: User;
-      doctor: Awaited<ReturnType<typeof DoctorsService.prototype.findByUserId>>;
+      doctor: Awaited<
+        ReturnType<typeof DoctorsService.prototype.find_by_and_fail>
+      >;
     }
   | {
       user: User;
       patient: Awaited<
-        ReturnType<typeof PatientsService.prototype.findByUserId>
+        ReturnType<typeof PatientsService.prototype.find_by_and_fail>
       >;
     }
   | { user: User; doctor?: never; patient?: never };
@@ -41,10 +43,14 @@ export class UserProfileService {
 
     switch (user.role) {
       case Role.DOCTOR:
-        const doctor = await this.doctorsService.findByUserId(userId, true);
+        const doctor = await this.doctorsService.find_by_and_fail({
+          user_id: userId,
+        });
         return { user, doctor };
       case Role.PATIENT:
-        const patient = await this.patientsService.findByUserId(userId, true);
+        const patient = await this.patientsService.find_by_and_fail({
+          user_id: userId,
+        });
         return { user, patient };
       default:
         return { user };
@@ -82,10 +88,10 @@ export class UserProfileService {
 
     switch (user.role) {
       case Role.DOCTOR:
-        await this.doctorsService.updateByUserId(userId, dto.doctor);
+        await this.doctorsService.update_by_user_id(userId, dto.doctor);
         break;
       case Role.PATIENT:
-        await this.patientsService.updateByUserId(userId, dto.patient);
+        await this.patientsService.update_by_user_id(userId, dto.patient);
         break;
     }
 
@@ -104,12 +110,12 @@ export class UserProfileService {
     switch (user.role) {
       case Role.DOCTOR:
         if (dto.doctor) {
-          await this.doctorsService.createForUser(user.id, dto.doctor);
+          await this.doctorsService.create_for_user(user.id, dto.doctor);
         }
         break;
       case Role.PATIENT:
         if (dto.patient) {
-          await this.patientsService.createForUser(user.id, dto.patient);
+          await this.patientsService.create_for_user(user.id, dto.patient);
         }
         break;
     }

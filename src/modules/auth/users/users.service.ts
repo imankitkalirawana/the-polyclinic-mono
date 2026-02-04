@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
@@ -44,22 +44,24 @@ export class UserService {
    * enforcing `companies` to contain the active schema.
    */
   async find_by(
-    where: Partial<User>,
-    options?: UserFindOptions,
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
   ): Promise<User | null> {
+    const { globally, ...rest } = options;
     const userRepository = await this.getUserRepository();
     return userRepository.findOne({
       where: {
         ...where,
-        ...(!options?.globally && { companies: ArrayContains([this.schema]) }),
+        ...(!globally && { companies: ArrayContains([this.schema]) }),
+        ...rest,
       },
     });
   }
 
   // find_by_and_fail
   async find_by_and_fail(
-    where: Partial<User>,
-    options?: UserFindOptions,
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
   ): Promise<User> {
     const user = await this.find_by(where, options);
     if (!user) {
@@ -76,25 +78,18 @@ export class UserService {
    * enforcing `companies` to contain the active schema.
    */
   async find_all(
-    where: Partial<User>,
-    options?: UserFindOptions,
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
   ): Promise<User[]> {
+    const { globally, ...rest } = options;
     const userRepository = await this.getUserRepository();
     return userRepository.find({
       where: {
         ...where,
-        ...(!options?.globally && { companies: ArrayContains([this.schema]) }),
+        ...(!globally && { companies: ArrayContains([this.schema]) }),
       },
+      ...rest,
     });
-  }
-
-  // safely check if the email is not already taken in this company
-  async checkEmailIsNotTaken(email: string) {
-    const user = await this.find_by({ email }, { globally: true });
-    if (user) {
-      throw new ConflictException('Email already taken');
-    }
-    return true;
   }
 
   /** For updates: ensure email is not taken by another user (excluding excludeUserId). */
@@ -127,7 +122,7 @@ export class UserService {
     }
 
     if (existingUser) {
-      await this.addUserToCompany(dto.email, this.schema);
+      await this.add_user_to_company(dto.email, this.schema);
       if (existingUser.deletedAt) {
         await this.restore(existingUser.id);
       }
@@ -145,21 +140,21 @@ export class UserService {
     return await userRepository.save(user);
   }
 
-  async addUserToCompany(email: string, schema: string) {
+  async add_user_to_company(email: string, schema: string) {
     const user = await this.find_by({ email }, { globally: true });
     const companies = [...new Set([...(user.companies || []), schema])];
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
-  async removeUserFromCompany(email: string, schema: string) {
+  async remove_user_from_company(email: string, schema: string) {
     const user = await this.find_by({ email });
     const companies = user.companies.filter((c) => c !== schema);
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
-  async updatePassword(id: string, password: string) {
+  async update_password(id: string, password: string) {
     await this.find_by_and_fail({ id });
     const userRepository = await this.getUserRepository();
     await userRepository.update(id, {
@@ -167,7 +162,7 @@ export class UserService {
     });
   }
 
-  async softDelete(id: string) {
+  async soft_delete(id: string) {
     const userRepository = await this.getUserRepository();
     await userRepository.softDelete(id);
   }
