@@ -51,10 +51,10 @@ export class UserProfileService {
 
     switch (user.role) {
       case Role.DOCTOR:
-        const doctor = await this.doctorsService.findByUserId(userId);
+        const doctor = await this.doctorsService.findByUserId(userId, true);
         return { user, doctor };
       case Role.PATIENT:
-        const patient = await this.patientsService.findByUserId(userId);
+        const patient = await this.patientsService.findByUserId(userId, true);
         return { user, patient };
       default:
         return { user };

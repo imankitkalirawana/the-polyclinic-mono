@@ -151,11 +151,11 @@ export class PatientsService {
     return patients;
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string, skipRelations?: boolean) {
     const repo = await this.getPatientRepository();
     const patient = await repo.findOne({
       where: { user_id: userId },
-      relations: ['user'],
+      relations: skipRelations ? undefined : ['user'],
     });
 
     if (!patient) {

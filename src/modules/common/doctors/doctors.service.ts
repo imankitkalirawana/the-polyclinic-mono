@@ -77,11 +77,11 @@ export class DoctorsService {
     return doctor;
   }
 
-  async findByUserId(userId: string) {
+  async findByUserId(userId: string, skipRelations?: boolean) {
     const doctorRepository = await this.getDoctorRepository();
     const doctor = await doctorRepository.findOne({
       where: { user_id: userId },
-      relations: ['user'],
+      relations: skipRelations ? undefined : ['user'],
     });
     if (!doctor) throw new NotFoundException('Doctor not found');
     return doctor;
