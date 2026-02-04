@@ -94,19 +94,6 @@ export class PatientsService {
     return patient;
   }
 
-  // find one by user email
-  async findOneByUserEmail(email: string) {
-    const repo = await this.getPatientRepository();
-    const patient = await repo.findOne({
-      where: { user: { email, companies: ArrayContains([this.schema]) } },
-      relations: ['user'],
-    });
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
-    return patient;
-  }
-
   async update(id: string, updatePatientDto: UpdatePatientDto) {
     const repo = await this.getPatientRepository();
     const updatedPatient = await repo.update(id, updatePatientDto);

@@ -5,17 +5,13 @@ import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { Doctor } from '@/common/doctors/entities/doctor.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { UserService } from '@/auth/users/users.service';
 import { UpdateDoctorProfileDto } from '@/auth/users/dto/update-profile.dto';
 import { DoctorFindOptions } from './doctor.types';
 
 @Injectable()
 export class DoctorsService {
   private readonly schema: string;
-  constructor(
-    @Inject(REQUEST) private request: Request,
-    private readonly userService: UserService,
-  ) {
+  constructor(@Inject(REQUEST) private request: Request) {
     this.schema = this.request.schema;
   }
 
