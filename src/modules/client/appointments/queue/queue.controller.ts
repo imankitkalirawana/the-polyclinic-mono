@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
+import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
 import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
@@ -70,11 +71,15 @@ export class QueueController {
     return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
-  @Get()
+  @Post('all')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  async findAll(@Req() req: Request, @Query('date') date?: string) {
-    const queues = await this.queueService.find_all_by_date(date);
-    return queues.map((queue) => formatQueue(queue, req.user.role));
+  async findAll(@Req() req: Request, @Body() body: FindAllQueueQueryDto) {
+    const result = await this.queueService.find_all_by_date(body);
+
+    return {
+      ...result,
+      queues: result.queues.map((queue) => formatQueue(queue, req.user.role)),
+    };
   }
 
   @Get('aid/:aid')

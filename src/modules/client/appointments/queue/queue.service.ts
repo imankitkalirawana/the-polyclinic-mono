@@ -13,6 +13,7 @@ import {
   FindOptionsWhere,
   In,
   LessThan,
+  LessThanOrEqual,
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
@@ -45,9 +46,22 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { PatientsService } from '@/common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
+import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
+
+function startOfDay(dateStr: string): Date {
+  const d = new Date(dateStr);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(dateStr: string): Date {
+  const d = new Date(dateStr);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
 
 const defaultQueueFindRelations = {
   patient: { user: true },
@@ -337,13 +351,39 @@ export class QueueService {
     return queue;
   }
 
-  async find_all_by_date(date?: string) {
+  /**
+   * Builds appointmentDate where clause from optional date range filter.
+   * - date: single day (Between start and end of day).
+   * - dateGte / dateLte: inclusive range; either or both.
+   */
+  private buildAppointmentDateWhere(
+    filter: FindAllQueueQueryDto,
+  ): FindOptionsWhere<Queue>['appointmentDate'] {
+    const { start, end } = filter.date ?? {};
+
+    if (start && end) {
+      return Between(startOfDay(start), endOfDay(end));
+    }
+    if (start) {
+      return MoreThanOrEqual(startOfDay(start));
+    }
+    if (end) {
+      return LessThanOrEqual(endOfDay(end));
+    }
+    return undefined;
+  }
+
+  async find_all_by_date(filters: FindAllQueueQueryDto = {}) {
     const isPatient = this.request.user.role === Role.PATIENT;
     const isDoctor = this.request.user.role === Role.DOCTOR;
 
+    const appointmentDateWhere = this.buildAppointmentDateWhere(filters);
+
     const queues = await this.find_all(
       {
-        createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
+        ...(appointmentDateWhere != null && {
+          appointmentDate: appointmentDateWhere,
+        }),
         ...(isPatient && {
           patient: { user: { id: this.request.user.userId } },
         }),
@@ -356,7 +396,13 @@ export class QueueService {
       },
     );
 
-    return queues;
+    return {
+      queues,
+      filters,
+      metaData: {
+        total: queues.length,
+      },
+    };
   }
 
   async remove(id: string) {
