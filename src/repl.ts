@@ -40,15 +40,21 @@ function parseHistoryEntries(content: string): string[] {
   return entries;
 }
 
-function setupNaturalOrderHistory(
+/**
+ * Sets up dual history files:
+ * - rawPath: each line appended as entered (no timestamp, no debounce) — "as is"
+ * - naturalPath: debounced entries with # timestamp, multi-line as one block — natural order
+ * REPL in-memory history is loaded from naturalPath only.
+ */
+function setupDualHistory(
   replServer: ReplServerWithHistory,
-  historyPath: string,
+  rawPath: string,
+  naturalPath: string,
 ) {
-  // Load existing history (file is oldest-first / natural order)
-  // Each "# timestamp" starts an entry; following lines until next "# " form one history item
-  if (existsSync(historyPath)) {
+  // Load existing history from natural-order file only
+  if (existsSync(naturalPath)) {
     try {
-      const content = readFileSync(historyPath, 'utf-8');
+      const content = readFileSync(naturalPath, 'utf-8');
       const entries = parseHistoryEntries(content);
       const toLoad = entries.slice(-HISTORY_SIZE);
       for (const entry of toLoad) {
@@ -59,36 +65,50 @@ function setupNaturalOrderHistory(
     }
   }
 
-  // Debounce: multi-line paste = one timestamp, one entry
   let buffer: string[] = [];
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const flush = () => {
+  const flushNatural = () => {
     if (buffer.length === 0) return;
     const block = buffer.join('\n');
     buffer = [];
     flushTimer = null;
     try {
       const ts = new Date().toISOString();
-      appendFileSync(historyPath, `# ${ts}\n${block}\n`);
+      appendFileSync(naturalPath, `# ${ts}\n${block}\n`);
     } catch (error) {
-      logger.warn('Could not append to REPL history', error);
+      logger.warn('Could not append to REPL history (natural)', error);
     }
   };
 
   replServer.on('line', (line) => {
     const trimmed = line?.trimEnd();
     if (!trimmed) return;
+
+    // 1. Raw file: append each line as entered ("as is")
+    try {
+      appendFileSync(rawPath, trimmed + '\n');
+    } catch (error) {
+      logger.warn('Could not append to REPL history (raw)', error);
+    }
+
+    // 2. Natural-order file: debounced, with timestamp
     buffer.push(trimmed);
     if (flushTimer) clearTimeout(flushTimer);
-    flushTimer = setTimeout(flush, HISTORY_DEBOUNCE_MS);
+    flushTimer = setTimeout(flushNatural, HISTORY_DEBOUNCE_MS);
   });
 }
 
 async function bootstrap() {
   const replServer = await repl(AppModule);
 
-  const historyPath = join(process.cwd(), '.repl.history');
-  setupNaturalOrderHistory(replServer as ReplServerWithHistory, historyPath);
+  const cwd = process.cwd();
+  const rawHistoryPath = join(cwd, '.repl.history.raw');
+  const naturalHistoryPath = join(cwd, '.repl.history');
+  setupDualHistory(
+    replServer as ReplServerWithHistory,
+    rawHistoryPath,
+    naturalHistoryPath,
+  );
 }
 bootstrap();
