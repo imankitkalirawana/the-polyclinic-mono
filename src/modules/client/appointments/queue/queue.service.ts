@@ -395,7 +395,7 @@ export class QueueService {
           value: getCellValue(queue, {
             key: column.key,
             data_type: column.data_type,
-            source_config: column.source_config,
+            source: column.source,
           }),
         };
       }

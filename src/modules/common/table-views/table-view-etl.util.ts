@@ -4,7 +4,7 @@ import { ColumnDataType } from './entities/column.entity';
 export interface TableColumnSourceConfig {
   key: string;
   data_type: ColumnDataType | string;
-  source_config: Record<string, unknown> | null;
+  source: string;
 }
 
 /**
@@ -17,9 +17,9 @@ export function extractCellValue(
   entity: object,
   column: TableColumnSourceConfig,
 ): unknown {
-  const config = column.source_config;
-  if (config && typeof config.field === 'string') {
-    return getValueByPath(entity, config.field);
+  const source = column.source;
+  if (source && typeof source === 'string') {
+    return getValueByPath(entity, source);
   }
   const key = column.key;
   if (key in entity) {
