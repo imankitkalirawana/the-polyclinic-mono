@@ -38,6 +38,13 @@ export class ColumnService {
     return await this.tableColumnRepo.save(createTableColumnDto);
   }
 
+  // create in bulk
+  async create_bulk(
+    createTableColumnDtos: CreateTableColumnDto[],
+  ): Promise<TableColumn[]> {
+    return await this.tableColumnRepo.save(createTableColumnDtos);
+  }
+
   async update(
     id: string,
     updateTableColumnDto: UpdateTableColumnDto,

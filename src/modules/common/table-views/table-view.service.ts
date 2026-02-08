@@ -61,6 +61,7 @@ export class TableViewService {
         { view_type: type },
         { order: { key: 'ASC' } },
       );
+
       await this.viewColumnRepo.save(
         tableColumns.map((col, index) => ({
           view_id: view.id,
