@@ -45,6 +45,11 @@ export class ColumnService {
     return await this.tableColumnRepo.update(id, updateTableColumnDto);
   }
 
+  //   delete_by
+  async delete_by(where: FindOptionsWhere<TableColumn>): Promise<DeleteResult> {
+    return await this.tableColumnRepo.softDelete(where);
+  }
+
   async delete(id: string): Promise<DeleteResult> {
     return await this.tableColumnRepo.softDelete(id);
   }

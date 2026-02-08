@@ -11,10 +11,20 @@ import {
 import { UserTableViewColumn } from './table-view-column.entity';
 import { BaseEntity } from 'src/common/entity/base.entity';
 
+export enum TableViewType {
+  QUEUE = 'QUEUE',
+  PATIENT = 'PATIENT',
+  DOCTOR = 'DOCTOR',
+  USER = 'USER',
+}
+
 @Entity('user_table_views', { schema: 'public' })
 export class UserTableView extends BaseEntity {
   @Column({ default: 'Default View' })
   name: string;
+
+  @Column({ type: 'enum', enum: TableViewType })
+  type: TableViewType;
 
   @Column()
   @Index()

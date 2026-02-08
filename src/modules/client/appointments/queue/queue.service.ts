@@ -48,6 +48,7 @@ import { PatientsService } from '@/common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
 import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
 import { TableViewService } from '@/common/table-views/table-view.service';
+import { TableViewType } from '@/common/table-views/entities/table-view.entity';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -389,7 +390,11 @@ export class QueueService {
     const isDoctor = this.request.user.role === Role.DOCTOR;
 
     const { columns, filters: viewFilters } =
-      await this.tableViewService.getViewOrDefault(filters.viewId, 'queue');
+      await this.tableViewService.find_by({
+        id: filters.viewId,
+        type: TableViewType.QUEUE,
+        user_id: this.request.user.userId,
+      });
 
     const { viewId: _viewId, ...bodyFilters } = filters;
     const mergedFilters: FindAllQueueQueryDto = {
