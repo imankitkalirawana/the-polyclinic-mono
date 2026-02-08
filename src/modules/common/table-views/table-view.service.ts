@@ -1,8 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { TableViewType, UserTableView } from './entities/table-view.entity';
 import { ColumnService } from './column.service';
+import { UpdateUserTableViewDto } from './dto/update-table-view.dto';
 
 @Injectable()
 export class TableViewService {
@@ -43,5 +49,13 @@ export class TableViewService {
       type,
       user_id,
     });
+  }
+
+  // update_by
+  async update_by(
+    where: FindOptionsWhere<UserTableView>,
+    update: UpdateUserTableViewDto,
+  ): Promise<UpdateResult> {
+    return await this.viewRepo.update(where, update);
   }
 }
