@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
-import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { QueueStatus } from '../entities/queue.entity';
 
 /**
  * Query params for GET /client/appointments/queue.
@@ -33,4 +34,11 @@ export class FindAllQueueQueryDto {
   @Type(() => AppointmentDateRange)
   @IsOptional()
   date?: AppointmentDateRange;
+
+  // status
+  @IsEnum(QueueStatus, {
+    each: true,
+  })
+  @IsOptional()
+  status?: QueueStatus[];
 }

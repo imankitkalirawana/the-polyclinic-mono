@@ -373,17 +373,28 @@ export class QueueService {
     return undefined;
   }
 
+  /** Builds status where clause from optional status filter (type-safe: QueueStatus[]). */
+  private buildStatusWhere(
+    filter: FindAllQueueQueryDto,
+  ): Pick<FindOptionsWhere<Queue>, 'status'> | undefined {
+    const statuses = filter.status;
+    if (!statuses?.length) return undefined;
+    return { status: In(statuses) };
+  }
+
   async find_all_by_date(filters: FindAllQueueQueryDto = {}) {
     const isPatient = this.request.user.role === Role.PATIENT;
     const isDoctor = this.request.user.role === Role.DOCTOR;
 
     const appointmentDateWhere = this.buildAppointmentDateWhere(filters);
+    const statusWhere = this.buildStatusWhere(filters);
 
     const queues = await this.find_all(
       {
         ...(appointmentDateWhere != null && {
           appointmentDate: appointmentDateWhere,
         }),
+        ...(statusWhere != null && statusWhere),
         ...(isPatient && {
           patient: { user: { id: this.request.user.userId } },
         }),
