@@ -47,6 +47,7 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { PatientsService } from '@/common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
 import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
+import { TableViewService } from '@/common/table-views/table-view.service';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -85,6 +86,7 @@ export class QueueService {
     private readonly qrService: QrService,
     private readonly activityService: ActivityService,
     private readonly activityLogService: ActivityLogService,
+    private readonly tableViewService: TableViewService,
   ) {
     this.schema = this.request.schema;
   }
@@ -386,8 +388,17 @@ export class QueueService {
     const isPatient = this.request.user.role === Role.PATIENT;
     const isDoctor = this.request.user.role === Role.DOCTOR;
 
-    const appointmentDateWhere = this.buildAppointmentDateWhere(filters);
-    const statusWhere = this.buildStatusWhere(filters);
+    const { columns, filters: viewFilters } =
+      await this.tableViewService.getViewOrDefault(filters.viewId, 'queue');
+
+    const { viewId: _viewId, ...bodyFilters } = filters;
+    const mergedFilters: FindAllQueueQueryDto = {
+      ...viewFilters,
+      ...bodyFilters,
+    } as FindAllQueueQueryDto;
+
+    const appointmentDateWhere = this.buildAppointmentDateWhere(mergedFilters);
+    const statusWhere = this.buildStatusWhere(mergedFilters);
 
     const queues = await this.find_all(
       {
@@ -409,10 +420,11 @@ export class QueueService {
 
     return {
       queues,
-      filters,
+      filters: mergedFilters,
       metaData: {
         total: queues.length,
       },
+      columns,
     };
   }
 

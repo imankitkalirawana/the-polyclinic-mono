@@ -6,9 +6,17 @@ import { PdfModule } from '../../pdf/pdf.module';
 import { DoctorsModule } from '../../../common/doctors/doctors.module';
 import { QrModule } from '../../qr/qr.module';
 import { PatientsModule } from '@/common/patients/patients.module';
+import { TableViewsModule } from '@/common/table-views/table-views.module';
 
 @Module({
-  imports: [PaymentsModule, PdfModule, DoctorsModule, QrModule, PatientsModule],
+  imports: [
+    PaymentsModule,
+    PdfModule,
+    DoctorsModule,
+    QrModule,
+    PatientsModule,
+    TableViewsModule,
+  ],
   controllers: [QueueController],
   providers: [QueueService],
   exports: [QueueService],

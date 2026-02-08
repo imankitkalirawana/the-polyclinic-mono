@@ -1,17 +1,55 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
-import { getTenantConnection } from 'src/common/db/tenant-connection';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  DeleteResult,
+  FindManyOptions,
+  FindOptionsWhere,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
+import { TableColumn } from './entities/column.entity';
+import { CreateTableColumnDto } from './dto/create-table-column.dto';
+import { UpdateTableColumnDto } from './dto/update-table-column.dto';
 
 @Injectable()
 export class ColumnService {
-  private readonly schema: string;
+  constructor(
+    @InjectRepository(TableColumn)
+    private readonly tableColumnRepo: Repository<TableColumn>,
+  ) {}
 
-  constructor(@Inject(REQUEST) private request: Request) {
-    this.schema = this.request.schema;
+  async find_by(
+    where: FindOptionsWhere<TableColumn>,
+    options?: FindManyOptions<TableColumn>,
+  ): Promise<TableColumn[]> {
+    return await this.tableColumnRepo.find({ where, ...options });
   }
 
-  private async getConnection() {
-    return await getTenantConnection(this.schema);
+  async find_all(
+    where: FindOptionsWhere<TableColumn>,
+    options?: FindManyOptions<TableColumn>,
+  ): Promise<TableColumn[]> {
+    return await this.tableColumnRepo.find({ where, ...options });
+  }
+
+  async create(
+    createTableColumnDto: CreateTableColumnDto,
+  ): Promise<TableColumn> {
+    return await this.tableColumnRepo.save(createTableColumnDto);
+  }
+
+  async update(
+    id: string,
+    updateTableColumnDto: UpdateTableColumnDto,
+  ): Promise<UpdateResult> {
+    return await this.tableColumnRepo.update(id, updateTableColumnDto);
+  }
+
+  async delete(id: string): Promise<DeleteResult> {
+    return await this.tableColumnRepo.softDelete(id);
+  }
+
+  async delete_hard(id: string): Promise<DeleteResult> {
+    return await this.tableColumnRepo.delete(id);
   }
 }

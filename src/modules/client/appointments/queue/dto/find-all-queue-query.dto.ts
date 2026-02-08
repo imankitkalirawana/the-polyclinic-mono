@@ -1,5 +1,11 @@
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 import { QueueStatus } from '../entities/queue.entity';
 
 /**
@@ -30,12 +36,15 @@ export class AppointmentDateRange {
   end?: string;
 }
 export class FindAllQueueQueryDto {
+  @IsUUID()
+  @IsOptional()
+  viewId?: string;
+
   @ValidateNested()
   @Type(() => AppointmentDateRange)
   @IsOptional()
   date?: AppointmentDateRange;
 
-  // status
   @IsEnum(QueueStatus, {
     each: true,
   })
