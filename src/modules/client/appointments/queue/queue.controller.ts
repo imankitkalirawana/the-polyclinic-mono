@@ -10,11 +10,9 @@ import {
   Query,
   Res,
   Logger,
-  Req,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
 import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
@@ -26,7 +24,7 @@ import {
 } from '@/auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
@@ -73,13 +71,10 @@ export class QueueController {
 
   @Post('all')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  async findAll(@Req() req: Request, @Body() body: FindAllQueueQueryDto) {
-    const result = await this.queueService.find_all_by_date(body);
+  async findAll(@Query('view_id') view_id: string) {
+    const result = await this.queueService.find_all_by_view(view_id);
 
-    return {
-      ...result,
-      queues: result.queues.map((queue) => formatQueue(queue, req.user.role)),
-    };
+    return result;
   }
 
   @Get('aid/:aid')

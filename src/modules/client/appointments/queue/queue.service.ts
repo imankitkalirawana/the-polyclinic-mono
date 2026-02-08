@@ -13,7 +13,6 @@ import {
   FindOptionsWhere,
   In,
   LessThan,
-  LessThanOrEqual,
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
@@ -46,24 +45,11 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { PatientsService } from '@/common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
-import { FindAllQueueQueryDto } from './dto/find-all-queue-query.dto';
 import { TableViewService } from '@/common/table-views/table-view.service';
 import { TableViewType } from '@/common/table-views/entities/table-view.entity';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
-
-function startOfDay(dateStr: string): Date {
-  const d = new Date(dateStr);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function endOfDay(dateStr: string): Date {
-  const d = new Date(dateStr);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
 
 const defaultQueueFindRelations = {
   patient: { user: true },
@@ -354,83 +340,20 @@ export class QueueService {
     return queue;
   }
 
-  /**
-   * Builds appointmentDate where clause from optional date range filter.
-   * - date: single day (Between start and end of day).
-   * - dateGte / dateLte: inclusive range; either or both.
-   */
-  private buildAppointmentDateWhere(
-    filter: FindAllQueueQueryDto,
-  ): FindOptionsWhere<Queue>['appointmentDate'] {
-    const { start, end } = filter.date ?? {};
+  async find_all_by_view(viewId: string) {
+    let view = await this.tableViewService.find_by({
+      id: viewId,
+      type: TableViewType.QUEUE,
+      user_id: this.request.user.userId,
+    });
 
-    if (start && end) {
-      return Between(startOfDay(start), endOfDay(end));
+    // if view is not found, create a default view
+    if (!view) {
+      view = await this.tableViewService.create_default_view(
+        TableViewType.QUEUE,
+        this.request.user.userId,
+      );
     }
-    if (start) {
-      return MoreThanOrEqual(startOfDay(start));
-    }
-    if (end) {
-      return LessThanOrEqual(endOfDay(end));
-    }
-    return undefined;
-  }
-
-  /** Builds status where clause from optional status filter (type-safe: QueueStatus[]). */
-  private buildStatusWhere(
-    filter: FindAllQueueQueryDto,
-  ): Pick<FindOptionsWhere<Queue>, 'status'> | undefined {
-    const statuses = filter.status;
-    if (!statuses?.length) return undefined;
-    return { status: In(statuses) };
-  }
-
-  async find_all_by_date(filters: FindAllQueueQueryDto = {}) {
-    const isPatient = this.request.user.role === Role.PATIENT;
-    const isDoctor = this.request.user.role === Role.DOCTOR;
-
-    const { columns, filters: viewFilters } =
-      await this.tableViewService.find_by({
-        id: filters.viewId,
-        type: TableViewType.QUEUE,
-        user_id: this.request.user.userId,
-      });
-
-    const { viewId: _viewId, ...bodyFilters } = filters;
-    const mergedFilters: FindAllQueueQueryDto = {
-      ...viewFilters,
-      ...bodyFilters,
-    } as FindAllQueueQueryDto;
-
-    const appointmentDateWhere = this.buildAppointmentDateWhere(mergedFilters);
-    const statusWhere = this.buildStatusWhere(mergedFilters);
-
-    const queues = await this.find_all(
-      {
-        ...(appointmentDateWhere != null && {
-          appointmentDate: appointmentDateWhere,
-        }),
-        ...(statusWhere != null && statusWhere),
-        ...(isPatient && {
-          patient: { user: { id: this.request.user.userId } },
-        }),
-        ...(isDoctor && { doctor: { user: { id: this.request.user.userId } } }),
-      },
-      {
-        order: {
-          aid: 'DESC',
-        },
-      },
-    );
-
-    return {
-      queues,
-      filters: mergedFilters,
-      metaData: {
-        total: queues.length,
-      },
-      columns,
-    };
   }
 
   async remove(id: string) {
