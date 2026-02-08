@@ -69,7 +69,7 @@ export class QueueController {
     return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
-  @Post('all')
+  @Get('all')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
   async findAll(@Query('view_id') view_id: string) {
     const result = await this.queueService.find_all_by_view(view_id);

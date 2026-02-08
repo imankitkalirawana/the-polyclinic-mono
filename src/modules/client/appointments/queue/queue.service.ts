@@ -46,7 +46,15 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { PatientsService } from '@/common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
 import { TableViewService } from '@/common/table-views/table-view.service';
-import { TableViewType } from '@/common/table-views/entities/table-view.entity';
+import {
+  TableViewFilters,
+  TableViewType,
+} from '@/common/table-views/entities/table-view.entity';
+import type {
+  TableViewCell,
+  TableViewColumnConfig,
+} from '@/common/table-views/table-view.types';
+import { getCellValue } from '@/common/table-views/table-view-etl.util';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -340,20 +348,70 @@ export class QueueService {
     return queue;
   }
 
-  async find_all_by_view(viewId: string) {
-    let view = await this.tableViewService.find_by({
-      id: viewId,
-      type: TableViewType.QUEUE,
-      user_id: this.request.user.userId,
-    });
+  async find_all_by_view(viewId: string): Promise<{
+    columns: TableViewColumnConfig[];
+    rows: Record<string, TableViewCell>[];
+  }> {
+    let view = await this.tableViewService.find_by(
+      {
+        id: viewId,
+        type: TableViewType.QUEUE,
+        user_id: this.request.user.userId,
+      },
+      { relations: { columns: { column: true } } },
+    );
 
-    // if view is not found, create a default view
     if (!view) {
       view = await this.tableViewService.create_default_view(
         TableViewType.QUEUE,
         this.request.user.userId,
       );
     }
+
+    const sortedColumns = view.columns.sort((a, b) => a.order - b.order);
+
+    const columns = sortedColumns.map((vc) => ({
+      key: vc.column.key,
+      name: vc.column.name,
+      data_type: vc.column.data_type,
+      order: vc.order,
+      width: vc.width,
+      pinned: vc.pinned,
+    }));
+
+    const where = this.buildQueueWhereFromFilters(view.filters);
+    const queues = await this.find_all(where, {
+      order: {
+        aid: 'DESC',
+      },
+    });
+
+    const rows: Record<string, TableViewCell>[] = queues.map((queue) => {
+      const row: Record<string, TableViewCell> = {};
+      for (const vc of sortedColumns) {
+        const column = vc.column;
+        if (!column) continue;
+        row[column.key] = {
+          value: getCellValue(queue, {
+            key: column.key,
+            data_type: column.data_type,
+            source_config: column.source_config,
+          }),
+        };
+      }
+      return row;
+    });
+
+    return { columns, rows };
+  }
+
+  private buildQueueWhereFromFilters(
+    filters: TableViewFilters | undefined,
+  ): FindOptionsWhere<Queue> {
+    if (!filters) return undefined;
+    const where: FindOptionsWhere<Queue> = {};
+    if (filters.status) where.status = filters.status;
+    return where;
   }
 
   async remove(id: string) {

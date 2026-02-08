@@ -7,6 +7,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { TableViewType, UserTableView } from './entities/table-view.entity';
+import { UserTableViewColumn } from './entities/table-view-column.entity';
 import { ColumnService } from './column.service';
 import { UpdateUserTableViewDto } from './dto/update-table-view.dto';
 
@@ -17,13 +18,15 @@ export class TableViewService {
   constructor(
     @InjectRepository(UserTableView)
     private readonly viewRepo: Repository<UserTableView>,
+    @InjectRepository(UserTableViewColumn)
+    private readonly viewColumnRepo: Repository<UserTableViewColumn>,
     private readonly columnService: ColumnService,
   ) {}
 
   async find_by(
     where: FindOptionsWhere<UserTableView>,
     options?: FindManyOptions<UserTableView>,
-  ): Promise<UserTableView> {
+  ): Promise<UserTableView | null> {
     return await this.viewRepo.findOne({ where, ...options });
   }
 
@@ -38,17 +41,43 @@ export class TableViewService {
     type: TableViewType,
     user_id: string,
   ): Promise<UserTableView> {
-    const existingView = await this.find_by({ type, user_id });
+    const existingView = await this.find_by(
+      { type, user_id },
+      { relations: { columns: { column: true } } },
+    );
 
     if (existingView) {
       return existingView;
     }
 
-    return await this.viewRepo.save({
+    const view = await this.viewRepo.save({
       name: `Default ${type} View`,
       type,
       user_id,
     });
+
+    if (type === TableViewType.QUEUE) {
+      const tableColumns = await this.columnService.find_all(
+        { view_type: type },
+        { order: { key: 'ASC' } },
+      );
+      await this.viewColumnRepo.save(
+        tableColumns.map((col, index) => ({
+          view_id: view.id,
+          column_id: col.id,
+          order: index,
+          visible: true,
+          width: 160,
+          pinned: false,
+        })),
+      );
+    }
+
+    // refresh view with columns
+    return await this.find_by(
+      { id: view.id },
+      { relations: { columns: { column: true } } },
+    );
   }
 
   // update_by

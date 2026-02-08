@@ -10,13 +10,14 @@ import {
 } from 'typeorm';
 import { UserTableViewColumn } from './table-view-column.entity';
 import { BaseEntity } from 'src/common/entity/base.entity';
+import { TableViewType } from '../enums/table-view-type.enum';
+import { QueueStatus } from '@/client/appointments/queue/entities/queue.entity';
 
-export enum TableViewType {
-  QUEUE = 'QUEUE',
-  PATIENT = 'PATIENT',
-  DOCTOR = 'DOCTOR',
-  USER = 'USER',
-}
+export { TableViewType };
+
+export type TableViewFilters = {
+  status?: QueueStatus;
+};
 
 @Entity('user_table_views', { schema: 'public' })
 export class UserTableView extends BaseEntity {
@@ -38,12 +39,11 @@ export class UserTableView extends BaseEntity {
 
   @OneToMany(() => UserTableViewColumn, (vc) => vc.view, {
     cascade: true,
-    eager: true,
   })
   columns: UserTableViewColumn[];
 
   @Column({ type: 'jsonb', default: () => "'{}'" })
-  filters: Record<string, unknown>;
+  filters: TableViewFilters;
 
   @DeleteDateColumn()
   deletedAt?: Date;
