@@ -11,6 +11,7 @@ import { PdfModule } from '../../pdf/pdf.module';
 import { DoctorsModule } from '../../doctors/doctors.module';
 import { QrModule } from '../../qr/qr.module';
 import { EmailService } from '@/common/email/email.service';
+import { PatientsModule } from '../../patients/patients.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Tenant], 'default'),
@@ -19,6 +20,7 @@ import { EmailService } from '@/common/email/email.service';
     PaymentsModule,
     PdfModule,
     DoctorsModule,
+    PatientsModule,
     QrModule,
   ],
   controllers: [QueueController],

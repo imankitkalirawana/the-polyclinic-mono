@@ -37,7 +37,7 @@ export class QueueController {
   constructor(private readonly queueService: QueueService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
   async create(
     @StandardParam() params: StandardParams,
     @Body() createQueueDto: CreateQueueDto,

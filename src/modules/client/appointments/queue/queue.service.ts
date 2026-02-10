@@ -21,6 +21,7 @@ import { PaymentsService } from '@/client/payments/payments.service';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 import { PdfService } from '@/client/pdf/pdf.service';
 import { DoctorsService } from '@/client/doctors/doctors.service';
+import { PatientsService } from '@/client/patients/patients.service';
 import { PaymentReferenceType } from '@/client/payments/entities/payment.entity';
 import { Currency } from '@/client/payments/dto/create-payment.dto';
 import { Role } from 'src/common/enums/role.enum';
@@ -54,6 +55,7 @@ export class QueueService extends BaseTenantService {
     tenantAuthInitService: TenantAuthInitService,
     private readonly paymentsService: PaymentsService,
     private readonly doctorsService: DoctorsService,
+    private readonly patientsService: PatientsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
     private readonly activityService: ActivityService,
@@ -227,12 +229,13 @@ export class QueueService extends BaseTenantService {
   async cancelPayment(queueId: string, remark?: string) {
     const queue = await this.findOne(queueId);
 
+    const previousStatus = queue.status;
+
     queue.status = QueueStatus.CANCELLED;
     queue.cancellationDetails = {
       by: this.request.user.userId,
       remark,
     };
-    const previousStatus = queue.status;
     await this.getQueueRepository().save(queue);
 
     this.activityService.logStatusChange({
@@ -412,7 +415,85 @@ export class QueueService extends BaseTenantService {
       next: next
         ? next.map((queue) => formatQueue(queue, this.request.user.role))
         : null,
+
+      metaData: {
+        totalPrevious: previousQueues.length,
+        totalNext: next.length,
+      },
     };
+  }
+
+  async getQueueForPatient() {
+    const queueRepo = this.getQueueRepository();
+    const userId = this.request.user.userId;
+    const patient = await this.patientsService.findByUserId(userId);
+
+    const previousQueues = await queueRepo.find({
+      where: {
+        patientId: patient.id,
+        status: In([QueueStatus.COMPLETED, QueueStatus.CANCELLED]),
+      },
+      relations: queueRelations,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const nextQueues = await queueRepo.find({
+      where: {
+        patientId: patient.id,
+        status: Not(In([QueueStatus.COMPLETED, QueueStatus.CANCELLED])),
+      },
+      relations: queueRelations,
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+
+    // latest upcoming appointment
+    const latestUpcomingAppointment = nextQueues[0];
+
+    return {
+      previous: previousQueues.map((queue) =>
+        formatQueue(queue, this.request.user.role),
+      ),
+      current: formatQueue(latestUpcomingAppointment, this.request.user.role),
+      next: nextQueues
+        .slice(1)
+        .map((queue) => formatQueue(queue, this.request.user.role)),
+      metaData: {
+        totalPrevious: previousQueues.length,
+        totalNext: nextQueues.length - 1,
+      },
+    };
+  }
+
+  //get appointment by aid
+  async getAppointmentByAid(aid: string) {
+    const userId = this.request.user.userId;
+
+    let patientId = undefined;
+    if (this.request.user.role === Role.PATIENT) {
+      patientId = (await this.patientsService.findByUserId(userId)).id;
+    }
+
+    const queueRepository = this.getQueueRepository();
+    const where: any = {
+      referenceNumber: aid,
+    };
+
+    if (patientId) {
+      where.patientId = patientId;
+    }
+
+    const queue = await queueRepository.findOne({
+      where,
+      relations: queueRelations,
+    });
+    if (!queue) {
+      throw new NotFoundException(`Appointment with AID ${aid} not found`);
+    }
+    return formatQueue(queue, this.request.user.role);
   }
 
   // Call queue by id
