@@ -1,21 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { Tenant } from '../../public/tenants/entities/tenant.entity';
-import { Session as PublicSession } from '../../public/auth/entities/session.entity';
-import { ClientSessionCleanupService } from './client/client-session-cleanup.service';
-import { ClientOtpCleanupService } from './client/client-otp-cleanup.service';
+import { Session } from '../../auth/entities/session.entity';
+import { MasterKeyModule } from '@/common/utilities/master-key/masterkey.module';
 import { PublicSessionCleanupService } from './public/public-session-cleanup.service';
+import { MasterKeyRotateCronService } from './master-key-rotate-cron.service';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([Tenant, PublicSession], 'default'),
+    TypeOrmModule.forFeature([Session]),
+    MasterKeyModule,
   ],
-  providers: [
-    ClientSessionCleanupService,
-    ClientOtpCleanupService,
-    PublicSessionCleanupService,
-  ],
+  providers: [PublicSessionCleanupService, MasterKeyRotateCronService],
 })
 export class CronModule {}

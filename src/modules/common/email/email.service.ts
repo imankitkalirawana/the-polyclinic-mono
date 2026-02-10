@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { resend } from 'src/lib/resend';
+import { resend } from 'src/libs/resend';
 
 @Injectable()
 export class EmailService {

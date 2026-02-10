@@ -5,13 +5,15 @@ import {
   IsOptional,
   IsObject,
   ValidateIf,
+  IsArray,
 } from 'class-validator';
 import { ActivityAction } from '../enums/activity-action.enum';
 import { ActorType } from '../enums/actor-type.enum';
+import { EntityType } from '../enums/entity-type.enum';
 
 export class CreateActivityDto {
-  @IsString()
-  entityType: string;
+  @IsEnum(EntityType)
+  entityType: EntityType;
 
   @IsUUID()
   entityId: string;
@@ -24,15 +26,15 @@ export class CreateActivityDto {
 
   @IsOptional()
   @IsObject()
-  changedFields?: Record<string, any>;
+  changedFields?: Record<string, unknown>;
 
   @IsOptional()
   @IsObject()
-  previousData?: Record<string, any>;
+  previousData?: Record<string, unknown>;
 
   @IsOptional()
   @IsObject()
-  newData?: Record<string, any>;
+  newData?: Record<string, unknown>;
 
   @IsEnum(ActorType)
   actorType: ActorType;
@@ -49,5 +51,9 @@ export class CreateActivityDto {
   @IsOptional()
   @IsString()
   description?: string | null;
-}
 
+  @IsOptional()
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  stakeholders?: string[] | null;
+}

@@ -3,14 +3,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Patient } from '@/client/patients/entities/patient.entity';
-import { Doctor } from '@/client/doctors/entities/doctor.entity';
-import { TenantUser } from '@/client/users/entities/tenant-user.entity';
+import { Patient } from '@/common/patients/entities/patient.entity';
+import { Doctor } from '@/common/doctors/entities/doctor.entity';
+import { User } from '@/auth/entities/user.entity';
 import { PaymentMode } from '../enums/queue.enum';
 
 export enum QueueStatus {
@@ -31,22 +32,28 @@ export interface Counter {
 }
 
 @Entity('appointment_queue')
+@Index(['doctorId', 'aid', 'appointmentDate', 'sequenceNumber'])
 export class Queue {
+  // ...
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({
     type: 'varchar',
-    length: 10,
+    length: 12,
     unique: true,
   })
-  referenceNumber: string;
+  aid: string;
+
+  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+  appointmentDate: Date;
 
   @Column({ type: 'uuid' })
   patientId: string;
 
   @ManyToOne(() => Patient, (patient) => patient.id, {
     onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
@@ -63,6 +70,7 @@ export class Queue {
 
   @ManyToOne(() => Doctor, (doctor) => doctor.id, {
     onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
@@ -70,12 +78,13 @@ export class Queue {
   @Column({ type: 'uuid', nullable: true })
   bookedBy: string;
 
-  @ManyToOne(() => TenantUser, (user) => user.id, {
+  @ManyToOne(() => User, (user) => user.id, {
     onDelete: 'SET NULL',
     nullable: true,
+    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'bookedBy' })
-  bookedByUser: TenantUser;
+  bookedByUser: User;
 
   @Column({ type: 'int' })
   sequenceNumber: number;
@@ -101,12 +110,13 @@ export class Queue {
   @Column({ type: 'timestamp with time zone', nullable: true })
   completedAt: Date;
 
-  @ManyToOne(() => TenantUser, (user) => user.id, {
+  @ManyToOne(() => User, (user) => user.id, {
     onDelete: 'SET NULL',
     nullable: true,
+    createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'completedBy' })
-  completedByUser: TenantUser;
+  completedByUser: User;
 
   @Column({
     type: 'jsonb',

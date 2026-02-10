@@ -9,7 +9,8 @@ import {
 } from 'typeorm';
 import { ActivityAction } from '../enums/activity-action.enum';
 import { ActorType } from '../enums/actor-type.enum';
-import { TenantUser } from '@/client/users/entities/tenant-user.entity';
+import { EntityType } from '../enums/entity-type.enum';
+import { User } from '@/auth/entities/user.entity';
 
 @Entity('activity_logs')
 export class ActivityLog {
@@ -18,7 +19,7 @@ export class ActivityLog {
 
   @Column({ type: 'varchar', length: 255 })
   @Index()
-  entityType: string;
+  entityType: EntityType;
 
   @Column({ type: 'uuid' })
   @Index()
@@ -52,15 +53,23 @@ export class ActivityLog {
   @Index()
   actorId: string | null;
 
-  @ManyToOne(() => TenantUser, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => User, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
+  })
   @JoinColumn({ name: 'actorId' })
-  actor: TenantUser | null;
+  actor: User | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   actorRole: string | null;
 
   @Column({ type: 'text', nullable: true })
   description: string | null;
+
+  @Column({ type: 'jsonb', nullable: true, default: [] })
+  @Index()
+  stakeholders: string[] | null;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   @Index()

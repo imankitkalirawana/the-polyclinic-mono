@@ -1,5 +1,6 @@
 // src/scripts/script-runner.util.ts
 import 'dotenv/config';
+import './types';
 import { NestFactory } from '@nestjs/core';
 import { INestApplicationContext } from '@nestjs/common';
 import { AppModule } from '../app.module';

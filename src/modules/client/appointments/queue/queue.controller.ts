@@ -13,16 +13,15 @@ import {
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { UpdateQueueDto } from './dto/update-queue.dto';
-import { BearerAuthGuard } from '../../auth/guards/bearer-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { FieldRestrictionsGuard } from '@/public/auth/guards/field-restrictions.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
+import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
-} from '../../auth/decorators/current-user.decorator';
+} from '@/auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
 import { Response } from 'express';
@@ -44,7 +43,9 @@ export class QueueController {
   ) {
     let queue = null;
     if (createQueueDto.queueId) {
-      queue = await this.queueService.findOne(createQueueDto.queueId);
+      queue = await this.queueService.find_by_and_fail({
+        id: createQueueDto.queueId,
+      });
     } else {
       queue = await this.queueService.create(createQueueDto);
     }
@@ -68,10 +69,18 @@ export class QueueController {
     return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
-  @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  findAll(@Query('date') date?: string) {
-    return this.queueService.findAll(date);
+  @Get('all')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  async findAll(@Query('view_id') view_id: string) {
+    const result = await this.queueService.find_all_by_view(view_id);
+
+    return result;
+  }
+
+  @Get('aid/:aid')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  findByAid(@Param('aid') aid: string) {
+    return this.queueService.find_by_and_fail({ aid });
   }
 
   @Get('doctor/:doctorId/queue')
@@ -79,9 +88,26 @@ export class QueueController {
   getQueueForDoctor(
     @Param('doctorId') doctorId: string,
     @Query('id') queueId?: string,
+    @Query('date') date?: string,
   ) {
-    const queue = this.queueService.getQueueForDoctor(doctorId, queueId);
+    const queue = this.queueService.getQueueForDoctor({
+      doctorId,
+      queueId,
+      appointmentDate: date ? new Date(date) : new Date(),
+    });
     return queue;
+  }
+
+  @Get('patient/me')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  getQueueForPatient() {
+    return this.queueService.getQueueForPatient();
+  }
+
+  @Get(':aid')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  getAppointmentByAid(@Param('aid') aid: string) {
+    return this.queueService.getAppointmentByAid(aid);
   }
 
   @Get(':id/activity-logs')
@@ -93,14 +119,8 @@ export class QueueController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async findOne(@Param('id') id: string) {
-    const queue = await this.queueService.findOne(id);
+    const queue = await this.queueService.find_by_and_fail({ id });
     return formatQueue(queue);
-  }
-
-  @Patch(':id')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
-  update(@Param('id') id: string, @Body() updateQueueDto: UpdateQueueDto) {
-    return this.queueService.update(id, updateQueueDto);
   }
 
   @Delete(':id')

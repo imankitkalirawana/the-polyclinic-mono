@@ -5,26 +5,32 @@ import { Request } from 'express';
 import { CreateActivityDto } from '../dto/create-activity.dto';
 import { ActivityAction } from '../enums/activity-action.enum';
 import { ActorType } from '../enums/actor-type.enum';
+import { EntityType } from '../enums/entity-type.enum';
 import { diffObjects } from '../utils/diff.util';
 import { formatLabel } from 'src/common/utils/text-transform.util';
 
 interface LogUpdateOptions {
-  entityType: string;
+  entityType: EntityType;
   entityId: string;
   module: string;
-  before: any;
-  after: any;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
   description?: string;
+  stakeholders?: string[];
 }
 
 interface LogStatusChangeOptions {
-  entityType: string;
+  entityType: EntityType;
   entityId: string;
   module: string;
-  before: any;
-  after: any;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
   description?: string;
-  additionalFields?: Record<string, { before: any; after: any }>;
+  additionalFields?: Record<
+    string,
+    { before: Record<string, unknown>; after: Record<string, unknown> }
+  >;
+  stakeholders?: string[];
 }
 
 @Injectable()
@@ -44,10 +50,10 @@ export class ActivityService {
     }
 
     try {
-      const tenantSlug = (this.request as any)?.tenantSlug;
+      const schema = this.request?.schema;
       const eventPayload = {
         ...payload,
-        tenantSlug,
+        schema,
       };
       this.eventEmitter.emit('activity.log', eventPayload);
     } catch (error) {
@@ -56,8 +62,15 @@ export class ActivityService {
   }
 
   logUpdate(options: LogUpdateOptions): void {
-    const { entityType, entityId, module, before, after, description } =
-      options;
+    const {
+      entityType,
+      entityId,
+      module,
+      before,
+      after,
+      description,
+      stakeholders,
+    } = options;
     const changedFields = diffObjects(before, after);
 
     if (Object.keys(changedFields).length === 0) {
@@ -76,6 +89,7 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
@@ -88,11 +102,13 @@ export class ActivityService {
       after,
       description,
       additionalFields = {},
+      stakeholders,
     } = options;
 
     const statusField = 'status';
-    const beforeStatus = formatLabel(before[statusField]);
-    const afterStatus = formatLabel(after[statusField]);
+    // TODO: Fix this type
+    const beforeStatus = formatLabel(before[statusField] as string);
+    const afterStatus = formatLabel(after[statusField] as string);
 
     if (
       beforeStatus === afterStatus &&
@@ -101,7 +117,7 @@ export class ActivityService {
       return;
     }
 
-    const changedFields: Record<string, any> = {
+    const changedFields: Record<string, unknown> = {
       ...additionalFields,
     };
 
@@ -127,16 +143,25 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description: defaultDescription,
+      stakeholders,
     });
   }
 
-  logCreate(
-    entityType: string,
-    entityId: string,
-    module: string,
-    data: any,
-    description?: string,
-  ): void {
+  logCreate({
+    entityType,
+    entityId,
+    module,
+    data,
+    description,
+    stakeholders,
+  }: {
+    entityType: EntityType;
+    entityId: string;
+    module: string;
+    data: Record<string, unknown>;
+    description?: string;
+    stakeholders?: string[];
+  }): void {
     this.logActivity({
       entityType,
       entityId,
@@ -147,16 +172,25 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
-  logDelete(
-    entityType: string,
-    entityId: string,
-    module: string,
-    data: any,
-    description?: string,
-  ): void {
+  logDelete({
+    entityType,
+    entityId,
+    module,
+    data,
+    description,
+    stakeholders,
+  }: {
+    entityType: EntityType;
+    entityId: string;
+    module: string;
+    data: Record<string, unknown>;
+    description?: string;
+    stakeholders?: string[];
+  }): void {
     this.logActivity({
       entityType,
       entityId,
@@ -167,15 +201,17 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
   logSoftDelete(
-    entityType: string,
+    entityType: EntityType,
     entityId: string,
     module: string,
-    data: any,
+    data: Record<string, unknown>,
     description?: string,
+    stakeholders?: string[],
   ): void {
     this.logActivity({
       entityType,
@@ -187,6 +223,7 @@ export class ActivityService {
       actorId: this.getActorId(),
       actorRole: this.getActorRole(),
       description,
+      stakeholders,
     });
   }
 
@@ -195,10 +232,10 @@ export class ActivityService {
   }
 
   private getActorId(): string | null {
-    return (this.request as any)?.user?.userId || null;
+    return this.request?.user?.userId || null;
   }
 
   private getActorRole(): string | null {
-    return (this.request as any)?.user?.role || null;
+    return this.request?.user?.role || null;
   }
 }
