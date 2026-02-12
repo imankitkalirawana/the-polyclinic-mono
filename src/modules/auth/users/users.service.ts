@@ -80,7 +80,7 @@ export class UserService {
    * enforcing `companies` to contain the active schema.
    */
   async find_all(
-    where: FindOptionsWhere<User>,
+    where: FindOptionsWhere<User> | null,
     options: UserFindOptions = {},
   ): Promise<User[]> {
     const { globally, ...rest } = options;

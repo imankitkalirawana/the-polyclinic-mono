@@ -35,8 +35,10 @@ export class AuthService {
   async login(dto: LoginDto): Promise<GlobalToken> {
     const email = dto.email.trim().toLowerCase();
     const user = await this.userService.find_by_and_fail({ email });
-    if (!user.is_verified) {
-      throw new UnauthorizedException('Please verify your email to login');
+    if (!user.email_verified) {
+      throw new UnauthorizedException(
+        'Please verify your email/phone number to login',
+      );
     }
 
     const ok = await bcrypt.compare(dto.password, user.password_digest);

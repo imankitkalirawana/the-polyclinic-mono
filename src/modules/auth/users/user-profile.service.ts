@@ -73,7 +73,11 @@ export class UserProfileService {
         break;
     }
 
-    this.emailService.sendEmail(user.email, 'Welcome to the platform');
+    this.emailService.sendEmail({
+      to: user.email,
+      subject: 'Welcome to the platform',
+      html: '<p>Welcome to the platform</p>',
+    });
 
     return this.getProfile(user.id);
   }
