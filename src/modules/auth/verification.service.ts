@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 import { MoreThan } from 'typeorm';
 import { Verification, VerificationType } from './entities/verification.entity';
 import { Repository } from 'typeorm';
-import { UsersService } from './users/users.service';
+import { UserService } from './users/users.service';
 
 /** Length in bytes for the verification token (64 hex chars when encoded). */
 const VERIFICATION_TOKEN_BYTES = 32;
@@ -22,7 +22,7 @@ export class VerificationService {
   constructor(
     @InjectRepository(Verification)
     private readonly verificationRepository: Repository<Verification>,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   async sendOtp(email: string, type: VerificationType): Promise<void> {
@@ -206,7 +206,7 @@ export class VerificationService {
     email: string,
     type: VerificationType,
   ): Promise<void> {
-    const user = await this.usersService.checkUserExistsByEmail(email);
+    const user = await this.userService.find_by({ email });
 
     switch (type) {
       case VerificationType.REGISTRATION:

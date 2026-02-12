@@ -7,53 +7,91 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
+import { UserProfileService } from './user-profile.service';
 import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userProfileService: UserProfileService,
+  ) {}
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   async create(
     @StandardParam() params: StandardParams,
-    @Body() dto: CreateUserDto,
+    @Body() dto: CreateProfileDto,
   ) {
-    const user = await this.usersService.create(dto);
-    params.setMessage('User created successfully');
-    return user;
+    const result = await this.userProfileService.createProfile(dto);
+    params.setMessage('Profile created successfully');
+    return result;
   }
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
-  async findAll() {
-    return await this.usersService.findAll();
+  async find_all() {
+    return await this.userService.find_all({}, { order: { name: 'ASC' } });
   }
 
   @Get(':id')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
-  async findOne(@Param('id') id: string) {
-    return await this.usersService.findOne(id);
+  async find_one(@Param('id') id: string) {
+    return await this.userService.find_by_and_fail({ id });
+  }
+
+  /** Get user + integrated role profile (Doctor/Patient) for the "Update a User" form. */
+  @Get(':id/profile')
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.MODERATOR,
+    Role.DOCTOR,
+    Role.PATIENT,
+  )
+  async get_profile(@Param('id') id: string) {
+    return await this.userProfileService.getProfile(id);
+  }
+
+  /** Update both user (name, email, phone) and role-specific profile in one request. */
+  @Patch(':id/profile')
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.MODERATOR,
+    Role.DOCTOR,
+    Role.PATIENT,
+  )
+  async update_profile(
+    @StandardParam() params: StandardParams,
+    @Param('id') id: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    console.log('dto in users.controller.ts', dto);
+    const result = await this.userProfileService.updateProfile(id, dto);
+    params.setMessage('Profile updated successfully');
+    return result;
   }
 
   @Patch(':id')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  async update(
+  async update_user(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
-    const user = await this.usersService.update(id, dto);
+    const user = await this.userService.update(id, dto);
     params.setMessage('User updated successfully');
     return user;
   }
@@ -61,12 +99,12 @@ export class UsersController {
   // reset password
   @Post(':id/reset-password')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  async resetPassword(
+  async reset_password(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
     @Body() dto: ResetPasswordDto,
   ) {
-    await this.usersService.updatePassword(id, dto.password);
+    await this.userService.update_password(id, dto.password);
     params.setMessage('Password reset successfully');
     return null;
   }

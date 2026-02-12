@@ -7,7 +7,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Between, Equal, In, LessThan, MoreThanOrEqual, Not } from 'typeorm';
+import {
+  Between,
+  Equal,
+  FindOptionsWhere,
+  In,
+  LessThan,
+  MoreThanOrEqual,
+  Not,
+} from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
 import { CurrentUserPayload } from '@/auth/decorators/current-user.decorator';
@@ -36,21 +44,31 @@ import { EntityType } from '@/common/activity/enums/entity-type.enum';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { PatientsService } from '@/common/patients/patients.service';
+import { QueueFindOptions } from './queue.types';
+import { TableViewService } from '@/common/table-views/table-view.service';
+import {
+  TableViewFilters,
+  TableViewType,
+} from '@/common/table-views/entities/table-view.entity';
+import type {
+  TableViewCell,
+  TableViewColumnConfig,
+} from '@/common/table-views/table-view.types';
+import { getCellValue } from '@/common/table-views/table-view-etl.util';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
 
-const queueRelations = [
-  'patient',
-  'patient.user',
-  'doctor',
-  'doctor.user',
-  'bookedByUser',
-  'completedByUser',
-];
+const defaultQueueFindRelations = {
+  patient: { user: true },
+  doctor: { user: true },
+  bookedByUser: true,
+  completedByUser: true,
+};
 
 @Injectable()
 export class QueueService {
+  private readonly schema: string;
   private readonly logger = new Logger(QueueService.name);
 
   constructor(
@@ -63,18 +81,13 @@ export class QueueService {
     private readonly qrService: QrService,
     private readonly activityService: ActivityService,
     private readonly activityLogService: ActivityLogService,
-  ) {}
-
-  private getSchema(): string {
-    const schema = this.request?.schema;
-    if (!schema) {
-      throw new UnauthorizedException('Schema is required');
-    }
-    return schema;
+    private readonly tableViewService: TableViewService,
+  ) {
+    this.schema = this.request.schema;
   }
 
   private async getConnection() {
-    return await getTenantConnection(this.getSchema());
+    return await getTenantConnection(this.schema);
   }
 
   private async getQueueRepository() {
@@ -113,6 +126,42 @@ export class QueueService {
     });
   }
 
+  async find_by(
+    where: FindOptionsWhere<Queue>,
+    options: QueueFindOptions = {},
+  ): Promise<Queue | null> {
+    const queueRepository = await this.getQueueRepository();
+    return queueRepository.findOne({
+      where,
+      ...options,
+      relations: options.relations ?? defaultQueueFindRelations,
+    });
+  }
+
+  async find_by_and_fail(
+    where: FindOptionsWhere<Queue>,
+    options: QueueFindOptions = {},
+  ): Promise<Queue> {
+    const queue = await this.find_by(where, options);
+    if (!queue) {
+      throw new NotFoundException('Queue not found');
+    }
+    return queue;
+  }
+
+  // find_all
+  async find_all(
+    where: FindOptionsWhere<Queue>,
+    options: QueueFindOptions = {},
+  ): Promise<Queue[]> {
+    const queueRepository = await this.getQueueRepository();
+    return queueRepository.find({
+      where,
+      ...options,
+      relations: options.relations ?? defaultQueueFindRelations,
+    });
+  }
+
   // check if a queue is already booked for the same doctor and patient for that date
   async checkIfQueueIsBooked(doctorId: string, patientId: string) {
     const queueRepository = await this.getQueueRepository();
@@ -123,7 +172,7 @@ export class QueueService {
   }
 
   private async checkDoctorExists(doctorId: string) {
-    const doctor = await this.doctorsService.findOne(doctorId);
+    const doctor = await this.doctorsService.find_by_and_fail({ id: doctorId });
     if (!doctor) {
       throw new BadRequestException('Doctor not found');
     }
@@ -140,10 +189,9 @@ export class QueueService {
       throw new BadRequestException('Cannot book appointment in the past');
     }
 
-    await this.patientsService.checkPatientExists(
-      createQueueDto.patientId,
-      true,
-    );
+    await this.patientsService.find_by_and_fail({
+      id: createQueueDto.patientId,
+    });
     await this.checkDoctorExists(createQueueDto.doctorId);
 
     if (existingQueue && this.request.user.role === Role.PATIENT) {
@@ -152,7 +200,9 @@ export class QueueService {
       );
     }
 
-    const doctor = await this.doctorsService.findOne(createQueueDto.doctorId);
+    const doctor = await this.doctorsService.find_by_and_fail({
+      id: createQueueDto.doctorId,
+    });
 
     // start transaction
     const connection = await this.getConnection();
@@ -176,7 +226,7 @@ export class QueueService {
       }
 
       // Get tenant schema name
-      const schema = this.getSchema();
+      const schema = this.schema;
 
       // Build sequence name for this doctor and appointment date
       const sequenceName = buildSequenceName(
@@ -274,8 +324,8 @@ export class QueueService {
     return queue;
   }
 
-  async cancelPayment(queueId: string, remark?: string) {
-    const queue = await this.findOne(queueId);
+  async cancelPayment(aid: string, remark?: string) {
+    const queue = await this.find_by_and_fail({ aid });
 
     const previousStatus = queue.status;
     queue.status = QueueStatus.CANCELLED;
@@ -298,57 +348,70 @@ export class QueueService {
     return queue;
   }
 
-  async findAll(date?: string) {
-    const repo = await this.getQueueRepository();
-    const queues = await repo.find({
-      where: {
-        createdAt: date ? MoreThanOrEqual(new Date(date)) : undefined,
+  async find_all_by_view(viewId: string): Promise<{
+    columns: TableViewColumnConfig[];
+    rows: Record<string, TableViewCell>[];
+  }> {
+    let view = await this.tableViewService.find_by(
+      {
+        id: viewId,
+        type: TableViewType.QUEUE,
+        user_id: this.request.user.userId,
       },
-      withDeleted: true,
-      relations: queueRelations,
+      { relations: { columns: { column: true } } },
+    );
+
+    if (!view) {
+      view = await this.tableViewService.create_default_view(
+        TableViewType.QUEUE,
+        this.request.user.userId,
+      );
+    }
+
+    const sortedColumns = view.columns.sort((a, b) => a.order - b.order);
+
+    const columns = sortedColumns.map((vc) => ({
+      key: vc.column.key,
+      name: vc.column.name,
+      data_type: vc.column.data_type,
+      order: vc.order,
+      width: vc.width,
+      pinned: vc.pinned,
+    }));
+
+    const where = this.buildQueueWhereFromFilters(view.filters);
+    const queues = await this.find_all(where, {
       order: {
         aid: 'DESC',
       },
     });
 
-    return queues;
-  }
-
-  async findOne(id: string) {
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-
-    const queueRepository = await this.getQueueRepository();
-    const queue = await queueRepository.findOne({
-      where: {
-        id,
-      },
-      withDeleted: true,
-      relations: queueRelations,
+    const rows: Record<string, TableViewCell>[] = queues.map((queue) => {
+      const row: Record<string, TableViewCell> = {};
+      for (const vc of sortedColumns) {
+        const column = vc.column;
+        if (!column) continue;
+        row[column.key] = {
+          value: getCellValue(queue, {
+            key: column.key,
+            data_type: column.data_type,
+            source: column.source,
+          }),
+        };
+      }
+      return row;
     });
 
-    if (!queue) {
-      throw new NotFoundException(`Queue with ID ${id} not found`);
-    }
-
-    return queue;
+    return { columns, rows };
   }
 
-  async findByAid(aid: string) {
-    const user = this.request.user;
-    if (!user) throw new UnauthorizedException('Unauthorized');
-
-    const queueRepository = await this.getQueueRepository();
-    const queue = await queueRepository.findOne({
-      where: {
-        aid,
-      },
-      relations: queueRelations,
-    });
-    if (!queue) {
-      throw new NotFoundException(`Queue with AID ${aid} not found`);
-    }
-    return formatQueue(queue, user.role);
+  private buildQueueWhereFromFilters(
+    filters: TableViewFilters | undefined,
+  ): FindOptionsWhere<Queue> {
+    if (!filters) return undefined;
+    const where: FindOptionsWhere<Queue> = {};
+    if (filters.status) where.status = filters.status;
+    return where;
   }
 
   async remove(id: string) {
@@ -394,7 +457,7 @@ export class QueueService {
       const queueRepository = await this.getQueueRepository();
       requestedQueue = await queueRepository.findOne({
         where: { id: queueId },
-        relations: queueRelations,
+        relations: defaultQueueFindRelations,
       });
       if (!requestedQueue) {
         throw new NotFoundException(`Queue with ID ${queueId} not found`);
@@ -409,7 +472,7 @@ export class QueueService {
         status: In([QueueStatus.COMPLETED, QueueStatus.CANCELLED]),
       },
 
-      relations: queueRelations,
+      relations: defaultQueueFindRelations,
       order: {
         sequenceNumber: 'DESC',
       },
@@ -428,7 +491,7 @@ export class QueueService {
           ]),
         ),
       },
-      relations: queueRelations,
+      relations: defaultQueueFindRelations,
       order: {
         sequenceNumber: 'ASC',
       },
@@ -470,7 +533,9 @@ export class QueueService {
     const queueRepo = await this.getQueueRepository();
     const now = new Date();
     const userId = this.request.user.userId;
-    const patient = await this.patientService.findByUserId(userId);
+    const patient = await this.patientService.find_by_and_fail({
+      user_id: userId,
+    });
 
     const previousQueues = await queueRepo.find({
       where: [
@@ -483,7 +548,7 @@ export class QueueService {
           appointmentDate: LessThan(now),
         },
       ],
-      relations: queueRelations,
+      relations: defaultQueueFindRelations,
       order: {
         appointmentDate: 'DESC',
       },
@@ -495,7 +560,7 @@ export class QueueService {
         status: Not(In([QueueStatus.COMPLETED, QueueStatus.CANCELLED])),
         appointmentDate: MoreThanOrEqual(now),
       },
-      relations: queueRelations,
+      relations: defaultQueueFindRelations,
       order: {
         appointmentDate: 'ASC',
       },
@@ -525,13 +590,15 @@ export class QueueService {
 
     let patientId = undefined;
     if (this.request.user.role === Role.PATIENT) {
-      patientId = (await this.patientService.findByUserId(userId)).id;
+      patientId = (
+        await this.patientService.find_by_and_fail({ user_id: userId })
+      ).id;
     }
 
     const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
       where: { aid, patientId },
-      relations: queueRelations,
+      relations: defaultQueueFindRelations,
     });
     if (!queue) {
       throw new NotFoundException(`Appointment with AID ${aid} not found`);
@@ -540,9 +607,9 @@ export class QueueService {
   }
 
   // Call queue by id
-  async callQueue(id: string) {
+  async callQueue(aid: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.findOne(id);
+    const queue = await this.find_by_and_fail({ aid });
 
     if (
       ![QueueStatus.BOOKED, QueueStatus.SKIPPED, QueueStatus.CALLED].includes(
@@ -577,9 +644,9 @@ export class QueueService {
   }
 
   // skip queue by id
-  async skipQueue(id: string) {
+  async skipQueue(aid: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.findOne(id);
+    const queue = await this.find_by_and_fail({ aid });
 
     if (
       ![
@@ -619,9 +686,9 @@ export class QueueService {
   }
 
   // clock in
-  async clockIn(id: string) {
+  async clockIn(aid: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.findOne(id);
+    const queue = await this.find_by_and_fail({ aid });
 
     if (queue.status !== QueueStatus.CALLED) {
       throw new BadRequestException(
@@ -654,13 +721,13 @@ export class QueueService {
 
   // complete appointment queue
   async completeAppointmentQueue(
-    id: string,
+    aid: string,
     completeQueueDto: CompleteQueueDto,
     user: CurrentUserPayload,
   ) {
     const queueRepository = await this.getQueueRepository();
 
-    const queue = await this.findOne(id);
+    const queue = await this.find_by_and_fail({ aid });
 
     if (
       ![QueueStatus.IN_CONSULTATION, QueueStatus.COMPLETED].includes(
@@ -696,8 +763,8 @@ export class QueueService {
     return formatQueue(queue, this.request.user.role);
   }
 
-  async appointmentReceiptPdf(id: string) {
-    const queue = await this.findOne(id);
+  async appointmentReceiptPdf(aid: string) {
+    const queue = await this.find_by_and_fail({ aid });
 
     const url = `${process.env.APP_URL}/appointments/queues/${queue.aid}`;
 
@@ -723,8 +790,8 @@ export class QueueService {
     };
   }
 
-  async getActivityLogs(queueId: string) {
-    const queue = await this.findOne(queueId);
+  async getActivityLogs(aid: string) {
+    const queue = await this.find_by_and_fail({ aid });
 
     return this.activityLogService.getActivityLogsByEntity(
       EntityType.QUEUE,

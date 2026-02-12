@@ -20,14 +20,15 @@ import {
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { formatPatient } from './patients.helper';
-import { UsersService } from '@/auth/users/users.service';
+import { UserService } from '@/auth/users/users.service';
+import { ILike } from 'typeorm';
 
 @Controller('patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
   constructor(
     private readonly patientsService: PatientsService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   @Post()
@@ -43,21 +44,25 @@ export class PatientsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  async findAll(@Query('search') search?: string) {
-    const patients = await this.patientsService.findAll(search);
+  async find_all(@Query('search') search?: string) {
+    const patients = await this.patientsService.find_all({
+      user: { name: ILike(`%${search}%`) },
+    });
     return patients.map(formatPatient);
   }
 
   @Get('me')
-  async getMe(@CurrentUser() user: CurrentUserPayload) {
-    const patient = await this.patientsService.findByUserId(user.user_id);
+  async get_me(@CurrentUser() user: CurrentUserPayload) {
+    const patient = await this.patientsService.find_by_and_fail({
+      user_id: user.user_id,
+    });
     return formatPatient(patient);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async findOne(@Param('id') id: string) {
-    const patient = await this.patientsService.findOne(id);
+  async find_one(@Param('id') id: string) {
+    const patient = await this.patientsService.find_by_and_fail({ id });
     return formatPatient(patient);
   }
 

@@ -1,19 +1,15 @@
-import {
-  Injectable,
-  NotFoundException,
-  Inject,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { ArrayContains } from 'typeorm';
+import { ArrayContains, FindOptionsWhere } from 'typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
-import { subYears } from 'date-fns';
-import { UsersService } from '@/auth/users/users.service';
+import { UserService } from '@/auth/users/users.service';
 import { Patient } from '@/common/patients/entities/patient.entity';
 import { Role } from 'src/scripts/types';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { UpdatePatientProfileDto } from '@/auth/users/dto/update-profile.dto';
+import { PatientFindOptions } from './patient.types';
 
 @Injectable()
 export class PatientsService {
@@ -21,7 +17,7 @@ export class PatientsService {
 
   constructor(
     @Inject(REQUEST) private request: Request,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {
     this.schema = this.request.schema;
   }
@@ -35,72 +31,54 @@ export class PatientsService {
     return connection.getRepository(Patient);
   }
 
-  private getActor() {
-    const actor = this.request?.user;
-    return {
-      actorUserId: actor?.userId ?? null,
-      actorRole: actor?.role ?? null,
-    };
-  }
-
-  private calculateDob(age: number): Date {
-    const currentDate = new Date();
-    const dob = subYears(currentDate, age);
-    return dob;
-  }
-
-  private async findPatientEntityByUserId(userId: string) {
-    const repo = await this.getPatientRepository();
-    return await repo.findOne({
-      where: { user_id: userId },
-      relations: ['user'],
-    });
-  }
-
-  async checkPatientExists(patientId: string, earlyReturn?: boolean) {
+  async find_by(
+    where: FindOptionsWhere<Patient>,
+    options: PatientFindOptions = {
+      relations: { user: true },
+    },
+  ): Promise<Patient | null> {
+    const { globally, ...rest } = options;
     const patientRepository = await this.getPatientRepository();
-    const patient = await patientRepository.findOne({
+    return patientRepository.findOne({
       where: {
-        id: patientId,
-        user: {
-          companies: ArrayContains([this.schema]),
-        },
+        ...where,
+        ...(!globally && { user: { companies: ArrayContains([this.schema]) } }),
       },
+      ...rest,
     });
+  }
 
-    if (earlyReturn && !patient) {
+  async find_by_and_fail(
+    where: FindOptionsWhere<Patient>,
+    options: PatientFindOptions = {},
+  ): Promise<Patient> {
+    const patient = await this.find_by(where, options);
+    if (!patient) {
       throw new NotFoundException('Patient not found');
     }
-
-    return {
-      exists: !!patient,
-      patient,
-    };
+    return patient;
   }
 
-  async checkPatientExistsByEmail(email: string, earlyReturn?: boolean) {
+  // find_all
+  async find_all(
+    where: FindOptionsWhere<Patient>,
+    options: PatientFindOptions = {
+      relations: { user: true },
+    },
+  ): Promise<Patient[]> {
+    const { globally, ...rest } = options;
     const patientRepository = await this.getPatientRepository();
-    const patient = await patientRepository.findOne({
+    return patientRepository.find({
       where: {
-        user: {
-          email,
-          companies: ArrayContains([this.schema]),
-        },
+        ...where,
+        ...(!globally && { user: { companies: ArrayContains([this.schema]) } }),
       },
+      ...rest,
     });
-
-    if (earlyReturn && patient) {
-      throw new ConflictException('Patient with this email already exists');
-    }
-
-    return {
-      exists: !!patient,
-      patient,
-    };
   }
 
   async create(createPatientDto: CreatePatientDto) {
-    const user = await this.usersService.create({
+    const user = await this.userService.create({
       email: createPatientDto.email,
       name: createPatientDto.name,
       phone: createPatientDto.phone,
@@ -120,77 +98,6 @@ export class PatientsService {
     return patient;
   }
 
-  async findAll(search?: string) {
-    const repo = await this.getPatientRepository();
-    const baseWhere = {
-      user: { companies: ArrayContains([this.schema]) },
-    };
-
-    if (search?.trim()) {
-      const term = `%${search.trim()}%`;
-
-      return repo
-        .createQueryBuilder('patient')
-        .leftJoinAndSelect('patient.user', 'user')
-        .where('user.companies @> :companies', {
-          companies: [this.schema],
-        })
-        .andWhere(
-          `(user.name ILIKE :term 
-            OR user.email ILIKE :term 
-            OR user.phone ILIKE :term)`,
-        )
-        .setParameter('term', term)
-        .getMany();
-    }
-    const patients = await repo.find({
-      where: baseWhere,
-      relations: ['user'],
-    });
-    return patients;
-  }
-
-  async findByUserId(userId: string) {
-    const repo = await this.getPatientRepository();
-    const patient = await repo.findOne({
-      where: { user_id: userId },
-      relations: ['user'],
-    });
-
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
-
-    return patient;
-  }
-
-  async findOne(id: string) {
-    const repo = await this.getPatientRepository();
-    const patient = await repo.findOne({
-      where: { id, user: { companies: ArrayContains([this.schema]) } },
-      relations: ['user'],
-    });
-
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
-
-    return patient;
-  }
-
-  // find one by user email
-  async findOneByUserEmail(email: string) {
-    const repo = await this.getPatientRepository();
-    const patient = await repo.findOne({
-      where: { user: { email, companies: ArrayContains([this.schema]) } },
-      relations: ['user'],
-    });
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
-    return patient;
-  }
-
   async update(id: string, updatePatientDto: UpdatePatientDto) {
     const repo = await this.getPatientRepository();
     const updatedPatient = await repo.update(id, updatePatientDto);
@@ -199,7 +106,29 @@ export class PatientsService {
       throw new NotFoundException('Patient not found');
     }
 
-    return this.findOne(id);
+    return this.find_by_and_fail({ id });
+  }
+
+  /** Update patient profile by user id (used by profile service). */
+  async update_by_user_id(userId: string, dto: UpdatePatientProfileDto) {
+    const repo = await this.getPatientRepository();
+    if (dto && Object.keys(dto).length > 0) {
+      await repo.update({ user_id: userId }, dto);
+    }
+    return this.find_by_and_fail({ user_id: userId });
+  }
+
+  /**
+   * Create patient profile for an already created user.
+   * Used by the unified user profile creation flow.
+   */
+  async create_for_user(userId: string, dto: UpdatePatientProfileDto) {
+    const repo = await this.getPatientRepository();
+    const patient = repo.create({
+      user_id: userId,
+      ...dto,
+    });
+    return repo.save(patient);
   }
 
   async remove(_patientId: string) {}

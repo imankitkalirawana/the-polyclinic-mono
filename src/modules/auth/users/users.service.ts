@@ -5,18 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
 
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
+import { UserFindOptions } from './users.types';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   private readonly schema: string;
 
   constructor(
@@ -36,85 +36,101 @@ export class UsersService {
     return connection.getRepository(User);
   }
 
-  async checkUserExistsByEmail(email: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
-    return user;
-  }
-
-  async checkUserExistsByEmailAndFail(email: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
-    if (!user) {
-      throw new NotFoundException(
-        'User not found with email: ' + email,
-        'schema: ' + this.schema,
-      );
-    }
-    return user;
-  }
-
-  async checkUserExistsByIdAndFail(id: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: { id, companies: ArrayContains([this.schema]) },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found with id: ' + id);
-    }
-  }
-
-  // safely check if the email is not already taken in this company
-  async checkEmailIsNotTaken(email: string) {
-    const userRepository = await this.getUserRepository();
-    const user = await userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
-    if (user) {
-      throw new ConflictException('Email already taken');
-    }
-    return true;
-  }
-
-  // find user by email in the shared users table (any company)
-  private async findUserByEmailGlobally(email: string): Promise<User | null> {
+  /**
+   * Generic single user finder that allows calls like:
+   * `userService.find_by({ email: 'test@example.com' })`
+   *
+   * Always scopes the query to the current company (`schema`) by
+   * enforcing `companies` to contain the active schema.
+   */
+  async find_by(
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
+  ): Promise<User | null> {
+    const { globally, ...rest } = options;
     const userRepository = await this.getUserRepository();
     return userRepository.findOne({
-      where: { email },
-      withDeleted: true,
+      where: {
+        ...where,
+        ...(!globally && { companies: ArrayContains([this.schema]) }),
+        ...rest,
+      },
     });
+  }
+
+  // find_by_and_fail
+  async find_by_and_fail(
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
+  ): Promise<User> {
+    const user = await this.find_by(where, options);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  /**
+   * Generic multiple users finder that allows calls like:
+   * `userService.find_all({ email: 'test@example.com' })`
+   *
+   * Always scopes the query to the current company (`schema`) by
+   * enforcing `companies` to contain the active schema.
+   */
+  async find_all(
+    where: FindOptionsWhere<User>,
+    options: UserFindOptions = {},
+  ): Promise<User[]> {
+    const { globally, ...rest } = options;
+    const userRepository = await this.getUserRepository();
+    return userRepository.find({
+      where: {
+        ...where,
+        ...(!globally && { companies: ArrayContains([this.schema]) }),
+      },
+      ...rest,
+    });
+  }
+
+  /** For updates: ensure email is not taken by another user (excluding excludeUserId). */
+  async ensure_email_not_taken_by_other_user(
+    email: string,
+    excludeUserId: string,
+  ) {
+    const user = await this.find_by({ email }, { globally: true });
+
+    if (user && user.id !== excludeUserId) {
+      throw new ConflictException('Email already taken');
+    }
+  }
+
+  async update(id: string, dto: Partial<User>) {
+    const user = await this.find_by_and_fail({ id });
+    Object.assign(user, dto);
+    return this.userRepository.save(user);
   }
 
   async create(dto: CreateUserDto) {
     const userRepository = await this.getUserRepository();
-    const existingUser = await this.findUserByEmailGlobally(dto.email);
+    const existingUser = await this.find_by(
+      { email: dto.email },
+      { globally: true },
+    );
 
     if (existingUser?.companies?.includes(this.schema)) {
       throw new ConflictException('User already exists in this company');
     }
 
     if (existingUser) {
-      await this.addUserToCompany(dto.email, this.schema);
+      await this.add_user_to_company(dto.email, this.schema);
       if (existingUser.deletedAt) {
         await this.restore(existingUser.id);
       }
 
       return existingUser;
     }
-    const user = userRepository.create({
+    const user = new User();
+    Object.assign(user, {
       ...dto,
       password_digest: dto.password
         ? await bcrypt.hash(dto.password, 10)
@@ -124,67 +140,29 @@ export class UsersService {
     return await userRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find({
-      where: {
-        companies: ArrayContains([this.schema]),
-      },
-    });
-  }
-
-  async addUserToCompany(email: string, schema: string) {
-    const user = await this.findUserByEmailGlobally(email);
+  async add_user_to_company(email: string, schema: string) {
+    const user = await this.find_by({ email }, { globally: true });
     const companies = [...new Set([...(user.companies || []), schema])];
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
-  async removeUserFromCompany(email: string, schema: string) {
-    const user = await this.findOneByEmail(email);
+  async remove_user_from_company(email: string, schema: string) {
+    const user = await this.find_by({ email });
     const companies = user.companies.filter((c) => c !== schema);
     await this.userRepository.update(user.id, { companies });
     return user;
   }
 
-  async findOne(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { id, companies: ArrayContains([this.schema]) },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
-  async findOneByEmail(email: string) {
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-        companies: ArrayContains([this.schema]),
-      },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-
-  async update(id: string, dto: UpdateUserDto) {
-    await this.checkUserExistsByEmailAndFail(dto.email);
-    const user = await this.findOne(id);
-    Object.assign(user, dto);
-    return await this.userRepository.save(user);
-  }
-
-  async updatePassword(id: string, password: string) {
-    await this.checkUserExistsByIdAndFail(id);
+  async update_password(id: string, password: string) {
+    await this.find_by_and_fail({ id });
     const userRepository = await this.getUserRepository();
     await userRepository.update(id, {
       password_digest: await bcrypt.hash(password, 10),
     });
   }
 
-  async softDelete(id: string) {
+  async soft_delete(id: string) {
     const userRepository = await this.getUserRepository();
     await userRepository.softDelete(id);
   }
