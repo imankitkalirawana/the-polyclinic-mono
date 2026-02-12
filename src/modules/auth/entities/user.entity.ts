@@ -47,6 +47,9 @@ export class User extends BaseEntity {
   @OneToMany('Session', 'user')
   sessions: Session[];
 
+  @Column({ type: 'boolean', default: false })
+  is_verified: boolean;
+
   @DeleteDateColumn()
   deletedAt?: Date;
 }

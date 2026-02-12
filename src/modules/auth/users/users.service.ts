@@ -14,6 +14,7 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserFindOptions } from './users.types';
+import { EmailService } from '@/common/email/email.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly emailService: EmailService,
     @Inject(REQUEST) private request: Request,
   ) {
     this.schema = this.request.schema;
