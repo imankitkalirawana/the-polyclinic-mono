@@ -374,6 +374,7 @@ export class QueueService {
       key: vc.column.key,
       name: vc.column.name,
       data_type: vc.column.data_type,
+      column_type: vc.column.column_type,
       order: vc.order,
       width: vc.width,
       pinned: vc.pinned,
