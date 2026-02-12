@@ -13,6 +13,7 @@ import { TableViewsModule } from '@/common/table-views/table-views.module';
     PaymentsModule,
     PdfModule,
     DoctorsModule,
+    PatientsModule,
     QrModule,
     PatientsModule,
     TableViewsModule,
