@@ -4,6 +4,7 @@ import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';
 import { AppModule } from './app.module';
 import { CloudLoggerService } from './modules/common/logging/cloud-logger.service';
+import { RequestContextInterceptor } from './common/request-context/request-context.interceptor';
 import * as express from 'express';
 
 async function bootstrap() {
@@ -77,6 +78,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useGlobalInterceptors(new RequestContextInterceptor());
 
   app.enableShutdownHooks();
 
