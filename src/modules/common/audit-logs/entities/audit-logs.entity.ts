@@ -1,5 +1,5 @@
 import { Column, Entity, Index } from 'typeorm';
-import { BaseEntity } from '@common/entity/base.entity';
+import { BaseEntity } from 'src/common/entity/base.entity';
 
 export enum ItemType {
   USER = 'User',

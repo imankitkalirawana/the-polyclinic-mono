@@ -6,7 +6,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Gender } from '@/common/patients/entities/patient.entity';
+import { Gender } from '@common/patients/entities/patient.entity';
 
 /**
  * Base user fields shared across all roles (matches "Update a User" form).

@@ -12,8 +12,8 @@ import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
 import { Role } from 'src/scripts/types';
-import { DoctorsService } from '@/common/doctors/doctors.service';
-import { MasterKeyService } from '@/common/utilities/master-key/masterkey.service';
+import { DoctorsService } from '@common/doctors/doctors.service';
+import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 

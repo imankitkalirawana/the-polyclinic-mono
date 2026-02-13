@@ -13,13 +13,13 @@ import {
   ItemType,
   ActorType,
 } from './entities/audit-logs.entity';
-import { User } from '@/auth/entities/user.entity';
-import { Patient } from '@/common/patients/entities/patient.entity';
-import { Doctor } from '@/common/doctors/entities/doctor.entity';
-import { Company } from '@/auth/entities/company.entity';
-import { Queue } from '@/client/appointments/queue/entities/queue.entity';
-import { Payment } from '@/client/payments/entities/payment.entity';
-import { RequestContext } from '../../../common/request-context/request-context';
+import { User } from '@auth/entities/user.entity';
+import { Patient } from '@common/patients/entities/patient.entity';
+import { Doctor } from '@common/doctors/entities/doctor.entity';
+import { Company } from '@auth/entities/company.entity';
+import { Queue } from '@client/appointments/queue/entities/queue.entity';
+import { Payment } from '@client/payments/entities/payment.entity';
+import { RequestContext } from 'src/common/request-context/request-context';
 
 type AnyEntity =
   | User

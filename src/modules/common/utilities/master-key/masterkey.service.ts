@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { generatePassword } from '@/auth/users/users.utils';
-import { SlackService } from '@/common/slack/slack.service';
 import { formatDate } from 'date-fns';
 import { InjectModel } from '@nestjs/mongoose';
 import { MasterKey } from './schemas/masterkey.schema';
 import { Model } from 'mongoose';
+import { generatePassword } from '@auth/users/users.utils';
+import { SlackService } from '@common/slack/slack.service';
 
 @Injectable()
 export class MasterKeyService {

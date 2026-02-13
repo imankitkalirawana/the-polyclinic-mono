@@ -7,7 +7,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
+import { CreateUserDto } from '@auth/users/dto/create-user.dto';
 import {
   UpdateDoctorProfileDto,
   UpdatePatientProfileDto,

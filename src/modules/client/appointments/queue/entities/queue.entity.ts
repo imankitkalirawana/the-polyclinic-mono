@@ -9,9 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Patient } from '@/common/patients/entities/patient.entity';
-import { Doctor } from '@/common/doctors/entities/doctor.entity';
-import { User } from '@/auth/entities/user.entity';
+import { Patient } from '@common/patients/entities/patient.entity';
+import { Doctor } from '@common/doctors/entities/doctor.entity';
+import { User } from '@auth/entities/user.entity';
 import { PaymentMode } from '../enums/queue.enum';
 
 export enum QueueStatus {

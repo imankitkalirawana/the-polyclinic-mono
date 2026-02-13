@@ -11,7 +11,7 @@ import { TableViewService } from './table-view.service';
 import { Request } from 'express';
 import { UpdateUserTableViewColumnsDto } from './dto/update-user-table-view-columns.dto';
 import { TableViewType } from './enums/table-view-type.enum';
-import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
+import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { formatColumns, formatTableViewColumns } from './table-view.helper';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 

@@ -5,8 +5,8 @@ import { UserService } from './users.service';
 import { UserProfileService } from './user-profile.service';
 import { User } from '../entities/user.entity';
 import { SchemaValidatorService } from '../schema/schema-validator.service';
-import { DoctorsModule } from '@/common/doctors/doctors.module';
-import { PatientsModule } from '@/common/patients/patients.module';
+import { DoctorsModule } from '@common/doctors/doctors.module';
+import { PatientsModule } from '@common/patients/patients.module';
 
 @Global()
 @Module({

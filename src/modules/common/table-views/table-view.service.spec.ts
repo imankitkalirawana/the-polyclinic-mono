@@ -114,7 +114,7 @@ describe('TableViewService', () => {
 
       await expect(
         service.update_columns(VIEW_ID, {
-          columns: [{ column_id: COL_ID_A }],
+          columns: [{ id: COL_ID_A }],
         }),
       ).rejects.toThrow(NotFoundException);
 
@@ -132,7 +132,7 @@ describe('TableViewService', () => {
 
       await expect(
         service.update_columns(VIEW_ID, {
-          columns: [{ column_id: COL_ID_A }, { column_id: invalidColumnId }],
+          columns: [{ id: COL_ID_A }, { id: invalidColumnId }],
         }),
       ).rejects.toThrow(BadRequestException);
 
@@ -161,11 +161,7 @@ describe('TableViewService', () => {
       columnServiceFindAll.mockResolvedValue(allowedCols);
 
       const dto: UpdateUserTableViewColumnsDto = {
-        columns: [
-          { column_id: COL_ID_A },
-          { column_id: COL_ID_B },
-          { column_id: COL_ID_C },
-        ],
+        columns: [{ id: COL_ID_A }, { id: COL_ID_B }, { id: COL_ID_C }],
       };
 
       const result = await service.update_columns(VIEW_ID, dto);
@@ -213,13 +209,13 @@ describe('TableViewService', () => {
       await service.update_columns(VIEW_ID, {
         columns: [
           {
-            column_id: COL_ID_B,
+            id: COL_ID_B,
             order: 0,
             visible: false,
             width: 100,
             pinned: true,
           },
-          { column_id: COL_ID_A, order: 1 },
+          { id: COL_ID_A, order: 1 },
         ],
       });
 
@@ -241,7 +237,7 @@ describe('TableViewService', () => {
       viewRepoFindOne.mockResolvedValueOnce(view).mockResolvedValueOnce(view);
 
       await service.update_columns(VIEW_ID, {
-        columns: [{ column_id: COL_ID_B }, { column_id: COL_ID_A }],
+        columns: [{ id: COL_ID_B }, { id: COL_ID_A }],
       });
 
       expect(vcB.order).toBe(0);
@@ -261,7 +257,7 @@ describe('TableViewService', () => {
         .mockResolvedValueOnce(viewWithColumns([vcA]));
 
       await service.update_columns(VIEW_ID, {
-        columns: [{ column_id: COL_ID_A }],
+        columns: [{ id: COL_ID_A }],
       });
 
       expect(managerSoftRemove).toHaveBeenCalledWith([vcB]);
@@ -279,7 +275,7 @@ describe('TableViewService', () => {
         .mockResolvedValueOnce(updatedView);
 
       const result = await service.update_columns(VIEW_ID, {
-        columns: [{ column_id: COL_ID_A, width: 200 }],
+        columns: [{ id: COL_ID_A, width: 200 }],
       });
 
       expect(result).toBe(updatedView);

@@ -2,10 +2,10 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
-import { Doctor } from '@/common/doctors/entities/doctor.entity';
+import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { UpdateDoctorProfileDto } from '@/auth/users/dto/update-profile.dto';
+import { UpdateDoctorProfileDto } from '@auth/users/dto/update-profile.dto';
 import { DoctorFindOptions } from './doctor.types';
 
 @Injectable()

@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@/auth/entities/user.entity';
+import { User } from '@auth/entities/user.entity';
 
 @Entity('doctor_doctors', { schema: 'public' })
 export class Doctor {
