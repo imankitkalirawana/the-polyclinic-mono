@@ -14,7 +14,7 @@ export const publicOrmConfig: DataSourceOptions = {
     join(__dirname, './modules/auth/**/entities/*.entity.{ts,js}'),
     join(__dirname, './modules/common/**/entities/*.entity.{ts,js}'),
   ],
-  synchronize: true,
+  synchronize: false,
   logging: process.env.NODE_ENV === 'development',
   // ssl: {
   //   rejectUnauthorized: false,

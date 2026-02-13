@@ -78,7 +78,6 @@ export class UsersController {
     @Param('id') id: string,
     @Body() dto: UpdateProfileDto,
   ) {
-    console.log('dto in users.controller.ts', dto);
     const result = await this.userProfileService.updateProfile(id, dto);
     params.setMessage('Profile updated successfully');
     return result;

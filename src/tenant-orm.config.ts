@@ -31,7 +31,7 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
       Patient,
       Doctor,
     ],
-    synchronize: true,
+    synchronize: false,
     logging: process.env.NODE_ENV === 'development',
     // ssl: {
     //   rejectUnauthorized: false,

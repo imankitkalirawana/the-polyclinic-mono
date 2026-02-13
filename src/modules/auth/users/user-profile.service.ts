@@ -85,8 +85,6 @@ export class UserProfileService {
       await this.userService.update(userId, base);
     }
 
-    console.debug('dto in user-profile.service.ts', dto);
-
     switch (user.role) {
       case Role.DOCTOR:
         await this.doctorsService.update_by_user_id(userId, dto.doctor);

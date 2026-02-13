@@ -117,7 +117,6 @@ export class PatientsService {
     }
     return this.find_by_and_fail({ user_id: userId });
   }
-
   /**
    * Create patient profile for an already created user.
    * Used by the unified user profile creation flow.
