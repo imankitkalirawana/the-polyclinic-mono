@@ -12,8 +12,8 @@ import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
 import { Role } from 'src/scripts/types';
-import { DoctorsService } from '@/common/doctors/doctors.service';
-import { MasterKeyService } from '@/common/utilities/master-key/masterkey.service';
+import { DoctorsService } from '@common/doctors/doctors.service';
+import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -35,6 +35,11 @@ export class AuthService {
   async login(dto: LoginDto): Promise<GlobalToken> {
     const email = dto.email.trim().toLowerCase();
     const user = await this.userService.find_by_and_fail({ email });
+    if (!user.email_verified) {
+      throw new UnauthorizedException(
+        'Please verify your email/phone number to login',
+      );
+    }
 
     const ok = await bcrypt.compare(dto.password, user.password_digest);
 
@@ -94,6 +99,7 @@ export class AuthService {
     const user = await this.userService.find_by_and_fail({
       id: this.request.user.userId,
     });
+
     let integrated_user_id = null;
     if (user.role === Role.DOCTOR) {
       const doctor = await this.doctorsService.find_by_and_fail({

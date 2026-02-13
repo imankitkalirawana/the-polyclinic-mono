@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Role } from 'src/common/enums/role.enum';
 import { User } from '../entities/user.entity';
 import { UserService } from './users.service';
-import { DoctorsService } from '@/common/doctors/doctors.service';
-import { PatientsService } from '@/common/patients/patients.service';
+import { DoctorsService } from '@common/doctors/doctors.service';
+import { PatientsService } from '@common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
-import { generateDoctorCode } from '@/common/doctors/doctors.helper';
+import { generateDoctorCode } from '@common/doctors/doctors.helper';
+import { EmailService } from '@common/email/email.service';
 
 export type UserProfileResponse =
   | {
@@ -23,22 +24,15 @@ export type UserProfileResponse =
     }
   | { user: User; doctor?: never; patient?: never };
 
-/**
- * Unified profile service: get/update user + role-specific profile (Doctor/Patient)
- * in one place. Scalable: add new roles by extending getProfile/updateProfile switch.
- */
 @Injectable()
 export class UserProfileService {
   constructor(
     private readonly userService: UserService,
     private readonly doctorsService: DoctorsService,
     private readonly patientsService: PatientsService,
+    private readonly emailService: EmailService,
   ) {}
 
-  /**
-   * Get user and integrated role profile for the "Update a User" form.
-   * Returns user + doctor or user + patient based on user.role.
-   */
   async getProfile(userId: string): Promise<UserProfileResponse> {
     const user = await this.userService.find_by_and_fail({ id: userId });
 
@@ -58,11 +52,36 @@ export class UserProfileService {
     }
   }
 
-  /**
-   * Update both user (name, email, phone) and role-specific profile in one flow.
-   * Validates email uniqueness when email is changed; applies only the role block
-   * matching the user's role.
-   */
+  async createProfile(dto: CreateProfileDto): Promise<UserProfileResponse> {
+    // First create the base user
+    const user = await this.userService.create(dto.user);
+
+    // Then create role-specific profile based on the created user's role
+    switch (user.role) {
+      case Role.DOCTOR:
+        if (dto.doctor) {
+          if (!dto.doctor.code) {
+            dto.doctor.code = generateDoctorCode(user.name);
+          }
+          await this.doctorsService.create_for_user(user.id, dto.doctor);
+        }
+        break;
+      case Role.PATIENT:
+        if (dto.patient) {
+          await this.patientsService.create_for_user(user.id, dto.patient);
+        }
+        break;
+    }
+
+    this.emailService.sendEmail({
+      to: user.email,
+      subject: 'Welcome to the platform',
+      html: '<p>Welcome to the platform</p>',
+    });
+
+    return this.getProfile(user.id);
+  }
+
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,
@@ -95,33 +114,5 @@ export class UserProfileService {
     }
 
     return this.getProfile(userId);
-  }
-
-  /**
-   * Create a new user and the corresponding role-specific profile (doctor/patient)
-   * in a single unified flow.
-   */
-  async createProfile(dto: CreateProfileDto): Promise<UserProfileResponse> {
-    // First create the base user
-    const user = await this.userService.create(dto.user);
-
-    // Then create role-specific profile based on the created user's role
-    switch (user.role) {
-      case Role.DOCTOR:
-        if (dto.doctor) {
-          if (!dto.doctor.code) {
-            dto.doctor.code = generateDoctorCode(user.name);
-          }
-          await this.doctorsService.create_for_user(user.id, dto.doctor);
-        }
-        break;
-      case Role.PATIENT:
-        if (dto.patient) {
-          await this.patientsService.create_for_user(user.id, dto.patient);
-        }
-        break;
-    }
-
-    return this.getProfile(user.id);
   }
 }

@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@/auth/entities/user.entity';
+import { User } from '@auth/entities/user.entity';
 
 export enum Gender {
   MALE = 'MALE',

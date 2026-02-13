@@ -1,10 +1,12 @@
 import { DataSource } from 'typeorm';
 import { getTenantConnectionConfig } from '../../tenant-orm.config';
+import { ensureAuditLogsInSchema } from './ensure-audit-logs-schema';
 
 /**
  * In-memory connection pool for tenant schemas.
  * - One DataSource per schema, reused across requests
  * - Init lock per schema avoids duplicate connections under concurrent load
+ * - For non-public schemas, ensures audit_logs table exists so AuditLogSubscriber can write.
  */
 const connections = new Map<string, DataSource>();
 const initPromises = new Map<string, Promise<DataSource>>();
@@ -22,6 +24,9 @@ export async function getTenantConnection(
         const config = getTenantConnectionConfig(schema);
         const connection = new DataSource(config);
         await connection.initialize();
+        if (schema !== 'public') {
+          await ensureAuditLogsInSchema(connection, schema);
+        }
         connections.set(schema, connection);
         return connection;
       } finally {

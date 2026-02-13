@@ -1,4 +1,4 @@
-import { Patient } from '@/common/patients/entities/patient.entity';
+import { Patient } from '@common/patients/entities/patient.entity';
 import { differenceInYears } from 'date-fns';
 
 export function areNamesSimilar(

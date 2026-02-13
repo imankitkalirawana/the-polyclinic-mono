@@ -15,8 +15,8 @@ import { SchemaValidatorService } from './schema/schema-validator.service';
 import { GlobalBearerStrategy } from './strategies/bearer.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { DoctorsModule } from '@/common/doctors/doctors.module';
-import { MasterKeyModule } from '@/common/utilities/master-key/masterkey.module';
+import { DoctorsModule } from '@common/doctors/doctors.module';
+import { MasterKeyModule } from '@common/utilities/master-key/masterkey.module';
 
 @Global()
 @Module({

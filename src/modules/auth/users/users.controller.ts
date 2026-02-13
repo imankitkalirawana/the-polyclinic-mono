@@ -19,6 +19,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
+import { formatUser } from './users.helper';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -42,7 +43,10 @@ export class UsersController {
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
   async find_all() {
-    return await this.userService.find_all({}, { order: { name: 'ASC' } });
+    const users = await this.userService.find_all(null, {
+      order: { name: 'ASC' },
+    });
+    return users.map(formatUser);
   }
 
   @Get(':id')

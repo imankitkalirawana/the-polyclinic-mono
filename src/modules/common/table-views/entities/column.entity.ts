@@ -5,7 +5,15 @@ import { TableViewType } from '../enums/table-view-type.enum';
 export enum ColumnDataType {
   STRING = 'STRING',
   INTEGER = 'INTEGER',
-  HASHTAG = 'HASHTAG',
+  DATE = 'DATE',
+}
+
+export enum ColumnType {
+  DEFAULT = 'DEFAULT',
+  CHIP = 'CHIP',
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+  URL = 'URL',
   DATE = 'DATE',
   TIME = 'TIME',
   DATETIME = 'DATETIME',
@@ -21,6 +29,9 @@ export class TableColumn extends BaseEntity {
 
   @Column({ type: 'enum', enum: ColumnDataType })
   data_type: ColumnDataType;
+
+  @Column({ type: 'enum', enum: ColumnType, default: ColumnType.DEFAULT })
+  column_type: ColumnType;
 
   @Column({ default: false })
   is_sortable: boolean;

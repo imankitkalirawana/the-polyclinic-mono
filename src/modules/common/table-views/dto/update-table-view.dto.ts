@@ -1,5 +1,4 @@
-import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
-import { UserTableViewColumn } from '../entities/table-view-column.entity';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserTableViewDto {
   @IsString()
@@ -9,9 +8,4 @@ export class UpdateUserTableViewDto {
   @IsObject()
   @IsOptional()
   filters?: Record<string, unknown>;
-
-  //   update columns
-  @IsArray()
-  @IsOptional()
-  columns?: UserTableViewColumn[];
 }

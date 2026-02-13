@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MasterKeyService } from '@/common/utilities/master-key/masterkey.service';
+import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 
 @Injectable()
 export class MasterKeyRotateCronService {

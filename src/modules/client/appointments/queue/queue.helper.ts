@@ -1,7 +1,7 @@
 import { Role } from 'src/common/enums/role.enum';
 import { Queue } from './entities/queue.entity';
 import { redactField } from 'src/common/utils/redact.util';
-import { calculateAge } from '@/common/patients/patients.helper';
+import { calculateAge } from '@common/patients/patients.helper';
 
 interface FormattedQueue extends Queue {
   nextQueueId?: string;
