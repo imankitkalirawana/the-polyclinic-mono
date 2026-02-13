@@ -6,7 +6,7 @@ import {
   Index,
   DeleteDateColumn,
 } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 import { User } from './user.entity';
 
 @Entity('login_sessions', { schema: 'public' })

@@ -1,5 +1,5 @@
 import { Entity, Column, Index, DeleteDateColumn } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 
 export enum CompanyType {
   THE_POLYCLINIC = 'THE_POLYCLINIC',

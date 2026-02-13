@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 import { Column, DeleteDateColumn, Entity, Index } from 'typeorm';
 import { TableViewType } from '../enums/table-view-type.enum';
 

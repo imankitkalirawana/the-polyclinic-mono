@@ -1,5 +1,5 @@
 import { Column, DeleteDateColumn, Entity, Index } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 
 export enum VerificationType {
   LOGIN = 'LOGIN',

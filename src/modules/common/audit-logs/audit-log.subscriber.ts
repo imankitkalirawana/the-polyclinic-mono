@@ -17,6 +17,8 @@ import { User } from '@/auth/entities/user.entity';
 import { Patient } from '@/common/patients/entities/patient.entity';
 import { Doctor } from '@/common/doctors/entities/doctor.entity';
 import { Company } from '@/auth/entities/company.entity';
+import { Queue } from '@/client/appointments/queue/entities/queue.entity';
+import { Payment } from '@/client/payments/entities/payment.entity';
 import { RequestContext } from '../../../common/request-context/request-context';
 
 type AnyEntity =
@@ -24,6 +26,8 @@ type AnyEntity =
   | Patient
   | Doctor
   | Company
+  | Queue
+  | Payment
   | AuditLog
   | Record<string, unknown>;
 
@@ -72,6 +76,8 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
     if (entity instanceof Patient) return ItemType.PATIENT;
     if (entity instanceof Doctor) return ItemType.DOCTOR;
     if (entity instanceof Company) return ItemType.COMPANY;
+    if (entity instanceof Queue) return ItemType.QUEUE;
+    if (entity instanceof Payment) return ItemType.PAYMENT;
 
     return null;
   }

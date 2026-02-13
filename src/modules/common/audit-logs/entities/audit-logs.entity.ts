@@ -1,11 +1,13 @@
 import { Column, Entity, Index } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 
 export enum ItemType {
   USER = 'User',
   PATIENT = 'Patient',
   DOCTOR = 'Doctor',
   COMPANY = 'Company',
+  QUEUE = 'Queue',
+  PAYMENT = 'Payment',
 }
 
 export enum Event {
@@ -21,7 +23,11 @@ export enum ActorType {
   SYSTEM = 'SYSTEM',
 }
 
-@Entity('audit_logs', { schema: 'public' })
+/**
+ * Table name only; schema comes from the DataSource (public vs tenant).
+ * Ensures tenant-scoped operations write to their schema's audit_logs.
+ */
+@Entity('audit_logs')
 export class AuditLog extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   @Index()

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { UserTableView } from './table-view.entity';
 import { TableColumn } from './column.entity';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 
 @Entity('user_table_view_columns', { schema: 'public' })
 @Index(['view_id', 'column_id'], { unique: true })

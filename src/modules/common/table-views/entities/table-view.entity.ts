@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { UserTableViewColumn } from './table-view-column.entity';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import { BaseEntity } from '@common/entity/base.entity';
 import { TableViewType } from '../enums/table-view-type.enum';
 import { QueueStatus } from '@/client/appointments/queue/entities/queue.entity';
 
