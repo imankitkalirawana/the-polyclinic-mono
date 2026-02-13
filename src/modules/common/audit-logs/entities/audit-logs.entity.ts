@@ -23,6 +23,11 @@ export enum ActorType {
   SYSTEM = 'SYSTEM',
 }
 
+export type ObjectChanges = {
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+};
+
 /**
  * Table name only; schema comes from the DataSource (public vs tenant).
  * Ensures tenant-scoped operations write to their schema's audit_logs.
@@ -33,21 +38,31 @@ export class AuditLog extends BaseEntity {
   @Index()
   item_id: string | null;
 
-  @Column({ type: 'enum', enum: ItemType })
+  @Column({
+    type: 'enum',
+    enum: ItemType,
+  })
   item_type: ItemType;
 
-  @Column({ type: 'enum', enum: Event })
+  @Column({
+    type: 'enum',
+    enum: Event,
+  })
   event: Event;
 
   @Column({ type: 'uuid', nullable: true })
   @Index()
   actor_id: string | null;
 
-  @Column({ type: 'enum', enum: ActorType, default: ActorType.SYSTEM })
+  @Column({
+    type: 'enum',
+    enum: ActorType,
+    default: ActorType.SYSTEM,
+  })
   actor_type: ActorType;
 
   @Column({ type: 'jsonb', nullable: true })
-  object_changes: Record<string, any> | null;
+  object_changes: ObjectChanges | null;
 
   @Column({ type: 'varchar', length: 45, nullable: true })
   ip: string | null;

@@ -12,6 +12,7 @@ import {
   Event as AuditEvent,
   ItemType,
   ActorType,
+  ObjectChanges,
 } from './entities/audit-logs.entity';
 import { User } from '@auth/entities/user.entity';
 import { Patient } from '@common/patients/entities/patient.entity';
@@ -85,11 +86,13 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
   /**
    * Utility to build a simple before/after changes object for updates.
    */
-  private buildUpdateChanges(event: UpdateEvent<AnyEntity>) {
+  private buildUpdateChanges(
+    event: UpdateEvent<AnyEntity>,
+  ): ObjectChanges | null {
     if (!event.entity || !event.databaseEntity) return null;
 
-    const before: Record<string, unknown> = {};
-    const after: Record<string, unknown> = {};
+    const before: ObjectChanges['before'] = {};
+    const after: ObjectChanges['after'] = {};
 
     for (const column of event.updatedColumns) {
       const propertyName = column.propertyName;
@@ -132,9 +135,9 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
 
     const meta = this.getContextMeta();
     const entity = event.entity;
-    const object_changes =
+    const object_changes: ObjectChanges | null =
       entity && typeof entity === 'object'
-        ? { after: toPlainRecord(entity) }
+        ? { before: null, after: toPlainRecord(entity) }
         : null;
 
     const log = event.manager.create(AuditLog, {
@@ -182,7 +185,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
     const dbEntity = event.databaseEntity;
     const object_changes =
       dbEntity && typeof dbEntity === 'object'
-        ? { before: toPlainRecord(dbEntity) }
+        ? { before: toPlainRecord(dbEntity), after: null }
         : null;
 
     const log = event.manager.create(AuditLog, {
@@ -207,7 +210,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
     const dbEntity = event.databaseEntity;
     const object_changes =
       dbEntity && typeof dbEntity === 'object'
-        ? { before: toPlainRecord(dbEntity) }
+        ? { before: toPlainRecord(dbEntity), after: null }
         : null;
 
     const log = event.manager.create(AuditLog, {
@@ -232,7 +235,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
     const entity = event.entity;
     const object_changes =
       entity && typeof entity === 'object'
-        ? { after: toPlainRecord(entity) }
+        ? { before: null, after: toPlainRecord(entity) }
         : null;
 
     const log = event.manager.create(AuditLog, {
