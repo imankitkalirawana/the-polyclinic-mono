@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { Role } from 'src/common/enums/role.enum';
 import { CompanyType } from '../../entities/company.entity';
+import { AuthSource } from '../../entities/user.entity';
 
 export class CreateUserDto {
   @IsEmail()
@@ -37,6 +38,10 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   time_zone?: string;
+
+  @IsEnum(AuthSource)
+  @IsOptional()
+  auth_source?: AuthSource;
 
   /**
    * Optional list of tenant schema slugs this user can access.

@@ -55,7 +55,7 @@ export async function ensureAuditLogsInSchema(
       END $$;
     `);
 
-    // Create table if not exists (matches AuditLog entity + BaseEntity)
+    // Create table if not exists (matches AuditLog entity; no deletedAt)
     await q.query(`
       CREATE TABLE IF NOT EXISTS ${escapedSchema}.audit_logs (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),

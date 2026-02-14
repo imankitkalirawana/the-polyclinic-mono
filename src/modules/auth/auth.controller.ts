@@ -13,6 +13,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
 import { SendOtpDto } from './users/dto/send-otp.dto';
 import { VerifyOtpDto } from './users/dto/verify-otp.dto';
@@ -71,6 +72,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return await this.authService.login(dto);
+  }
+
+  @Post('google')
+  async googleLogin(@Body() dto: GoogleAuthDto) {
+    return await this.authService.googleLogin(dto);
   }
 
   @Post('register')

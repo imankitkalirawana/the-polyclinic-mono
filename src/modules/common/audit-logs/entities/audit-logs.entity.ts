@@ -1,5 +1,11 @@
-import { Column, Entity, Index } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum ItemType {
   USER = 'User',
@@ -31,9 +37,19 @@ export type ObjectChanges = {
 /**
  * Table name only; schema comes from the DataSource (public vs tenant).
  * Ensures tenant-scoped operations write to their schema's audit_logs.
+ * Does not extend BaseEntity so we do not have deletedAt (audit logs are append-only).
  */
 @Entity('audit_logs')
-export class AuditLog extends BaseEntity {
+export class AuditLog {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @Column({ type: 'uuid', nullable: true })
   @Index()
   item_id: string | null;

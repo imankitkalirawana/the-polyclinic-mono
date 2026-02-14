@@ -10,6 +10,11 @@ export enum UserStatus {
   BLOCKED = 'BLOCKED',
 }
 
+export enum AuthSource {
+  CREDENTIALS = 'CREDENTIALS',
+  GOOGLE = 'GOOGLE',
+}
+
 @Entity('login_users', { schema: 'public' })
 export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
@@ -37,6 +42,9 @@ export class User extends BaseEntity {
 
   @Column({ type: 'boolean', default: false })
   email_verified: boolean;
+
+  @Column({ type: 'enum', enum: AuthSource, default: AuthSource.CREDENTIALS })
+  auth_source: AuthSource;
 
   @Column({ type: 'varchar', length: 100, default: 'Asia/Kolkata' })
   time_zone: string;

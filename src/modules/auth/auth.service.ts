@@ -4,16 +4,19 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
-import { User } from './entities/user.entity';
+import { OAuth2Client } from 'google-auth-library';
+import { User, AuthSource } from './entities/user.entity';
 import { Session } from './entities/session.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
@@ -32,6 +35,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly doctorsService: DoctorsService,
+    private readonly configService: ConfigService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
     @Inject(REQUEST) private request: Request,
@@ -91,7 +95,7 @@ export class AuthService {
 
   async resetPassword(dto: ConfirmResetPasswordDto) {
     const user = await this.userService.find_by_and_fail({
-      email: dto.email.trim().toLowerCase(),
+      email: dto.email,
     });
     await this.userService.update_password(user.id, dto.password);
     const { token, expiresAt } = await this.createSessionAndToken({
@@ -102,6 +106,88 @@ export class AuthService {
       token,
       expiresIn: this.formatExpiresIn(expiresAt),
       schema: this.schema,
+    };
+  }
+
+  async googleLogin(dto: GoogleAuthDto): Promise<GlobalToken> {
+    const { email, name } = await this.getGoogleUserInfo(dto.credential);
+    if (!email) {
+      throw new UnauthorizedException('Google account has no email');
+    }
+
+    let user = await this.userService.find_by({ email }, { globally: true });
+
+    if (!user) {
+      user = await this.userService.create({
+        email,
+        name: name,
+        email_verified: true,
+        role: Role.PATIENT,
+        auth_source: AuthSource.GOOGLE,
+      });
+    } else {
+      if (!user.companies?.includes(this.schema)) {
+        await this.userService.add_user_to_company(email, this.schema);
+        if (user.deletedAt) {
+          await this.userService.restore(user.id);
+        }
+      }
+      user = await this.userService.find_by_and_fail({ email });
+    }
+
+    const { token, expiresAt } = await this.createSessionAndToken({ user });
+
+    return {
+      token,
+      expiresIn: this.formatExpiresIn(expiresAt),
+      schema: this.schema,
+    };
+  }
+
+  /**
+   * Resolves Google user email and name from either an ID token (JWT) or an OAuth2 access token.
+   */
+  private async getGoogleUserInfo(
+    credential: string,
+  ): Promise<{ email: string; name: string }> {
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    const isJwt =
+      credential.split('.').length === 3 &&
+      !credential.startsWith('ya29.') &&
+      !credential.startsWith('1/');
+
+    if (isJwt && clientId) {
+      const client = new OAuth2Client(clientId);
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      });
+      const payload = ticket.getPayload();
+      if (!payload?.email) {
+        throw new UnauthorizedException('Invalid Google credential');
+      }
+      return {
+        email: payload.email,
+        name: payload.name ?? payload.email.split('@')[0],
+      };
+    }
+
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${credential}` },
+    });
+    if (!res.ok) {
+      throw new UnauthorizedException('Invalid or expired Google credential');
+    }
+    const data = (await res.json()) as {
+      email?: string;
+      name?: string;
+    };
+    if (!data?.email) {
+      throw new UnauthorizedException('Google account has no email');
+    }
+    return {
+      email: data.email,
+      name: data.name,
     };
   }
 
@@ -124,7 +210,7 @@ export class AuthService {
   async getSession(): Promise<{
     user: Pick<
       User,
-      'id' | 'email' | 'name' | 'role' | 'phone' | 'companies'
+      'id' | 'email' | 'name' | 'role' | 'phone' | 'companies' | 'auth_source'
     > & { integrated_user_id: string | null };
   }> {
     const user = await this.userService.find_by_and_fail({
@@ -147,6 +233,7 @@ export class AuthService {
         role: user.role,
         phone: user.phone,
         companies: user.companies,
+        auth_source: user.auth_source,
         integrated_user_id,
       },
     };
