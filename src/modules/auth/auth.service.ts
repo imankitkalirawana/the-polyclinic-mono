@@ -13,6 +13,7 @@ import { User } from './entities/user.entity';
 import { Session } from './entities/session.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
@@ -79,6 +80,22 @@ export class AuthService {
     }
     const { token, expiresAt } = await this.createSessionAndToken({
       user: user.user,
+    });
+
+    return {
+      token,
+      expiresIn: this.formatExpiresIn(expiresAt),
+      schema: this.schema,
+    };
+  }
+
+  async resetPassword(dto: ConfirmResetPasswordDto) {
+    const user = await this.userService.find_by_and_fail({
+      email: dto.email.trim().toLowerCase(),
+    });
+    await this.userService.update_password(user.id, dto.password);
+    const { token, expiresAt } = await this.createSessionAndToken({
+      user,
     });
 
     return {

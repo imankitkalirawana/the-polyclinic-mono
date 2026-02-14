@@ -9,6 +9,10 @@ import { MoreThan } from 'typeorm';
 import { Verification, VerificationType } from './entities/verification.entity';
 import { Repository } from 'typeorm';
 import { UserService } from './users/users.service';
+import { EmailService } from '@common/email/email.service';
+import React from 'react';
+import SendOtp from 'emails/auth/send-otp';
+import { render } from '@react-email/render';
 
 /** Length in bytes for the verification token (64 hex chars when encoded). */
 const VERIFICATION_TOKEN_BYTES = 32;
@@ -22,6 +26,7 @@ export class VerificationService {
   constructor(
     @InjectRepository(Verification)
     private readonly verificationRepository: Repository<Verification>,
+    private readonly emailService: EmailService,
     private readonly userService: UserService,
   ) {}
 
@@ -30,7 +35,7 @@ export class VerificationService {
     await this.deletePreviousVerifications(email, type);
 
     const otp = this.generateVerificationOtp();
-    const { raw: tokenRaw, hash: tokenHash } = this.generateVerificationToken();
+    const { hash: tokenHash } = this.generateVerificationToken();
     const expiryDate = new Date(Date.now() + VERIFICATION_EXPIRY_MS);
 
     await this.verificationRepository.save({
@@ -40,7 +45,7 @@ export class VerificationService {
       expiry_date: expiryDate,
       type,
     });
-    await this.sendVerificationEmail(email, otp, tokenRaw);
+    await this.sendVerificationEmail(email, otp);
   }
 
   /**
@@ -155,12 +160,15 @@ export class VerificationService {
   }
 
   private async sendVerificationEmail(
-    _email: string,
-    _otp: string,
-    _token: string,
+    email: string,
+    otp: string,
   ): Promise<void> {
-    // await this.emailService.sendEmail(email, 'Verification Email');
-    // TODO: Send verification email with otp and token (token for link, otp for manual entry)
+    const html = await render(React.createElement(SendOtp, { otp }));
+    await this.emailService.sendEmail({
+      to: email,
+      subject: 'Verification Email',
+      html,
+    });
   }
 
   /** Generates a cryptographically secure 6-digit OTP. */

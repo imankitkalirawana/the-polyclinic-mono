@@ -12,6 +12,7 @@ import { StandardParam, StandardParams } from 'nest-standard-response';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
 import { SendOtpDto } from './users/dto/send-otp.dto';
 import { VerifyOtpDto } from './users/dto/verify-otp.dto';
@@ -84,6 +85,21 @@ export class AuthController {
     );
     const result = await this.authService.register(dto);
     params.setMessage('User registered successfully');
+    return result;
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @StandardParam() params: StandardParams,
+    @Body() dto: ConfirmResetPasswordDto,
+  ) {
+    await this.verificationService.reverifyOtp(
+      dto.email,
+      dto.otp,
+      VerificationType.PASSWORD_RESET,
+    );
+    const result = await this.authService.resetPassword(dto);
+    params.setMessage('Password reset successfully');
     return result;
   }
 
