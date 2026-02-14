@@ -23,7 +23,17 @@ export class DoctorsController {
     const doctors = await this.doctorsService.find_all({
       user: { name: ILike(`%${search}%`) },
     });
-    return doctors.map((doctor) => formatDoctor(doctor, req.user.role));
+    const formattedDoctors = doctors.map((doctor) =>
+      formatDoctor(doctor, req.user.role),
+    );
+    const categories = [
+      ...new Set(
+        doctors
+          .map((d) => d.specialization)
+          .filter((s): s is string => s && s.trim() !== ''),
+      ),
+    ].sort();
+    return { doctors: formattedDoctors, categories };
   }
 
   @Get('me')

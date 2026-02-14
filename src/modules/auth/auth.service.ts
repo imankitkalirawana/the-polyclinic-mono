@@ -24,6 +24,7 @@ import { Role } from 'src/scripts/types';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 import { UserProfileService } from './users/user-profile.service';
+import { PatientsService } from '@common/patients/patients.service';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly userProfileService: UserProfileService,
     private readonly doctorsService: DoctorsService,
+    private readonly patientsService: PatientsService,
     private readonly configService: ConfigService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
@@ -118,13 +120,17 @@ export class AuthService {
     let user = await this.userService.find_by({ email }, { globally: true });
 
     if (!user) {
-      user = await this.userService.create({
-        email,
-        name: name,
+      const newUser = await this.userProfileService.createProfile({
+        user: {
+          email,
+          name,
+          role: Role.PATIENT,
+          auth_source: AuthSource.GOOGLE,
+        },
+        patient: {},
         email_verified: true,
-        role: Role.PATIENT,
-        auth_source: AuthSource.GOOGLE,
       });
+      user = newUser.user;
     } else {
       if (!user.companies?.includes(this.schema)) {
         await this.userService.add_user_to_company(email, this.schema);
@@ -223,6 +229,12 @@ export class AuthService {
         user_id: user.id,
       });
       integrated_user_id = doctor.id;
+    }
+    if (user.role === Role.PATIENT) {
+      const patient = await this.patientsService.find_by_and_fail({
+        user_id: user.id,
+      });
+      integrated_user_id = patient.id;
     }
 
     return {
