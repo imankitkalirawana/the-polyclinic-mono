@@ -6,7 +6,6 @@ import { DoctorsService } from '@common/doctors/doctors.service';
 import { PatientsService } from '@common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
-import { generateDoctorCode } from '@common/doctors/doctors.helper';
 import { EmailService } from '@common/email/email.service';
 
 export type UserProfileResponse =
@@ -52,24 +51,22 @@ export class UserProfileService {
     }
   }
 
-  async createProfile(dto: CreateProfileDto): Promise<UserProfileResponse> {
+  async createProfile(
+    dto: CreateProfileDto & { email_verified?: boolean },
+  ): Promise<UserProfileResponse> {
     // First create the base user
-    const user = await this.userService.create(dto.user);
+    const user = await this.userService.create({
+      ...dto.user,
+      email_verified: dto.email_verified,
+    });
 
     // Then create role-specific profile based on the created user's role
     switch (user.role) {
       case Role.DOCTOR:
-        if (dto.doctor) {
-          if (!dto.doctor.code) {
-            dto.doctor.code = generateDoctorCode(user.name);
-          }
-          await this.doctorsService.create_for_user(user.id, dto.doctor);
-        }
+        await this.doctorsService.create_for_user(user.id, dto.doctor);
         break;
       case Role.PATIENT:
-        if (dto.patient) {
-          await this.patientsService.create_for_user(user.id, dto.patient);
-        }
+        await this.patientsService.create_for_user(user.id, dto.patient);
         break;
     }
 

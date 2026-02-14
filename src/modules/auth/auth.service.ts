@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +19,7 @@ import { UserService } from './users/users.service';
 import { Role } from 'src/scripts/types';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
+import { UserProfileService } from './users/user-profile.service';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -23,6 +29,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly userProfileService: UserProfileService,
     private readonly doctorsService: DoctorsService,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
@@ -62,9 +69,16 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const user = await this.userService.create(dto);
+    const user = await this.userProfileService.createProfile({
+      user: {
+        ...dto,
+      },
+    });
+    if (!user.user) {
+      throw new BadRequestException('Failed to create user');
+    }
     const { token, expiresAt } = await this.createSessionAndToken({
-      user,
+      user: user.user,
     });
 
     return {

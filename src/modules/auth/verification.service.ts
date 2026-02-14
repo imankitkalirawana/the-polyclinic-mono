@@ -102,7 +102,6 @@ export class VerificationService {
     email: string,
     type: VerificationType,
   ): Promise<void> {
-    console.log('deletePreviousVerifications', email, type);
     await this.verificationRepository.softDelete({
       email,
       type,

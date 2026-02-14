@@ -14,7 +14,6 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserFindOptions } from './users.types';
-import { EmailService } from '@common/email/email.service';
 
 @Injectable()
 export class UserService {
@@ -23,7 +22,6 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly emailService: EmailService,
     @Inject(REQUEST) private request: Request,
   ) {
     this.schema = this.request.schema;
@@ -112,7 +110,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto & { email_verified?: boolean }) {
     const userRepository = await this.getUserRepository();
     const existingUser = await this.find_by(
       { email: dto.email },
@@ -134,6 +132,7 @@ export class UserService {
     const user = new User();
     Object.assign(user, {
       ...dto,
+      email_verified: dto.email_verified,
       password_digest: dto.password
         ? await bcrypt.hash(dto.password, 10)
         : undefined,

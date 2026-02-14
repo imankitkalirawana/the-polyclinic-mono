@@ -13,6 +13,6 @@ import { PatientsModule } from '@common/patients/patients.module';
   imports: [TypeOrmModule.forFeature([User]), DoctorsModule, PatientsModule],
   controllers: [UsersController],
   providers: [UserService, UserProfileService, SchemaValidatorService],
-  exports: [UserService],
+  exports: [UserService, UserProfileService],
 })
 export class UsersModule {}
