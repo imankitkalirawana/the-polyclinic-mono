@@ -13,10 +13,14 @@ import { createHash } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from './entities/user.entity';
 import { Session } from './entities/session.entity';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
-import { GoogleAuthDto } from './dto/google-auth.dto';
+import {
+  LoginDto,
+  GoogleAuthDto,
+  ConfirmResetPasswordDto,
+  AuthSource,
+  UserRole,
+  RegisterDto,
+} from '@repo/store';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
@@ -24,7 +28,6 @@ import { DoctorsService } from '@common/doctors/doctors.service';
 import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 import { UserProfileService } from './users/user-profile.service';
 import { PatientsService } from '@common/patients/patients.service';
-import { AuthSource, UserRole } from '@repo/store';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 

@@ -10,16 +10,24 @@ import {
 } from '@nestjs/common';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
-import { GoogleAuthDto } from './dto/google-auth.dto';
+import {
+  ConfirmResetPasswordDto,
+  SendOtpDto,
+  sendOtpSchema,
+  VerificationType,
+  LoginDto,
+  GoogleAuthDto,
+  loginSchema,
+  googleAuthSchema,
+  RegisterDto,
+  registerSchema,
+  verifyTokenSchema,
+  verifyOtpSchema,
+  VerifyOtpDto,
+  VerifyTokenDto,
+} from '@repo/store';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
-import { SendOtpDto, sendOtpSchema } from '@repo/store';
-import { VerifyOtpDto } from './users/dto/verify-otp.dto';
-import { VerifyTokenDto } from './users/dto/verify-token.dto';
 import { VerificationService } from './verification.service';
-import { VerificationType } from '@repo/store';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 
@@ -50,7 +58,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async verifyOtp(
     @StandardParam() params: StandardParams,
-    @Body() dto: VerifyOtpDto,
+    @Body(ZodValidationPipe.create(verifyOtpSchema)) dto: VerifyOtpDto,
   ) {
     await this.verificationService.verifyOtp({
       email: dto.email,
@@ -65,25 +73,29 @@ export class AuthController {
 
   @Post('verify-token')
   @HttpCode(HttpStatus.OK)
-  async verifyToken(@Body() dto: VerifyTokenDto) {
+  async verifyToken(
+    @Body(ZodValidationPipe.create(verifyTokenSchema)) dto: VerifyTokenDto,
+  ) {
     await this.verificationService.verifyToken(dto.email, dto.token, dto.type);
     return { verified: true };
   }
 
   @Post('login')
-  async login(@Body() dto: LoginDto) {
+  async login(@Body(ZodValidationPipe.create(loginSchema)) dto: LoginDto) {
     return await this.authService.login(dto);
   }
 
   @Post('google')
-  async googleLogin(@Body() dto: GoogleAuthDto) {
+  async googleLogin(
+    @Body(ZodValidationPipe.create(googleAuthSchema)) dto: GoogleAuthDto,
+  ) {
     return await this.authService.googleLogin(dto);
   }
 
   @Post('register')
   async register(
     @StandardParam() params: StandardParams,
-    @Body() dto: RegisterDto,
+    @Body(ZodValidationPipe.create(registerSchema)) dto: RegisterDto,
   ) {
     await this.verificationService.reverifyOtp(
       dto.email,
