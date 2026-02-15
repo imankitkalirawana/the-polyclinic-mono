@@ -160,7 +160,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
               <li
                 key={stepIdx}
                 className={cn(
-                  'group rounded-large border-default-200 data-[status=active]:bg-default-100 dark:border-default-50 dark:data-[status=active]:bg-default-50 relative gap-4 border',
+                  'rounded-large border-default-200 data-[status=active]:bg-default-100 dark:border-default-50 dark:data-[status=active]:bg-default-50 group relative gap-4 border',
                   stepClassName
                 )}
                 data-status={status}
@@ -221,7 +221,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
                           >
                             <div className="flex items-center justify-center">
                               {status === 'complete' ? (
-                                <CheckIcon className="h-6 w-6 text-(--active-fg-color)" />
+                                <CheckIcon className="text-(--active-fg-color) h-6 w-6" />
                               ) : (
                                 <span>{stepIdx + 1}</span>
                               )}
@@ -281,7 +281,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
                       }}
                     >
                       <Spacer x={14} />
-                      <ul className="text-default-400 list-disc pr-12 pb-4 pl-1">
+                      <ul className="text-default-400 list-disc pb-4 pl-1 pr-12">
                         {step.details.map((detail, idx) => (
                           <li key={idx} className="text-tiny mb-1">
                             {detail}

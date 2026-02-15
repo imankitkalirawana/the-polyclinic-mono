@@ -24,7 +24,7 @@ export default function DetailsHeader({ currentQueue }: { currentQueue: Appointm
     <div className="relative flex flex-col">
       <div
         className={cn(
-          'flex items-center justify-start gap-8 border-l-8 border-l-default p-4',
+          'border-l-default flex items-center justify-start gap-8 border-l-8 p-4',
           getQueueStatusColor(currentQueue.status)
         )}
       >
@@ -34,7 +34,7 @@ export default function DetailsHeader({ currentQueue }: { currentQueue: Appointm
           </Chip>
         </div>
         <div className="aspect-square">
-          <h2 className="text-7xl font-bold text-primary">{currentQueue.sequenceNumber}</h2>
+          <h2 className="text-primary text-7xl font-bold">{currentQueue.sequenceNumber}</h2>
         </div>
         <div className="grid w-full grid-cols-3 gap-2">
           <CellRenderer
@@ -109,7 +109,7 @@ export default function DetailsHeader({ currentQueue }: { currentQueue: Appointm
           const keysSet = keys as Set<string>;
           setIsDetailsOpen(keysSet.has('view-more-details'));
         }}
-        className="border-b border-divider bg-default-100"
+        className="border-divider bg-default-100 border-b"
         itemClasses={{
           trigger: 'py-0.5',
         }}
@@ -118,7 +118,7 @@ export default function DetailsHeader({ currentQueue }: { currentQueue: Appointm
           key="view-more-details"
           aria-label="More details"
           title={
-            <div className="flex w-full items-center justify-center gap-1 py-0.5 text-center text-small">
+            <div className="text-small flex w-full items-center justify-center gap-1 py-0.5 text-center">
               <span>View more details</span>
               <Icon
                 icon="solar:alt-arrow-down-line-duotone"

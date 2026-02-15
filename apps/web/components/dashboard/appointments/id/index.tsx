@@ -281,7 +281,7 @@ export default function Appointment({ aid }: { aid: string }) {
             </CardBody>
           </Card>
         </div>
-        <div className="flex flex-2 flex-col gap-4">
+        <div className="flex-2 flex flex-col gap-4">
           {/* first card  second column */}
           <Card>
             <CustomCardHeader title="Appointment Details" endContent="" />

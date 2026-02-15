@@ -121,7 +121,7 @@ export function SlotsPreview({ config, onSlotSelect, selected }: SlotsPreviewPro
     // Fix 1: Ensure the container has a defined height and proper overflow handling
     <div className="flex h-full max-h-full flex-1 flex-col overflow-hidden">
       {/* Fix 2: Make the header truly sticky with proper z-index */}
-      <div className="bg-background/95 sticky top-0 z-20 shrink-0 backdrop-blur-xs">
+      <div className="bg-background/95 backdrop-blur-xs sticky top-0 z-20 shrink-0">
         <SlotHeader currentDate={currentDate} setCurrentDate={setCurrentDate} />
         <div className="border-divider grid grid-cols-8 border-b">
           <div className="border-divider text-default-500 flex h-16 items-center justify-center border-r text-xs">
@@ -152,7 +152,7 @@ export function SlotsPreview({ config, onSlotSelect, selected }: SlotsPreviewPro
                   content={<div className="text-xs">Custom availability</div>}
                 >
                   <div
-                    className="bg-primary absolute top-1 right-1 h-2 w-2 rounded-full"
+                    className="bg-primary absolute right-1 top-1 h-2 w-2 rounded-full"
                     title="Custom availability"
                   />
                 </Tooltip>
@@ -170,7 +170,7 @@ export function SlotsPreview({ config, onSlotSelect, selected }: SlotsPreviewPro
             {timeLabels.map((time, timeIndex) => (
               <div
                 key={timeIndex}
-                className="border-divider flex items-start justify-end border-b pt-1 pr-2"
+                className="border-divider flex items-start justify-end border-b pr-2 pt-1"
                 style={{ height: `${hourHeight}px` }}
               >
                 <span className="text-default-500 text-xs">{time}</span>
@@ -208,9 +208,9 @@ export function SlotsPreview({ config, onSlotSelect, selected }: SlotsPreviewPro
                       <div
                         key={slotIndex}
                         className={cn(
-                          'hover:bg-opacity-50 absolute right-1 left-1 cursor-pointer rounded-sm border transition-colors',
+                          'absolute left-1 right-1 cursor-pointer rounded-sm border transition-colors hover:bg-opacity-50',
                           {
-                            'bg-opacity-30 border-orange-400 bg-orange-400': isDayOverridden,
+                            'border-orange-400 bg-orange-400 bg-opacity-30': isDayOverridden,
                             'border-primary-400 bg-primary-400 bg-opacity-30': !isDayOverridden,
                             'border-primary-500 bg-primary-500 hover:bg-primary-500': isSelected,
                           }
@@ -226,7 +226,7 @@ export function SlotsPreview({ config, onSlotSelect, selected }: SlotsPreviewPro
                         <div className="p-1">
                           <Tooltip delay={500} content={format(date, 'h:mm a')}>
                             <div
-                              className={cn('bg-primary-400 h-3 w-3 rounded-xs', {
+                              className={cn('bg-primary-400 rounded-xs h-3 w-3', {
                                 'bg-orange-400': isDayOverridden,
                                 'bg-primary-100': isSelected,
                               })}

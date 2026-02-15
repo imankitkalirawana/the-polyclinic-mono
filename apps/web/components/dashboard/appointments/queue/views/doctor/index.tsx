@@ -112,7 +112,7 @@ export default function QueuesDoctorView() {
           )}
 
           <QueueFooter currentQueue={currentQueue} />
-          <div className="absolute top-1/2 right-0 -translate-y-1/2">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
             <Tooltip content="Show next appointments" placement="left">
               <Button
                 isIconOnly

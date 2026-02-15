@@ -31,7 +31,7 @@ export default function DateTimePicker({
   timeProps?: TimeInputProps;
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 xs:items-start">
+    <div className="xs:items-start flex flex-col items-center gap-4">
       <Calendar
         {...dateProps}
         aria-label="Date (Min Date Value)"

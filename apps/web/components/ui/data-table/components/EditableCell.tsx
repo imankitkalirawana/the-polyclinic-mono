@@ -165,7 +165,7 @@ export function EditableCell<TData extends RowData>({
         className
       )}
     >
-      <span className="text-sm whitespace-nowrap">{displayValue}</span>
+      <span className="whitespace-nowrap text-sm">{displayValue}</span>
     </div>
   );
 }

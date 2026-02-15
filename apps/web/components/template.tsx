@@ -112,7 +112,7 @@ export const VercelInviteUserEmail = ({
                 </Column>
               </Row>
             </Section>
-            <Section className="mt-[32px] mb-[32px] text-center">
+            <Section className="mb-[32px] mt-[32px] text-center">
               <Button
                 className="rounded-sm bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
                 href={inviteLink}

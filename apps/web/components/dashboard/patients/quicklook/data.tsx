@@ -73,7 +73,7 @@ export const sidebarContent = (patient: PatientType) => (
             </div>
             <span className="text-default-foreground capitalize">{patient.id}</span>
           </div>
-          <div className="from-divider/20 via-divider to-divider/20 h-px w-full bg-linear-to-r" />
+          <div className="from-divider/20 via-divider to-divider/20 bg-linear-to-r h-px w-full" />
           <div className="text-small flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="rounded-medium bg-pink-200 p-[5px] text-pink-400">
@@ -83,7 +83,7 @@ export const sidebarContent = (patient: PatientType) => (
             </div>
             <span className="text-default-foreground capitalize">{patient.name}</span>
           </div>
-          <div className="from-divider/20 via-divider to-divider/20 h-px w-full bg-linear-to-r" />
+          <div className="from-divider/20 via-divider to-divider/20 bg-linear-to-r h-px w-full" />
           <div className="text-small flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="rounded-medium bg-blue-200 p-[5px] text-blue-400">

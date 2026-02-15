@@ -152,7 +152,7 @@ export function CalendarHeader({
           </Button>
         </div>
 
-        <h2 className="font-medium whitespace-nowrap">{getDateTitle()}</h2>
+        <h2 className="whitespace-nowrap font-medium">{getDateTitle()}</h2>
       </div>
 
       <div className="flex w-full items-center justify-end gap-2">
@@ -194,7 +194,7 @@ export function CalendarHeader({
             {user?.role === Role.PATIENT && (
               <Tooltip
                 content="Book an appointment with AI"
-                className="bg-linear-to-br from-blue-300/50 via-blue-500/50 via-40% to-purple-500/50 backdrop-blur-xs"
+                className="bg-linear-to-br backdrop-blur-xs from-blue-300/50 via-blue-500/50 via-40% to-purple-500/50"
               >
                 <Button
                   isIconOnly

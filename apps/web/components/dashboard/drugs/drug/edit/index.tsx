@@ -50,8 +50,8 @@ export default function EditDrug({ did }: { did: number }) {
       className="rounded-none bg-transparent shadow-none"
     >
       <CardHeader className="flex-col items-start p-0">
-        <h3 className="leading-large font-semibold text-default-900 text-medium">Edit Drug</h3>
-        <p className="leading-medium max-w-2xl text-default-500 text-small">Update drug details</p>
+        <h3 className="leading-large text-default-900 text-medium font-semibold">Edit Drug</h3>
+        <p className="leading-medium text-default-500 text-small max-w-2xl">Update drug details</p>
       </CardHeader>
       <CardBody className="space-y-2 px-0" as={ScrollShadow}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

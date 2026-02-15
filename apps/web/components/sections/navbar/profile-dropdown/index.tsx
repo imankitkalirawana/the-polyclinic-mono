@@ -24,7 +24,7 @@ export default function ProfileDropdown() {
       <DropdownMenu aria-label="Profile Actions" variant="flat">
         <DropdownItem key="profile" href="/profile" className="h-14 gap-2">
           <p className="font-semibold">{user?.name}</p>
-          <p className="capitalize text-default-500 text-tiny">{user?.role}</p>
+          <p className="text-default-500 text-tiny capitalize">{user?.role}</p>
         </DropdownItem>
         <DropdownItem key="my-profile" href="/profile">
           My Profile

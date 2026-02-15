@@ -145,7 +145,7 @@ export default function Navbar() {
             <NotificationsWrapper />
           </NavbarItem>
         )}
-        <NavbarItem className="ml-2 flex! gap-2">
+        <NavbarItem className="flex! ml-2 gap-2">
           {user ? (
             <ProfileDropdown />
           ) : (
@@ -211,7 +211,7 @@ export default function Navbar() {
                   <Listbox aria-label={subItem.title}>
                     {subItem.items.map((subMenuItem, index) => (
                       <ListboxItem
-                        className="text-default-500 pr-4 pl-2"
+                        className="text-default-500 pl-2 pr-4"
                         key={`${subMenuItem.name}-${index}`}
                         startContent={
                           subMenuItem?.icon && (
@@ -253,7 +253,7 @@ export default function Navbar() {
               style={{
                 backgroundImage: `url(${activeMenu.thumbnail})`,
               }}
-              className="rounded-medium text-default-500 col-span-4 h-full w-full max-w-sm bg-linear-to-r from-[#F2F0FF] to-[#F0F6FF] bg-cover p-4"
+              className="rounded-medium text-default-500 bg-linear-to-r col-span-4 h-full w-full max-w-sm from-[#F2F0FF] to-[#F0F6FF] bg-cover p-4"
             />
           </div>
         )}

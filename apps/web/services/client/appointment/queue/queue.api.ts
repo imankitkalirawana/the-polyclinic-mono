@@ -78,6 +78,18 @@ export class AppointmentQueueApi {
     });
   }
 
+  static async getQueuesForPatient() {
+    return await apiRequest<any>({
+      url: `${this.API_BASE}/patient/me`,
+    });
+  }
+
+  static async getQueueByAid(aid: string) {
+    return await apiRequest<any>({
+      url: `${this.API_BASE}/${aid}`,
+    });
+  }
+
   static async call(queueId: string) {
     return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${queueId}/call`,

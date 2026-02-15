@@ -59,7 +59,7 @@ function ChatMessage({
               </div>
             </div>
           ) : (
-            <p className="text-start text-sm leading-relaxed whitespace-pre-wrap">{message}</p>
+            <p className="whitespace-pre-wrap text-start text-sm leading-relaxed">{message}</p>
           )}
         </div>
 
