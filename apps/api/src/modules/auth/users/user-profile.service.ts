@@ -36,16 +36,18 @@ export class UserProfileService {
     const user = await this.userService.find_by_and_fail({ id: userId });
 
     switch (user.role) {
-      case Role.DOCTOR:
+      case Role.DOCTOR: {
         const doctor = await this.doctorsService.find_by_and_fail({
           user_id: userId,
         });
         return { user, doctor };
-      case Role.PATIENT:
+      }
+      case Role.PATIENT: {
         const patient = await this.patientsService.find_by_and_fail({
           user_id: userId,
         });
         return { user, patient };
+      }
       default:
         return { user };
     }
