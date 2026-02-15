@@ -10,24 +10,26 @@ import {
   Query,
   Res,
   Logger,
+  Req,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
-import { FieldRestrictionsGuard } from '@/auth/guards/field-restrictions.guard';
-import { Roles } from '@/auth/decorators/roles.decorator';
+import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
+import { RolesGuard } from '@auth/guards/roles.guard';
+import { FieldRestrictionsGuard } from '@auth/guards/field-restrictions.guard';
+import { Roles } from '@auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
-} from '@/auth/decorators/current-user.decorator';
+} from '@auth/decorators/current-user.decorator';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
-import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
+import { VerifyPaymentDto } from '@client/payments/dto/verify-payment.dto';
 import { Response } from 'express';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
+import { Request } from 'express';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -77,12 +79,6 @@ export class QueueController {
     return result;
   }
 
-  @Get('aid/:aid')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  findByAid(@Param('aid') aid: string) {
-    return this.queueService.find_by_and_fail({ aid });
-  }
-
   @Get('doctor/:doctorId/queue')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   getQueueForDoctor(
@@ -106,21 +102,15 @@ export class QueueController {
 
   @Get(':aid')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
-  getAppointmentByAid(@Param('aid') aid: string) {
-    return this.queueService.getAppointmentByAid(aid);
+  async getAppointmentByAid(@Param('aid') aid: string, @Req() req: Request) {
+    const queue = await this.queueService.getAppointmentByAid(aid);
+    return formatQueue(queue, req.user.role);
   }
 
   @Get(':id/activity-logs')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   async getActivityLogs(@Param('id') id: string) {
     return this.queueService.getActivityLogs(id);
-  }
-
-  @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async findOne(@Param('id') id: string) {
-    const queue = await this.queueService.find_by_and_fail({ id });
-    return formatQueue(queue);
   }
 
   @Delete(':id')

@@ -7,29 +7,27 @@ import {
   Delete,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
-import { BearerAuthGuard } from '@/auth/guards/bearer-auth.guard';
-import { RolesGuard } from '@/auth/guards/roles.guard';
-import { Roles } from '@/auth/decorators/roles.decorator';
+import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
+import { RolesGuard } from '@auth/guards/roles.guard';
+import { Roles } from '@auth/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
-} from '@/auth/decorators/current-user.decorator';
+} from '@auth/decorators/current-user.decorator';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { formatPatient } from './patients.helper';
-import { UserService } from '@/auth/users/users.service';
 import { ILike } from 'typeorm';
+import { Request } from 'express';
 
 @Controller('patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
-  constructor(
-    private readonly patientsService: PatientsService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly patientsService: PatientsService) {}
 
   @Post()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
@@ -60,9 +58,13 @@ export class PatientsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  async find_one(@Param('id') id: string) {
-    const patient = await this.patientsService.find_by_and_fail({ id });
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  async find_one(@Param('id') id: string, @Req() req: Request) {
+    const isPatient = req.user.role === Role.PATIENT;
+    const patient = await this.patientsService.find_by_and_fail({
+      id,
+      user_id: isPatient ? req.user.userId : undefined,
+    });
     return formatPatient(patient);
   }
 

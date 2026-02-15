@@ -4,6 +4,17 @@ import { CompanyType } from './company.entity';
 import { Role } from 'src/common/enums/role.enum';
 import type { Session } from './session.entity';
 
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BLOCKED = 'BLOCKED',
+}
+
+export enum AuthSource {
+  CREDENTIALS = 'CREDENTIALS',
+  GOOGLE = 'GOOGLE',
+}
+
 @Entity('login_users', { schema: 'public' })
 export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
@@ -22,12 +33,18 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', default: Role.PATIENT })
   role: Role;
 
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
+
   @Column({ type: 'varchar', default: CompanyType.CLIENT })
   @Index()
   company_type: CompanyType;
 
   @Column({ type: 'boolean', default: false })
   email_verified: boolean;
+
+  @Column({ type: 'enum', enum: AuthSource, default: AuthSource.CREDENTIALS })
+  auth_source: AuthSource;
 
   @Column({ type: 'varchar', length: 100, default: 'Asia/Kolkata' })
   time_zone: string;

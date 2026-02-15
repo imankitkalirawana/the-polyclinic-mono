@@ -5,11 +5,14 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@/auth/entities/user.entity';
+import { User } from '@auth/entities/user.entity';
+import { Specialization } from './specialization.entity';
 
 @Entity('doctor_doctors', { schema: 'public' })
 export class Doctor {
@@ -35,8 +38,19 @@ export class Doctor {
   @Column({ nullable: true })
   seating?: string;
 
-  @Column({ nullable: true })
-  specialization?: string;
+  @ManyToMany(() => Specialization, (specialization) => specialization.doctors)
+  @JoinTable({
+    name: 'doctor_doctor_specializations',
+    joinColumn: {
+      name: 'doctor_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'specialization_id',
+      referencedColumnName: 'id',
+    },
+  })
+  specializations: Specialization[];
 
   @Column({ type: 'integer', nullable: true })
   experience?: number;

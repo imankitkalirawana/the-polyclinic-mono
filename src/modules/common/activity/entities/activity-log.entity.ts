@@ -10,7 +10,7 @@ import {
 import { ActivityAction } from '../enums/activity-action.enum';
 import { ActorType } from '../enums/actor-type.enum';
 import { EntityType } from '../enums/entity-type.enum';
-import { User } from '@/auth/entities/user.entity';
+import { User } from '@auth/entities/user.entity';
 
 @Entity('activity_logs')
 export class ActivityLog {

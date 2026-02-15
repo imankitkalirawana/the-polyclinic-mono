@@ -4,11 +4,11 @@ import { Request } from 'express';
 import { ArrayContains, FindOptionsWhere } from 'typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
-import { UserService } from '@/auth/users/users.service';
-import { Patient } from '@/common/patients/entities/patient.entity';
+import { UserService } from '@auth/users/users.service';
+import { Patient } from '@common/patients/entities/patient.entity';
 import { Role } from 'src/scripts/types';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { UpdatePatientProfileDto } from '@/auth/users/dto/update-profile.dto';
+import { UpdatePatientProfileDto } from '@auth/users/dto/update-profile.dto';
 import { PatientFindOptions } from './patient.types';
 
 @Injectable()
@@ -33,11 +33,9 @@ export class PatientsService {
 
   async find_by(
     where: FindOptionsWhere<Patient>,
-    options: PatientFindOptions = {
-      relations: { user: true },
-    },
+    options: PatientFindOptions = {},
   ): Promise<Patient | null> {
-    const { globally, ...rest } = options;
+    const { globally, relations, ...rest } = options;
     const patientRepository = await this.getPatientRepository();
     return patientRepository.findOne({
       where: {
@@ -45,6 +43,7 @@ export class PatientsService {
         ...(!globally && { user: { companies: ArrayContains([this.schema]) } }),
       },
       ...rest,
+      relations: relations ?? { user: true },
     });
   }
 
@@ -62,11 +61,9 @@ export class PatientsService {
   // find_all
   async find_all(
     where: FindOptionsWhere<Patient>,
-    options: PatientFindOptions = {
-      relations: { user: true },
-    },
+    options: PatientFindOptions = {},
   ): Promise<Patient[]> {
-    const { globally, ...rest } = options;
+    const { globally, relations, ...rest } = options;
     const patientRepository = await this.getPatientRepository();
     return patientRepository.find({
       where: {
@@ -74,6 +71,7 @@ export class PatientsService {
         ...(!globally && { user: { companies: ArrayContains([this.schema]) } }),
       },
       ...rest,
+      relations: relations ?? { user: true },
     });
   }
 

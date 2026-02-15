@@ -52,8 +52,6 @@ export function transformCellValue(
   if (raw == null) return null;
   switch (dataType) {
     case ColumnDataType.DATE:
-    case ColumnDataType.TIME:
-    case ColumnDataType.DATETIME:
       return raw instanceof Date ? raw.toISOString() : String(raw);
     default:
       return String(raw);

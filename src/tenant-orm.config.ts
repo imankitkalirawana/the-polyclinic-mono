@@ -5,6 +5,9 @@ import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
 import { Patient } from './modules/common/patients/entities/patient.entity';
 import { Doctor } from './modules/common/doctors/entities/doctor.entity';
+import { AuditLog } from './modules/common/audit-logs/entities/audit-logs.entity';
+import { AuditLogSubscriber } from './modules/common/audit-logs/audit-log.subscriber';
+import { Specialization } from './modules/common/doctors/entities/specialization.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
   // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public
@@ -24,14 +27,17 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
     entities: [
       ...clientEntities,
       ActivityLog,
+      AuditLog,
       // Allow tenant schema entities to reference global users in public schema
       User,
       // Needed because User has relations to Session
       Session,
       Patient,
       Doctor,
+      Specialization,
     ],
-    synchronize: true,
+    subscribers: [AuditLogSubscriber],
+    synchronize: false,
     logging: process.env.NODE_ENV === 'development',
     // ssl: {
     //   rejectUnauthorized: false,

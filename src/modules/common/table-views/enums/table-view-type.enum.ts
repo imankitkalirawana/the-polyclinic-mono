@@ -3,4 +3,5 @@ export enum TableViewType {
   PATIENT = 'PATIENT',
   DOCTOR = 'DOCTOR',
   USER = 'USER',
+  COMMON = 'COMMON',
 }

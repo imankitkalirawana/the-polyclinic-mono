@@ -1,7 +1,7 @@
 import { Role } from 'src/common/enums/role.enum';
 import { Queue } from './entities/queue.entity';
 import { redactField } from 'src/common/utils/redact.util';
-import { calculateAge } from '@/common/patients/patients.helper';
+import { calculateAge } from '@common/patients/patients.helper';
 
 interface FormattedQueue extends Queue {
   nextQueueId?: string;
@@ -53,7 +53,11 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
     doctor: queue.doctor
       ? {
           id: queue.doctor.id,
-          specialization: queue.doctor.specialization,
+          specializations:
+            queue.doctor.specializations?.map((s) => ({
+              id: s.id,
+              name: s.name,
+            })) ?? [],
           email: redactField({
             value: queue.doctor.user?.email ?? null,
             currentRole: role,

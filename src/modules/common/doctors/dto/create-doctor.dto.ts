@@ -31,9 +31,10 @@ export class CreateDoctorDto {
   @IsOptional()
   code?: string;
 
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  specialization?: string;
+  specializationIds?: string[];
 
   @IsString()
   @IsOptional()

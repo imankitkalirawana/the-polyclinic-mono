@@ -1,4 +1,4 @@
-import { Doctor } from '@/common/doctors/entities/doctor.entity';
+import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { redactField } from 'src/common/utils/redact.util';
 import { Role } from 'src/common/enums/role.enum';
 
@@ -19,7 +19,7 @@ export function formatDoctor(doctor: Doctor, currentRole: Role) {
       currentRole,
       targetRole: currentRole,
     }),
-    specialization: doctor.specialization,
+    specializations: doctor.specializations ?? [],
     education: doctor.education,
     // TODO: Add designation and seating
     designation: null,

@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from '@/auth/users/dto/create-user.dto';
+import { CreateUserDto } from '@auth/users/dto/create-user.dto';
 
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
@@ -78,7 +78,7 @@ export class UserService {
    * enforcing `companies` to contain the active schema.
    */
   async find_all(
-    where: FindOptionsWhere<User>,
+    where: FindOptionsWhere<User> | null,
     options: UserFindOptions = {},
   ): Promise<User[]> {
     const { globally, ...rest } = options;
@@ -110,7 +110,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto & { email_verified?: boolean }) {
     const userRepository = await this.getUserRepository();
     const existingUser = await this.find_by(
       { email: dto.email },
@@ -132,6 +132,7 @@ export class UserService {
     const user = new User();
     Object.assign(user, {
       ...dto,
+      email_verified: dto.email_verified,
       password_digest: dto.password
         ? await bcrypt.hash(dto.password, 10)
         : undefined,

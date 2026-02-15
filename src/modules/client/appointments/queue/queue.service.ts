@@ -18,7 +18,7 @@ import {
 } from 'typeorm';
 import { Request } from 'express';
 import { CreateQueueDto } from './dto/create-queue.dto';
-import { CurrentUserPayload } from '@/auth/decorators/current-user.decorator';
+import { CurrentUserPayload } from '@auth/decorators/current-user.decorator';
 import { Queue, QueueStatus } from './entities/queue.entity';
 import {
   formatQueue,
@@ -28,40 +28,40 @@ import {
   getNextTokenNumber,
 } from './queue.helper';
 import { CompleteQueueDto } from './dto/compelete-queue.dto';
-import { PaymentsService } from '@/client/payments/payments.service';
-import { VerifyPaymentDto } from '@/client/payments/dto/verify-payment.dto';
-import { PdfService } from '@/client/pdf/pdf.service';
-import { DoctorsService } from '@/common/doctors/doctors.service';
-import { PaymentReferenceType } from '@/client/payments/entities/payment.entity';
-import { Currency } from '@/client/payments/dto/create-payment.dto';
+import { PaymentsService } from '@client/payments/payments.service';
+import { VerifyPaymentDto } from '@client/payments/dto/verify-payment.dto';
+import { PdfService } from '@client/pdf/pdf.service';
+import { DoctorsService } from '@common/doctors/doctors.service';
+import { PaymentReferenceType } from '@client/payments/entities/payment.entity';
+import { Currency } from '@client/payments/dto/create-payment.dto';
 import { Role } from 'src/common/enums/role.enum';
 import { PaymentMode } from './enums/queue.enum';
 import { appointmentConfirmationTemplate } from './templates/confirm-appointment.template';
-import { QrService } from '@/client/qr/qr.service';
-import { ActivityService } from '@/common/activity/services/activity.service';
-import { ActivityLogService } from '@/common/activity/services/activity-log.service';
-import { EntityType } from '@/common/activity/enums/entity-type.enum';
+import { QrService } from '@client/qr/qr.service';
+import { ActivityService } from '@common/activity/services/activity.service';
+import { ActivityLogService } from '@common/activity/services/activity-log.service';
+import { EntityType } from '@common/activity/enums/entity-type.enum';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { PatientsService } from '@/common/patients/patients.service';
+import { PatientsService } from '@common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
-import { TableViewService } from '@/common/table-views/table-view.service';
+import { TableViewService } from '@common/table-views/table-view.service';
 import {
   TableViewFilters,
   TableViewType,
-} from '@/common/table-views/entities/table-view.entity';
+} from '@common/table-views/entities/table-view.entity';
 import type {
   TableViewCell,
   TableViewColumnConfig,
-} from '@/common/table-views/table-view.types';
-import { getCellValue } from '@/common/table-views/table-view-etl.util';
+} from '@common/table-views/table-view.types';
+import { getCellValue } from '@common/table-views/table-view-etl.util';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
 
 const defaultQueueFindRelations = {
   patient: { user: true },
-  doctor: { user: true },
+  doctor: { user: true, specializations: true },
   bookedByUser: true,
   completedByUser: true,
 };
@@ -374,6 +374,7 @@ export class QueueService {
       key: vc.column.key,
       name: vc.column.name,
       data_type: vc.column.data_type,
+      column_type: vc.column.column_type,
       order: vc.order,
       width: vc.width,
       pinned: vc.pinned,
@@ -603,7 +604,7 @@ export class QueueService {
     if (!queue) {
       throw new NotFoundException(`Appointment with AID ${aid} not found`);
     }
-    return formatQueue(queue, this.request.user.role);
+    return queue;
   }
 
   // Call queue by id

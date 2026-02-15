@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import { SCHEMA_KEY } from './schema.constants';
-import { SchemaValidatorService } from '@/auth/schema/schema-validator.service';
+import { SchemaValidatorService } from '@auth/schema/schema-validator.service';
 
 @Injectable()
 export class SchemaHandler {

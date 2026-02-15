@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { DataSourceOptions } from 'typeorm';
+import { AuditLogSubscriber } from './modules/common/audit-logs/audit-log.subscriber';
 
 export const publicOrmConfig: DataSourceOptions = {
   type: 'postgres',
@@ -14,7 +15,8 @@ export const publicOrmConfig: DataSourceOptions = {
     join(__dirname, './modules/auth/**/entities/*.entity.{ts,js}'),
     join(__dirname, './modules/common/**/entities/*.entity.{ts,js}'),
   ],
-  synchronize: true,
+  subscribers: [AuditLogSubscriber],
+  synchronize: false,
   logging: process.env.NODE_ENV === 'development',
   // ssl: {
   //   rejectUnauthorized: false,

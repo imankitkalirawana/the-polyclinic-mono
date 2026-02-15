@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import type { ValidationError } from 'class-validator';
 import { AppModule } from './app.module';
 import { CloudLoggerService } from './modules/common/logging/cloud-logger.service';
+import { RequestContextInterceptor } from './common/request-context/request-context.interceptor';
 import * as express from 'express';
 
 async function bootstrap() {
@@ -43,13 +45,30 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: false,
       transform: true,
-      exceptionFactory: (errors) => {
-        const messages = errors
-          .map((error) => {
-            const firstConstraint = Object.values(error.constraints || {})[0];
-            return firstConstraint;
-          })
-          .filter(Boolean); // Remove any undefined values
+      exceptionFactory: (errors: ValidationError[]) => {
+        // Recursively collect all constraint messages, including from nested children
+        const extractMessages = (
+          validationErrors: ValidationError[],
+        ): string[] => {
+          const messages: string[] = [];
+
+          for (const error of validationErrors) {
+            if (error.constraints) {
+              const constraintValues = Object.values(
+                error.constraints ?? {},
+              ).filter((value): value is string => typeof value === 'string');
+
+              messages.push(...constraintValues);
+            }
+            if (Array.isArray(error.children) && error.children.length) {
+              messages.push(...extractMessages(error.children));
+            }
+          }
+
+          return messages;
+        };
+
+        const messages = extractMessages(errors);
 
         return new BadRequestException({
           message: messages,
@@ -59,6 +78,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useGlobalInterceptors(new RequestContextInterceptor());
 
   app.enableShutdownHooks();
 

@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { Repository, In } from 'typeorm';
 import { ActivityLog } from '../entities/activity-log.entity';
 import { EntityType } from '../enums/entity-type.enum';
-import { User } from '@/auth/entities/user.entity';
+import { User } from '@auth/entities/user.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 @Injectable()
