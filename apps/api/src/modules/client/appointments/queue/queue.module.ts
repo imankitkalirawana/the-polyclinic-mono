@@ -1,0 +1,25 @@
+import { Module } from '@nestjs/common';
+import { QueueService } from './queue.service';
+import { QueueController } from './queue.controller';
+import { PaymentsModule } from '../../payments/payments.module';
+import { PdfModule } from '../../pdf/pdf.module';
+import { DoctorsModule } from '../../../common/doctors/doctors.module';
+import { QrModule } from '../../qr/qr.module';
+import { PatientsModule } from '@common/patients/patients.module';
+import { TableViewsModule } from '@common/table-views/table-views.module';
+
+@Module({
+  imports: [
+    PaymentsModule,
+    PdfModule,
+    DoctorsModule,
+    PatientsModule,
+    QrModule,
+    PatientsModule,
+    TableViewsModule,
+  ],
+  controllers: [QueueController],
+  providers: [QueueService],
+  exports: [QueueService],
+})
+export class QueueModule {}
