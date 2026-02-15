@@ -24,6 +24,8 @@ const Configuration: UserConfig = {
       ],
     ],
     'header-max-length': [2, 'always', 200], // Allow up to 200 characters in header
+    // Allow sentence-case; only disallow upper-case, pascal-case, start-case
+    'subject-case': [2, 'never', ['upper-case', 'pascal-case', 'start-case']],
   },
 };
 
