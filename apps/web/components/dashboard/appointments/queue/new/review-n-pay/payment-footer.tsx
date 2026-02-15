@@ -69,7 +69,7 @@ export default function PaymentFooter() {
 
     try {
       await loadRazorpay();
-    } catch (err) {
+    } catch {
       setStatus('failed');
       setError('Failed to load payment gateway. Please try again.');
       isProcessingRef.current = false;
