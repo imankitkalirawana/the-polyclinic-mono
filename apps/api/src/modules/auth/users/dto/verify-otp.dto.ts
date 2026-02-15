@@ -6,7 +6,7 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { VerificationType } from '../../entities/verification.entity';
+import { VerificationType } from '@repo/store';
 
 export class VerifyOtpDto {
   @IsEmail()

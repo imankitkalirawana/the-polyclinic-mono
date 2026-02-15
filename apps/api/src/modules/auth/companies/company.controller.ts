@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
+import { CreateCompanyDto } from '@repo/store';
+import { UpdateCompanyDto } from '@repo/store';
 import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';

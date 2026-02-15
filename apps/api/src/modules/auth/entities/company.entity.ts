@@ -1,10 +1,6 @@
+import { CompanyType } from '@repo/store';
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { Entity, Column, Index, DeleteDateColumn } from 'typeorm';
-
-export enum CompanyType {
-  THE_POLYCLINIC = 'THE_POLYCLINIC',
-  CLIENT = 'CLIENT',
-}
 
 @Entity('login_companies', { schema: 'public' })
 export class Company extends BaseEntity {

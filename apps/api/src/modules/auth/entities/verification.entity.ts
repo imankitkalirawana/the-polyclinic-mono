@@ -1,11 +1,6 @@
 import { Column, DeleteDateColumn, Entity, Index } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
-
-export enum VerificationType {
-  LOGIN = 'LOGIN',
-  REGISTRATION = 'REGISTRATION',
-  PASSWORD_RESET = 'PASSWORD_RESET',
-}
+import { VerificationType } from '@repo/store';
 
 @Entity('login_verifications', { schema: 'public' })
 export class Verification extends BaseEntity {

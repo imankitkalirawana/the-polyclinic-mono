@@ -1,19 +1,7 @@
 import { Entity, Column, OneToMany, Index, DeleteDateColumn } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
-import { CompanyType } from './company.entity';
 import type { Session } from './session.entity';
-import { UserRole } from '@repo/store';
-
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  BLOCKED = 'BLOCKED',
-}
-
-export enum AuthSource {
-  CREDENTIALS = 'CREDENTIALS',
-  GOOGLE = 'GOOGLE',
-}
+import { UserRole, CompanyType, UserStatus, AuthSource } from '@repo/store';
 
 @Entity('login_users', { schema: 'public' })
 export class User extends BaseEntity {

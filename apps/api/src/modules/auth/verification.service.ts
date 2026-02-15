@@ -6,7 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import { MoreThan } from 'typeorm';
-import { Verification, VerificationType } from './entities/verification.entity';
+import { Verification } from './entities/verification.entity';
+import { VerificationType } from '@repo/store';
 import { Repository } from 'typeorm';
 import { UserService } from './users/users.service';
 import { EmailService } from '@common/email/email.service';

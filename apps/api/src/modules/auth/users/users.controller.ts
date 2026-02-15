@@ -13,13 +13,12 @@ import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { CreateProfileDto } from './dto/create-profile.dto';
+import { UpdateProfileDto, updateProfileSchema } from '@repo/store';
+import { CreateProfileDto, createProfileSchema, UserRole } from '@repo/store';
+import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
 import { formatUser } from './users.helper';
-import { UserRole } from '@repo/store';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -33,7 +32,7 @@ export class UsersController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async create(
     @StandardParam() params: StandardParams,
-    @Body() dto: CreateProfileDto,
+    @Body(ZodValidationPipe.create(createProfileSchema)) dto: CreateProfileDto,
   ) {
     const result = await this.userProfileService.createProfile(dto);
     params.setMessage('Profile created successfully');
@@ -80,23 +79,11 @@ export class UsersController {
   async update_profile(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
-    @Body() dto: UpdateProfileDto,
+    @Body(ZodValidationPipe.create(updateProfileSchema)) dto: UpdateProfileDto,
   ) {
     const result = await this.userProfileService.updateProfile(id, dto);
     params.setMessage('Profile updated successfully');
     return result;
-  }
-
-  @Patch(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  async update_user(
-    @StandardParam() params: StandardParams,
-    @Param('id') id: string,
-    @Body() dto: UpdateUserDto,
-  ) {
-    const user = await this.userService.update(id, dto);
-    params.setMessage('User updated successfully');
-    return user;
   }
 
   // reset password

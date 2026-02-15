@@ -4,4 +4,6 @@ export * from "./drug.enum";
 export * from "./service.enum";
 export * from "./queue.enum";
 export * from "./appointment.enum";
-export * from "./verification.enum";
+export * from "./company.enum";
+export * from "./patient.enum";
+export * from "./auth.enum";

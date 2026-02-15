@@ -9,19 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Gender } from '@repo/store';
+import { Gender, PatientVitals } from '@repo/store';
 import { User } from '@auth/entities/user.entity';
-
-export { Gender };
-
-export type Vitals = {
-  bloodType: string;
-  bloodPressure: string;
-  heartRate: string;
-  weight: string;
-  height: string;
-  allergy: string;
-};
 
 @Entity('patient_patients', { schema: 'public' })
 export class Patient {
@@ -52,7 +41,7 @@ export class Patient {
   address: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  vitals: Vitals;
+  vitals: PatientVitals;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;

@@ -3,13 +3,13 @@ import { executeScript } from './script-runner.util';
 import { INestApplicationContext } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Company, CompanyType } from 'src/modules/auth/entities/company.entity';
+import { Company } from 'src/modules/auth/entities/company.entity';
 import { User } from 'src/modules/auth/entities/user.entity';
 import {
   assertRoleAllowedForCompanyType,
   defaultRoleForCompanyType,
 } from 'src/modules/auth/utils/company-role.util';
-import { UserRole } from '@repo/store';
+import { CompanyType, UserRole } from '@repo/store';
 
 type DemoUser = {
   email: string;

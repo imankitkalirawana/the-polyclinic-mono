@@ -3,8 +3,7 @@ import { User } from '../entities/user.entity';
 import { UserService } from './users.service';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { PatientsService } from '@common/patients/patients.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { CreateProfileDto } from './dto/create-profile.dto';
+import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
 import { EmailService } from '@common/email/email.service';
 import { UserRole } from '@repo/store';
 

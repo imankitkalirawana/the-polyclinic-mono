@@ -8,12 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from '@auth/users/dto/create-user.dto';
 
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserFindOptions } from './users.types';
+import { CreateProfileDto } from '@repo/store';
 
 @Injectable()
 export class UserService {
@@ -110,7 +110,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async create(dto: CreateUserDto & { email_verified?: boolean }) {
+  async create(dto: CreateProfileDto['user'] & { email_verified?: boolean }) {
     const userRepository = await this.getUserRepository();
     const existingUser = await this.find_by(
       { email: dto.email },

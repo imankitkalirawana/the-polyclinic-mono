@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
-import { User, AuthSource } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { Session } from './entities/session.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -24,7 +24,7 @@ import { DoctorsService } from '@common/doctors/doctors.service';
 import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 import { UserProfileService } from './users/user-profile.service';
 import { PatientsService } from '@common/patients/patients.service';
-import { UserRole } from '@repo/store';
+import { AuthSource, UserRole } from '@repo/store';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -79,6 +79,7 @@ export class AuthService {
     const user = await this.userProfileService.createProfile({
       user: {
         ...dto,
+        role: UserRole.PATIENT,
       },
     });
     if (!user.user) {

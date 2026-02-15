@@ -15,12 +15,13 @@ import { RegisterDto } from './dto/register.dto';
 import { ConfirmResetPasswordDto } from './dto/confirm-reset-password.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 import { BearerAuthGuard } from './guards/bearer-auth.guard';
-import { SendOtpDto } from './users/dto/send-otp.dto';
+import { SendOtpDto, sendOtpSchema } from '@repo/store';
 import { VerifyOtpDto } from './users/dto/verify-otp.dto';
 import { VerifyTokenDto } from './users/dto/verify-token.dto';
 import { VerificationService } from './verification.service';
-import { VerificationType } from './entities/verification.entity';
+import { VerificationType } from '@repo/store';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -38,7 +39,7 @@ export class AuthController {
   @Post('send-otp')
   async sendOtp(
     @StandardParam() params: StandardParams,
-    @Body() dto: SendOtpDto,
+    @Body(ZodValidationPipe.create(sendOtpSchema)) dto: SendOtpDto,
   ) {
     await this.verificationService.sendOtp(dto.email, dto.type);
     params.setMessage('OTP sent successfully');

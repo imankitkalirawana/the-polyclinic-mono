@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { UserRole } from '@repo/store';
-import { CompanyType } from '../entities/company.entity';
+import { CompanyType, UserRole } from '@repo/store';
 
 export const INTERNAL_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
   UserRole.SUPER_ADMIN,

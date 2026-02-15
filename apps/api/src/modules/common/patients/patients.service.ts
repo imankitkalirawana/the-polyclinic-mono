@@ -7,7 +7,7 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { UserService } from '@auth/users/users.service';
 import { Patient } from '@common/patients/entities/patient.entity';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { UpdatePatientProfileDto } from '@auth/users/dto/update-profile.dto';
+import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
 import { PatientFindOptions } from './patient.types';
 import { UserRole } from '@repo/store';
 
@@ -108,7 +108,7 @@ export class PatientsService {
   }
 
   /** Update patient profile by user id (used by profile service). */
-  async update_by_user_id(userId: string, dto: UpdatePatientProfileDto) {
+  async update_by_user_id(userId: string, dto: UpdateProfileDto['patient']) {
     const repo = await this.getPatientRepository();
     if (dto && Object.keys(dto).length > 0) {
       await repo.update({ user_id: userId }, dto);
@@ -119,7 +119,7 @@ export class PatientsService {
    * Create patient profile for an already created user.
    * Used by the unified user profile creation flow.
    */
-  async create_for_user(userId: string, dto: UpdatePatientProfileDto) {
+  async create_for_user(userId: string, dto: CreateProfileDto['patient']) {
     const repo = await this.getPatientRepository();
     const patient = repo.create({
       user_id: userId,

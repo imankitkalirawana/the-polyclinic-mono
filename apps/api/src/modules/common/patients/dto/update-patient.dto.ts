@@ -6,7 +6,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { Gender } from '../entities/patient.entity';
+import { Gender } from '@repo/store';
 
 export class UpdatePatientDto {
   // age
