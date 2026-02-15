@@ -96,7 +96,7 @@ export function WelcomeUser(user: User) {
 
 export function OtpEmail({
   otp,
-  type = 'register',
+  type = VerificationType.REGISTRATION,
 }: {
   otp: number | string;
   type: VerificationType;
@@ -109,17 +109,17 @@ export function OtpEmail({
       code: number | string;
     }
   > = {
-    register: {
+    [VerificationType.REGISTRATION]: {
       title: `Verify your email to sign up for ${APP_INFO.name}!`,
       description: `We have received a sign-up attempt from ${APP_INFO.name}`,
       code: otp,
     },
-    'reset-password': {
+    [VerificationType.PASSWORD_RESET]: {
       title: `Reset your password for ${APP_INFO.name}!`,
       description: `We have received a password reset attempt from ${APP_INFO.name}`,
       code: otp,
     },
-    'verify-email': {
+    [VerificationType.LOGIN]: {
       title: `Verify your email for ${APP_INFO.name}!`,
       description: `We have received a verification attempt from ${APP_INFO.name}`,
       code: otp,
