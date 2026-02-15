@@ -1,4 +1,4 @@
-import { Drug } from '@/services/client/drug/drug.types';
+import { Drug } from '@repo/store';
 import { apiRequest } from '@/libs/axios';
 
 export class DrugApi {

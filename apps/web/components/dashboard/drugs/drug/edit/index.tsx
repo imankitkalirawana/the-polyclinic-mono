@@ -18,13 +18,17 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import NoResults from '@/components/ui/no-results';
 import { drugValidationSchema } from '@/libs/validation';
 import { useDrugWithDid, useUpdateDrug } from '@/services/client/drug/drug.query';
-import { DrugType } from '@/services/client/drug/drug.types';
 
 export default function EditDrug({ did }: { did: number }) {
   const router = useRouter();
   const { data } = useDrugWithDid(did);
-  const drug: DrugType = data as DrugType;
   const updateDrug = useUpdateDrug();
+
+  if (!data) {
+    return <NoResults message="Drug not found" />;
+  }
+
+  const drug = data;
 
   const formik = useFormik({
     initialValues: drug,
@@ -35,10 +39,6 @@ export default function EditDrug({ did }: { did: number }) {
       });
     },
   });
-
-  if (!drug) {
-    return <NoResults message="Drug not found" />;
-  }
 
   return (
     <Card

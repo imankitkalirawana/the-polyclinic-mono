@@ -7,16 +7,15 @@ import { format } from 'date-fns';
 
 import CellValue from '@/components/ui/cell-value';
 import { useDrugWithDid } from '@/services/client/drug/drug.query';
-import { DrugType } from '@/services/client/drug/drug.types';
 
 export default function DrugCard({ did }: { did: number }) {
   const { data } = useDrugWithDid(did);
 
-  const drug: DrugType = data as DrugType;
-
-  if (!drug) {
+  if (!data) {
     return <div>Drug not found</div>;
   }
+
+  const drug = data;
 
   return (
     <Card className="bg-transparent shadow-none">

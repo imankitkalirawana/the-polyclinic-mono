@@ -1,6 +1,6 @@
+import type { Department } from '@repo/store';
 import type {
   CreateDepartmentInput,
-  Department,
   UpdateDepartmentInput,
 } from './department.types';
 import { apiRequest } from '@/libs/axios';

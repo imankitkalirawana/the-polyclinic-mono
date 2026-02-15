@@ -1,6 +1,6 @@
 import { useGenericQuery } from '@/services/useGenericQuery';
 import { useGenericMutation } from '@/services/useGenericMutation';
-import { DrugType } from '@/services/client/drug/drug.types';
+import { Drug } from '@repo/store';
 import { DrugApi } from './drug.api';
 
 export const useAllDrugs = () =>
@@ -19,7 +19,7 @@ export const useDrugWithDid = (did: number) =>
 // Update
 export const useUpdateDrug = () => {
   return useGenericMutation({
-    mutationFn: (data: DrugType) => DrugApi.update(data),
+    mutationFn: (data: Drug) => DrugApi.update(data),
     invalidateQueries: [['drug']],
   });
 };

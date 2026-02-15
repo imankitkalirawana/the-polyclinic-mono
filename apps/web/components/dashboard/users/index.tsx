@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
 import { useAllUsers } from '@/services/common/user/user.query';
-import { User } from '@/services/common/user/user.types';
+import { User } from '@repo/store';
 import { CopyText } from '@/components/ui/copy';
 import ResetPasswordModal from './ui/reset-password-modal';
 import DeleteUserModal from './ui/delete-user-modal';

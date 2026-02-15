@@ -5,7 +5,7 @@ import { create } from 'zustand';
 
 import { ActionType } from './types';
 
-import { Drug } from '@/services/client/drug/drug.types';
+import { Drug } from '@repo/store';
 
 interface DrugStoreState {
   selected: Drug | null;

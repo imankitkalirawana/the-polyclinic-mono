@@ -1,22 +1,7 @@
 import { $FixMe } from '@/types';
 import { Role } from '@/services/common/user/user.constants';
 import { ButtonProps } from '@heroui/react';
-import {
-  Appointment,
-  type AppointmentStatus,
-  type AppointmentMode,
-  type AppointmentType,
-} from '@repo/store';
-
-export type {
-  Appointment,
-  AppointmentStatus,
-  AppointmentMode,
-  AppointmentType,
-  CreateAppointmentInput,
-  AppointmentPatientInfo,
-  AppointmentDoctorInfo,
-} from '@repo/store';
+import { Appointment, AppointmentStatus } from '@repo/store';
 
 export type ActionType =
   | 'reschedule'

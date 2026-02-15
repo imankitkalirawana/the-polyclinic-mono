@@ -1,5 +1,6 @@
 import { apiRequest } from '@/libs/axios';
-import { User, ResetPasswordRequest, UserProfile, UserFormValues } from './user.types';
+import { User } from '@repo/store';
+import { ResetPasswordRequest, UserProfile, UserFormValues } from './user.types';
 
 export class UserApi {
   private static API_BASE = '/users';

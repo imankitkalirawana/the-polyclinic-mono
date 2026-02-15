@@ -9,8 +9,8 @@ import {
   MAX_DESCRIPTION_LENGTH,
   useCreateDepartment,
   useUpdateDepartment,
-  Department,
 } from '@/services/client/department';
+import { Department } from '@repo/store';
 
 import { Button, Input, Textarea } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';

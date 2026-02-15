@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 
 import { API_BASE_URL, CLINIC_INFO } from '@/libs/config';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 
 export function AppointmentStatus(appointment: Appointment) {
   const statusDescriptionMap: Record<string, string> = {

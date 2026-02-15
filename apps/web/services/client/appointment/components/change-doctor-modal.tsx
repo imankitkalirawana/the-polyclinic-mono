@@ -1,7 +1,8 @@
 import Modal from '@/components/ui/modal';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
 import { useChangeDoctorAppointment } from '../appointment.query';
-import { useAllDoctors, DoctorType } from '@/services/client/doctor';
+import { useAllDoctors } from '@/services/client/doctor';
+import { Doctor } from '@repo/store';
 import { SelectionList } from '@/components/dashboard/appointments/(common)';
 import { useState } from 'react';
 
@@ -10,7 +11,7 @@ export default function ChangeDoctorModal({ type }: { type: 'change-doctor' | 'a
   const { mutateAsync: changeDoctor } = useChangeDoctorAppointment();
   const { data: doctorsData, isLoading: isDoctorsLoading } = useAllDoctors();
 
-  const [selectedDoctor, setSelectedDoctor] = useState<DoctorType | undefined>(undefined);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | undefined>(undefined);
 
   const handleSubmit = async () => {
     if (!aid || !selectedDoctor) return;

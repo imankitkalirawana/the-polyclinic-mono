@@ -1,7 +1,7 @@
 import { Appointment } from '@/services/client/appointment';
 import { UserStatus } from '@/services/common/user/user.constants';
 import { UserRole } from '@repo/store';
-import { DrugStatus } from '@/services/client/drug/drug.types';
+import { DrugStatus } from '@repo/store';
 import { QueueStatus } from '@/services/client/appointment/queue/queue.types';
 
 export type ChipColorType =

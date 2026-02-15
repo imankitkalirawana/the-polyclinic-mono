@@ -23,7 +23,7 @@ import {
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import NewDepartment from './new-edit';
-import { Department } from '@/services/client/department';
+import { Department } from '@repo/store';
 
 export default function Departments() {
   const { data: departments, isLoading } = useAllDepartments();

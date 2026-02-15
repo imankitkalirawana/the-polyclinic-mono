@@ -15,7 +15,7 @@ import {
   DropdownItemWithSection,
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
-import { Doctor } from '@/services/client/doctor';
+import { Doctor } from '@repo/store';
 import { useAllDoctors } from '@/services/client/doctor/doctor.query';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import Link from 'next/link';

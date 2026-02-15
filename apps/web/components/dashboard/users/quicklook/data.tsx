@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import { ActionType, DropdownKeyType } from '../types';
 
 import { PermissionProps } from '@/components/ui/dashboard/quicklook/types';
-import { User } from '@/services/common/user/user.types';
+import { User } from '@repo/store';
 import { RenderUser } from '@/components/ui/static-data-table/cell-renderers';
 
 export const permissions: PermissionProps<ActionType, DropdownKeyType> = {

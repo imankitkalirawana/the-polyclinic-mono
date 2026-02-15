@@ -1,5 +1,5 @@
 import { Role } from '@/services/common/user/user.constants';
-import type { Organization } from '@/services/system/organization';
+import { Organization } from '@repo/store';
 
 export interface SessionUser {
   id: string;

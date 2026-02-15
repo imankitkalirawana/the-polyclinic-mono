@@ -1,4 +1,4 @@
-import { Patient } from './patient.types';
+import { Patient } from '@repo/store';
 import { Appointment } from '../appointment';
 import { apiRequest } from '@/libs/axios';
 

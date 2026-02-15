@@ -15,7 +15,7 @@ import { ActionType, DropdownKeyType } from '../types';
 
 import { PermissionProps } from '@/components/ui/dashboard/quicklook/types';
 import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
-import { DrugType } from '@/services/client/drug/drug.types';
+import { Drug } from '@repo/store';
 
 export const permissions: PermissionProps<ActionType, DropdownKeyType> = {
   DOCTOR: ['cancel', 'reschedule', 'reminder', 'new-tab', 'add-to-calendar', 'invoice', 'reports'],
@@ -24,7 +24,7 @@ export const permissions: PermissionProps<ActionType, DropdownKeyType> = {
   RECEPTIONIST: ['cancel', 'reschedule', 'reminder'],
 };
 
-export const content = (drug: DrugType) => [
+export const content = (drug: Drug) => [
   {
     label: 'drug ID',
     value: () => drug.did,
@@ -87,7 +87,7 @@ export const content = (drug: DrugType) => [
   },
 ];
 
-export const sidebarContent = (drug: DrugType) => (
+export const sidebarContent = (drug: Drug) => (
   <>
     <div className="flex flex-col items-center gap-2 p-4">
       <div className="flex flex-col items-center">

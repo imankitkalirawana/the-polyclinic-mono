@@ -1,10 +1,13 @@
-import { Patient } from '@/services/client/patient';
-import { DoctorSpecialization, Doctor } from '@/services/client/doctor';
-import { Department } from '@/services/client/department/department.types';
-import { Drug } from '@/services/client/drug/drug.types';
-import { Appointment } from '@/services/client/appointment/appointment.types';
-import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
-import { User } from '@/services/common/user/user.types';
+import {
+  Appointment,
+  AppointmentQueue,
+  Department,
+  Doctor,
+  DoctorSpecialization,
+  Drug,
+  Patient,
+  User,
+} from '@repo/store';
 
 /**
  * Cache Registry - Central type definition for all cacheable entities

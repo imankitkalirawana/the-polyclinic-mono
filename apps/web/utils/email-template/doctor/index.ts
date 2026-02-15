@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 
 import { API_BASE_URL } from '@/libs/config';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 
 export function NewAppointment(appointment: Appointment) {
   return `<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #ffffff; color: #1a1a1a; line-height: 1.5;">

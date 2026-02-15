@@ -3,7 +3,7 @@ import { useGenericQuery } from '@/services/useGenericQuery';
 import { useGenericMutation } from '@/services/useGenericMutation';
 import { useCollectionQuery, useIndexedQuery } from '@/store/cache';
 
-import { SlotConfig } from './doctor.types';
+import { SlotConfig } from '@repo/store';
 
 export const useAllDoctors = (search?: string) =>
   useCollectionQuery({

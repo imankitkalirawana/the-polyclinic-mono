@@ -8,7 +8,7 @@ import CellValue from '@/components/ui/cell-value';
 
 import { castData } from '@/libs/utils';
 import { useUserWithID } from '@/services/common/user/user.query';
-import { User } from '@/services/common/user/user.types';
+import { User } from '@repo/store';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { format } from 'date-fns';
 import { UserRole } from '@repo/store';
@@ -57,7 +57,7 @@ export default function UserCard({ id }: { id: string }) {
         </Button>
       </CardHeader>
       <CardBody className="space-y-2 px-0">
-        <ScrollShadow hideScrollBar className="pb-4 pr-4">
+        <ScrollShadow hideScrollBar className="pr-4 pb-4">
           <CellValue label="Full Name" value={user.name} />
           <CellValue label="Phone Number" value={user.phone || '-'} />
           <CellValue label="Email" value={user.email || '-'} />

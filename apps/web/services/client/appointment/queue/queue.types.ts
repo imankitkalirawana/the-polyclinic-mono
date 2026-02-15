@@ -1,28 +1,6 @@
 import type { DateValue } from '@internationalized/date';
 import { BookQueueSteps } from '@/components/dashboard/appointments/create/data';
-import {
-  QueueStatus,
-  type QueuePatientInfo,
-  type QueueDoctorInfo,
-  type QueueUserInfo,
-  type PaymentMode,
-  type AppointmentQueueRequest,
-  type VerifyPaymentRequest,
-  type PaymentDetails,
-  type AppointmentQueue,
-} from '@repo/store';
-
-export { QueueStatus } from '@repo/store';
-export type {
-  QueuePatientInfo,
-  QueueDoctorInfo,
-  QueueUserInfo,
-  PaymentMode,
-  AppointmentQueueRequest,
-  VerifyPaymentRequest,
-  PaymentDetails,
-  AppointmentQueue,
-} from '@repo/store';
+import { QueueStatus, type AppointmentQueueRequest } from '@repo/store';
 
 export type CreateAppointmentQueueFormValues = {
   appointment: AppointmentQueueRequest;

@@ -1,10 +1,10 @@
 import { CellRenderer } from '@/components/ui/cell/rich-color/cell-renderer';
 import { RenderUser } from '@/components/ui/static-data-table/cell-renderers';
-import { DoctorType } from '@/services/client/doctor';
+import { Doctor } from '@repo/store';
 import { Card, CardBody, CardHeader, Divider, Chip, ScrollShadow } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
-export const CreateAppointmentDoctorDetails = ({ doctor }: { doctor?: DoctorType | null }) => {
+export const CreateAppointmentDoctorDetails = ({ doctor }: { doctor?: Doctor | null }) => {
   if (!doctor)
     return (
       <Card className="w-full">

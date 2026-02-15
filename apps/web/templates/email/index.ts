@@ -1,6 +1,5 @@
 import { APP_INFO } from '@/libs/config';
-import { User } from '@/services/common/user/user.types';
-import { VerificationType } from '@/types';
+import { User, VerificationType } from '@repo/store';
 
 export function WelcomeUser(user: User) {
   return `

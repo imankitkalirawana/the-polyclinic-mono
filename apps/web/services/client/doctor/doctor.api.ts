@@ -1,4 +1,4 @@
-import { DoctorSpecialization, type Doctor, SlotConfig } from './doctor.types';
+import { DoctorSpecialization, type Doctor, SlotConfig } from '@repo/store';
 import { apiRequest } from '@/libs/axios';
 import { CreateSpecializationDto } from './doctor.dto';
 

@@ -10,7 +10,7 @@ import { permissions, sidebarContent } from './data';
 import QuickLook from '@/components/ui/dashboard/quicklook';
 import { ButtonProps, DropdownItemProps } from '@/components/ui/dashboard/quicklook/types';
 import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
-import { DrugType } from '@/services/client/drug/drug.types';
+import { Drug } from '@repo/store';
 
 export function DrugQuickLook() {
   const { selected, setSelected, setAction, action } = useDrugStore();
@@ -97,7 +97,7 @@ export function DrugQuickLook() {
     [selected]
   );
 
-  const content = (drug: DrugType) => [
+  const content = (drug: Drug) => [
     {
       label: 'Drug ID',
       value: () => drug.did,

@@ -122,17 +122,17 @@ The cache registry defines all available cache keys and their types:
 | Key                 | Type                          | Description                          |
 | ------------------- | ----------------------------- | ------------------------------------ |
 | `patients`          | `PatientType[]`               | All patients collection              |
-| `doctors`           | `DoctorType[]`                | All doctors collection               |
+| `doctors`           | `Doctor[]`                   | All doctors collection               |
 | `departments`       | `DepartmentType[]`            | All departments collection           |
 | `services`          | `ServiceType[]`               | All services collection              |
-| `drugs`             | `DrugType[]`                  | All drugs collection                 |
+| `drugs`             | `Drug[]`                      | All drugs collection                 |
 | `appointments`      | `AppointmentType[]`           | All appointments collection          |
 | `appointmentQueues` | `AppointmentQueueType[]`      | All queue appointments               |
 | `users`             | `UserType[]`                  | All users collection                 |
 | `selectedPatient`   | `PatientType \| null`         | Currently selected patient           |
-| `selectedDoctor`    | `DoctorType \| null`          | Currently selected doctor            |
+| `selectedDoctor`    | `Doctor \| null`              | Currently selected doctor            |
 | `patientById`       | `Record<string, PatientType>` | Patients indexed by ID               |
-| `doctorById`        | `Record<string, DoctorType>`  | Doctors indexed by ID                |
+| `doctorById`        | `Record<string, Doctor>`     | Doctors indexed by ID                |
 | ...                 | ...                           | (See `cache.types.ts` for full list) |
 
 ### Query Hooks
@@ -189,7 +189,7 @@ const result = useQueryWithCache({
 import { useCacheValue } from '@/store';
 
 const patients = useCacheValue('patients'); // PatientType[]
-const doctors = useCacheValue('doctors'); // DoctorType[]
+const doctors = useCacheValue('doctors'); // Doctor[]
 const services = useCacheValue('services'); // ServiceType[]
 ```
 
@@ -199,7 +199,7 @@ const services = useCacheValue('services'); // ServiceType[]
 import { usePatientById, useDoctorById } from '@/store';
 
 const patient = usePatientById(patientId); // PatientType | undefined
-const doctor = useDoctorById(doctorId); // DoctorType | undefined
+const doctor = useDoctorById(doctorId); // Doctor | undefined
 ```
 
 #### Selected Entity Selectors

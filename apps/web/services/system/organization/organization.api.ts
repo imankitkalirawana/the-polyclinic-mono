@@ -1,9 +1,9 @@
-import { User } from '@/services/common/user/user.types';
+import { User } from '@repo/store';
 import type {
   CreateOrganizationInput,
-  Organization,
   UpdateOrganizationInput,
 } from './organization.types';
+import type { Organization } from '@repo/store';
 
 import { apiRequest } from '@/libs/axios';
 

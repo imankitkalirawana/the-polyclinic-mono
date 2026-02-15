@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Base } from '@/types';
+import { Base } from '@repo/store';
 import { ValuesOf } from '@/libs/utils';
 import {
   NOTIFICATION_TYPES,
