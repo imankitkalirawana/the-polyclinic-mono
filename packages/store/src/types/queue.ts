@@ -1,5 +1,4 @@
-import { QueueStatus } from "../enums";
-import { Gender } from "../enums";
+import { Gender, PaymentMode, QueueStatus } from "../enums";
 
 export type QueuePatientInfo = {
   id: string;
@@ -27,8 +26,6 @@ export type QueueUserInfo = {
   email: string;
   name: string;
 };
-
-export type PaymentMode = "RAZORPAY" | "CASH";
 
 export type AppointmentQueueRequest = {
   aid?: string | null;
