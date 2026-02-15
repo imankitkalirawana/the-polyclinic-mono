@@ -1,0 +1,5 @@
+{
+  "name": "polyclinic",
+  "private": true,
+  "packageManager": "pnpm@latest"
+}
