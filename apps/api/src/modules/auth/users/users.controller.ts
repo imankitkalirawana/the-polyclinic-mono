@@ -13,13 +13,13 @@ import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { StandardParam, StandardParams } from 'nest-standard-response';
 import { ResetPasswordDto } from '../dto/reset-password-dto';
 import { formatUser } from './users.helper';
+import { UserRole } from '@repo/store';
 
 @Controller('users')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -30,7 +30,7 @@ export class UsersController {
   ) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async create(
     @StandardParam() params: StandardParams,
     @Body() dto: CreateProfileDto,
@@ -41,7 +41,7 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   async find_all() {
     const users = await this.userService.find_all(null, {
       order: { name: 'ASC' },
@@ -50,7 +50,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   async find_one(@Param('id') id: string) {
     return await this.userService.find_by_and_fail({ id });
   }
@@ -58,11 +58,11 @@ export class UsersController {
   /** Get user + integrated role profile (Doctor/Patient) for the "Update a User" form. */
   @Get(':id/profile')
   @Roles(
-    Role.SUPER_ADMIN,
-    Role.ADMIN,
-    Role.MODERATOR,
-    Role.DOCTOR,
-    Role.PATIENT,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.MODERATOR,
+    UserRole.DOCTOR,
+    UserRole.PATIENT,
   )
   async get_profile(@Param('id') id: string) {
     return await this.userProfileService.getProfile(id);
@@ -71,11 +71,11 @@ export class UsersController {
   /** Update both user (name, email, phone) and role-specific profile in one request. */
   @Patch(':id/profile')
   @Roles(
-    Role.SUPER_ADMIN,
-    Role.ADMIN,
-    Role.MODERATOR,
-    Role.DOCTOR,
-    Role.PATIENT,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.MODERATOR,
+    UserRole.DOCTOR,
+    UserRole.PATIENT,
   )
   async update_profile(
     @StandardParam() params: StandardParams,
@@ -88,7 +88,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async update_user(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
@@ -101,7 +101,7 @@ export class UsersController {
 
   // reset password
   @Post(':id/reset-password')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async reset_password(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,

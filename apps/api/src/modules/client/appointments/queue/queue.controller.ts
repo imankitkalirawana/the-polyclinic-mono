@@ -18,7 +18,6 @@ import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@auth/guards/field-restrictions.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
@@ -30,6 +29,7 @@ import { StandardParam, StandardParams } from 'nest-standard-response';
 import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
 import { Request } from 'express';
+import { UserRole } from '@repo/store';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -38,7 +38,7 @@ export class QueueController {
   constructor(private readonly queueService: QueueService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.PATIENT)
   async create(
     @StandardParam() params: StandardParams,
     @Body() createQueueDto: CreateQueueDto,
@@ -66,13 +66,19 @@ export class QueueController {
   }
 
   @Post('verify-payment')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.PATIENT)
   verifyPayment(@Body() verifyPaymentDto: VerifyPaymentDto) {
     return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
   @Get('all')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async findAll(@Query('view_id') view_id: string) {
     const result = await this.queueService.find_all_by_view(view_id);
 
@@ -80,7 +86,7 @@ export class QueueController {
   }
 
   @Get('doctor/:doctorId/queue')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
   getQueueForDoctor(
     @Param('doctorId') doctorId: string,
     @Query('id') queueId?: string,
@@ -95,53 +101,65 @@ export class QueueController {
   }
 
   @Get('patient/me')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   getQueueForPatient() {
     return this.queueService.getQueueForPatient();
   }
 
   @Get(':aid')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async getAppointmentByAid(@Param('aid') aid: string, @Req() req: Request) {
     const queue = await this.queueService.getAppointmentByAid(aid);
     return formatQueue(queue, req.user.role);
   }
 
   @Get(':id/activity-logs')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
   async getActivityLogs(@Param('id') id: string) {
     return this.queueService.getActivityLogs(id);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.queueService.remove(id);
   }
 
   @Patch(':id/call')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   callQueue(@StandardParam() params: StandardParams, @Param('id') id: string) {
     params.setMessage(`Patient has been called`);
     return this.queueService.callQueue(id);
   }
 
   @Patch(':id/clock-in')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   clockIn(@StandardParam() params: StandardParams, @Param('id') id: string) {
     params.setMessage(`Appointment started`);
     return this.queueService.clockIn(id);
   }
 
   @Patch(':id/skip')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   skipQueue(@StandardParam() params: StandardParams, @Param('id') id: string) {
     params.setMessage(`Patient has been temporarily skipped`);
     return this.queueService.skipQueue(id);
   }
 
   @Patch(':id/complete')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR)
   completeAppointmentQueue(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,

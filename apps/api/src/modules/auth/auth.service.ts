@@ -20,11 +20,11 @@ import { GoogleAuthDto } from './dto/google-auth.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { UserService } from './users/users.service';
-import { Role } from 'src/scripts/types';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { MasterKeyService } from '@common/utilities/master-key/masterkey.service';
 import { UserProfileService } from './users/user-profile.service';
 import { PatientsService } from '@common/patients/patients.service';
+import { UserRole } from '@repo/store';
 
 type GlobalToken = { token: string; expiresIn: string; schema: string };
 
@@ -124,7 +124,7 @@ export class AuthService {
         user: {
           email,
           name,
-          role: Role.PATIENT,
+          role: UserRole.PATIENT,
           auth_source: AuthSource.GOOGLE,
         },
         patient: {},
@@ -224,13 +224,13 @@ export class AuthService {
     });
 
     let integrated_user_id = null;
-    if (user.role === Role.DOCTOR) {
+    if (user.role === UserRole.DOCTOR) {
       const doctor = await this.doctorsService.find_by_and_fail({
         user_id: user.id,
       });
       integrated_user_id = doctor.id;
     }
-    if (user.role === Role.PATIENT) {
+    if (user.role === UserRole.PATIENT) {
       const patient = await this.patientsService.find_by_and_fail({
         user_id: user.id,
       });

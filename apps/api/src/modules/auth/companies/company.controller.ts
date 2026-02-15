@@ -15,7 +15,7 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 
 @Controller('auth/companies')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -23,7 +23,7 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Post()
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   async create(
     @StandardParam() params: StandardParams,
     @Body() dto: CreateCompanyDto,
@@ -34,19 +34,19 @@ export class CompanyController {
   }
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   async findAll() {
     return await this.companyService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   async findOne(@Param('id') id: string) {
     return await this.companyService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async update(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
@@ -58,7 +58,7 @@ export class CompanyController {
   }
 
   @Delete(':id/soft-remove')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async softRemove(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Role } from 'src/common/enums/role.enum';
 import { User } from '../entities/user.entity';
 import { UserService } from './users.service';
 import { DoctorsService } from '@common/doctors/doctors.service';
@@ -7,6 +6,7 @@ import { PatientsService } from '@common/patients/patients.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { EmailService } from '@common/email/email.service';
+import { UserRole } from '@repo/store';
 
 export type UserProfileResponse =
   | {
@@ -36,13 +36,13 @@ export class UserProfileService {
     const user = await this.userService.find_by_and_fail({ id: userId });
 
     switch (user.role) {
-      case Role.DOCTOR: {
+      case UserRole.DOCTOR: {
         const doctor = await this.doctorsService.find_by_and_fail({
           user_id: userId,
         });
         return { user, doctor };
       }
-      case Role.PATIENT: {
+      case UserRole.PATIENT: {
         const patient = await this.patientsService.find_by_and_fail({
           user_id: userId,
         });
@@ -64,10 +64,10 @@ export class UserProfileService {
 
     // Then create role-specific profile based on the created user's role
     switch (user.role) {
-      case Role.DOCTOR:
+      case UserRole.DOCTOR:
         await this.doctorsService.create_for_user(user.id, dto.doctor);
         break;
-      case Role.PATIENT:
+      case UserRole.PATIENT:
         await this.patientsService.create_for_user(user.id, dto.patient);
         break;
     }
@@ -104,10 +104,10 @@ export class UserProfileService {
     }
 
     switch (user.role) {
-      case Role.DOCTOR:
+      case UserRole.DOCTOR:
         await this.doctorsService.update_by_user_id(userId, dto.doctor);
         break;
-      case Role.PATIENT:
+      case UserRole.PATIENT:
         await this.patientsService.update_by_user_id(userId, dto.patient);
         break;
     }

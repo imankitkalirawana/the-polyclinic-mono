@@ -13,7 +13,6 @@ import { SpecializationsService } from './specializations.service';
 import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
@@ -22,6 +21,7 @@ import { formatDoctor } from './doctors.helper';
 import { Request } from 'express';
 import { ILike } from 'typeorm';
 import { CreateSpecializationDto } from './dto/create-specialization.dto';
+import { UserRole } from '@repo/store';
 
 @Controller('doctors')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -32,7 +32,13 @@ export class DoctorsController {
   ) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async find_all(@Req() req: Request, @Query('search') search?: string) {
     const doctors = await this.doctorsService.find_all({
       user: { name: ILike(`%${search}%`) },
@@ -67,21 +73,27 @@ export class DoctorsController {
 
   /* This should be defined before :id route */
   @Get('specializations')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async list_specializations() {
     const specializations = await this.specializationsService.find_all();
     return specializations;
   }
 
   @Post('specializations')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   async create_specialization(@Body() body: CreateSpecializationDto) {
     const specialization = await this.specializationsService.create(body);
     return specialization;
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
   async find_one(@Req() req: Request, @Param('id') id: string) {
     const doctor = await this.doctorsService.find_by_and_fail({ id });
     return formatDoctor(doctor, req.user.role);

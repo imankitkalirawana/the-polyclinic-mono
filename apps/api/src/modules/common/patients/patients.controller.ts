@@ -13,7 +13,6 @@ import { PatientsService } from './patients.service';
 import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
 import {
   CurrentUser,
   CurrentUserPayload,
@@ -23,6 +22,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { formatPatient } from './patients.helper';
 import { ILike } from 'typeorm';
 import { Request } from 'express';
+import { UserRole } from '@repo/store';
 
 @Controller('patients')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -30,7 +30,7 @@ export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.RECEPTIONIST, UserRole.NURSE)
   async create(
     @Body() createPatientDto: CreatePatientDto,
     @StandardParam() params: StandardParams,
@@ -41,7 +41,13 @@ export class PatientsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async find_all(@Query('search') search?: string) {
     const patients = await this.patientsService.find_all({
       user: { name: ILike(`%${search}%`) },
@@ -58,9 +64,15 @@ export class PatientsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async find_one(@Param('id') id: string, @Req() req: Request) {
-    const isPatient = req.user.role === Role.PATIENT;
+    const isPatient = req.user.role === UserRole.PATIENT;
     const patient = await this.patientsService.find_by_and_fail({
       id,
       user_id: isPatient ? req.user.userId : undefined,
@@ -69,7 +81,7 @@ export class PatientsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id') id: string) {
     return await this.patientsService.remove(id);
   }

@@ -1,8 +1,8 @@
 import { Entity, Column, OneToMany, Index, DeleteDateColumn } from 'typeorm';
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { CompanyType } from './company.entity';
-import { Role } from 'src/common/enums/role.enum';
 import type { Session } from './session.entity';
+import { UserRole } from '@repo/store';
 
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
@@ -30,8 +30,8 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   password_digest: string;
 
-  @Column({ type: 'varchar', default: Role.PATIENT })
-  role: Role;
+  @Column({ type: 'varchar', default: UserRole.PATIENT })
+  role: UserRole;
 
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;

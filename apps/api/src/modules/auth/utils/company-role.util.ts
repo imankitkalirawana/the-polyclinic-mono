@@ -1,23 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 import { CompanyType } from '../entities/company.entity';
 
-export const INTERNAL_ROLES: ReadonlySet<Role> = new Set<Role>([
-  Role.SUPER_ADMIN,
-  Role.MODERATOR,
-  Role.OPS,
+export const INTERNAL_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
+  UserRole.SUPER_ADMIN,
+  UserRole.MODERATOR,
+  UserRole.OPS,
 ]);
 
-export const CLIENT_ROLES: ReadonlySet<Role> = new Set<Role>([
-  Role.ADMIN,
-  Role.PATIENT,
-  Role.DOCTOR,
-  Role.NURSE,
-  Role.RECEPTIONIST,
+export const CLIENT_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
+  UserRole.ADMIN,
+  UserRole.PATIENT,
+  UserRole.DOCTOR,
+  UserRole.NURSE,
+  UserRole.RECEPTIONIST,
 ]);
 
 export function assertRoleAllowedForCompanyType(
-  role: Role,
+  role: UserRole,
   companyType: CompanyType,
 ): void {
   const allowed =
@@ -32,11 +32,13 @@ export function assertRoleAllowedForCompanyType(
   }
 }
 
-export function inferCompanyTypeForRole(role: Role): CompanyType {
+export function inferCompanyTypeForRole(role: UserRole): CompanyType {
   if (INTERNAL_ROLES.has(role)) return CompanyType.THE_POLYCLINIC;
   return CompanyType.CLIENT;
 }
 
-export function defaultRoleForCompanyType(companyType: CompanyType): Role {
-  return companyType === CompanyType.THE_POLYCLINIC ? Role.OPS : Role.PATIENT;
+export function defaultRoleForCompanyType(companyType: CompanyType): UserRole {
+  return companyType === CompanyType.THE_POLYCLINIC
+    ? UserRole.OPS
+    : UserRole.PATIENT;
 }

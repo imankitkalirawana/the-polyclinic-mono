@@ -6,10 +6,10 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { UserService } from '@auth/users/users.service';
 import { Patient } from '@common/patients/entities/patient.entity';
-import { Role } from 'src/scripts/types';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { UpdatePatientProfileDto } from '@auth/users/dto/update-profile.dto';
 import { PatientFindOptions } from './patient.types';
+import { UserRole } from '@repo/store';
 
 @Injectable()
 export class PatientsService {
@@ -81,7 +81,7 @@ export class PatientsService {
       name: createPatientDto.name,
       phone: createPatientDto.phone,
       password: createPatientDto.password,
-      role: Role.PATIENT,
+      role: UserRole.PATIENT,
       companies: [this.schema],
     });
 

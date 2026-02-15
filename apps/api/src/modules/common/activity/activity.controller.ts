@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { Roles } from '@auth/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 
 class GetActivityLogsQueryDto {
   @IsEnum(EntityType)
@@ -22,7 +22,7 @@ export class ActivityController {
   constructor(private readonly activityLogService: ActivityLogService) {}
 
   @Get('logs')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
   async getActivityLogs(@Query() query: GetActivityLogsQueryDto) {
     return this.activityLogService.getActivityLogsByEntity(
       query.type,
@@ -31,7 +31,13 @@ export class ActivityController {
   }
 
   @Get('logs/my')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.DOCTOR,
+    UserRole.NURSE,
+    UserRole.RECEPTIONIST,
+    UserRole.PATIENT,
+  )
   async getActivityLogsByStakeholder(@Req() req: Request) {
     return this.activityLogService.getActivityLogsByStakeholder(
       req.user?.userId,

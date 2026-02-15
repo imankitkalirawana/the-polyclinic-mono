@@ -1,8 +1,8 @@
 import { Doctor } from '@common/doctors/entities/doctor.entity';
+import { UserRole } from '@repo/store';
 import { redactField } from 'src/common/utils/redact.util';
-import { Role } from 'src/common/enums/role.enum';
 
-export function formatDoctor(doctor: Doctor, currentRole: Role) {
+export function formatDoctor(doctor: Doctor, currentRole: UserRole) {
   return {
     id: doctor.id,
     // TODO: Add code

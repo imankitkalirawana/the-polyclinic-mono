@@ -12,7 +12,7 @@ import {
   UpdateDoctorProfileDto,
   UpdatePatientProfileDto,
 } from './update-profile.dto';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 
 /**
  * User creation payload for the unified "create profile" flow.
@@ -34,11 +34,11 @@ export class ProfileRoleConsistencyConstraint implements ValidatorConstraintInte
       return true;
     }
 
-    if (value.user.role === Role.DOCTOR) {
+    if (value.user.role === UserRole.DOCTOR) {
       return !!value.doctor && !value.patient;
     }
 
-    if (value.user.role === Role.PATIENT) {
+    if (value.user.role === UserRole.PATIENT) {
       return !!value.patient && !value.doctor;
     }
 
@@ -51,11 +51,11 @@ export class ProfileRoleConsistencyConstraint implements ValidatorConstraintInte
     const value = args.object as CreateProfileDto | undefined;
     const role = value?.user?.role;
 
-    if (role === Role.DOCTOR) {
+    if (role === UserRole.DOCTOR) {
       return 'doctor profile details are required when role is DOCTOR ';
     }
 
-    if (role === Role.PATIENT) {
+    if (role === UserRole.PATIENT) {
       return 'patient profile details are required when role is PATIENT';
     }
 

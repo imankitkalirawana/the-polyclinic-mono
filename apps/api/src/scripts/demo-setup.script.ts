@@ -3,18 +3,18 @@ import { executeScript } from './script-runner.util';
 import { INestApplicationContext } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Role } from 'src/common/enums/role.enum';
 import { Company, CompanyType } from 'src/modules/auth/entities/company.entity';
 import { User } from 'src/modules/auth/entities/user.entity';
 import {
   assertRoleAllowedForCompanyType,
   defaultRoleForCompanyType,
 } from 'src/modules/auth/utils/company-role.util';
+import { UserRole } from '@repo/store';
 
 type DemoUser = {
   email: string;
   name: string;
-  role: Role;
+  role: UserRole;
 };
 
 function getArg(flag: string): string | undefined {
@@ -112,29 +112,29 @@ async function run(app: INestApplicationContext) {
     {
       email: 'superadmin@internal.local',
       name: 'Internal Super Admin',
-      role: Role.SUPER_ADMIN,
+      role: UserRole.SUPER_ADMIN,
     },
     {
       email: 'moderator@internal.local',
       name: 'Internal Moderator',
-      role: Role.MODERATOR,
+      role: UserRole.MODERATOR,
     },
-    { email: 'ops@internal.local', name: 'Internal Ops', role: Role.OPS },
+    { email: 'ops@internal.local', name: 'Internal Ops', role: UserRole.OPS },
   ];
 
   const clientUsers: DemoUser[] = [
-    { email: 'admin@demo.com', name: 'Demo Admin', role: Role.ADMIN },
-    { email: 'doctor@demo.com', name: 'Demo Doctor', role: Role.DOCTOR },
-    { email: 'nurse@demo.com', name: 'Demo Nurse', role: Role.NURSE },
+    { email: 'admin@demo.com', name: 'Demo Admin', role: UserRole.ADMIN },
+    { email: 'doctor@demo.com', name: 'Demo Doctor', role: UserRole.DOCTOR },
+    { email: 'nurse@demo.com', name: 'Demo Nurse', role: UserRole.NURSE },
     {
       email: 'receptionist@demo.com',
       name: 'Demo Receptionist',
-      role: Role.RECEPTIONIST,
+      role: UserRole.RECEPTIONIST,
     },
-    { email: 'patient@demo.com', name: 'Demo Patient', role: Role.PATIENT },
+    { email: 'patient@demo.com', name: 'Demo Patient', role: UserRole.PATIENT },
   ];
 
-  const created: Array<{ email: string; id: string; role: Role }> = [];
+  const created: Array<{ email: string; id: string; role: UserRole }> = [];
 
   const createUserAndAssign = async (
     u: DemoUser,

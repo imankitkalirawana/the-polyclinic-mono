@@ -1,4 +1,4 @@
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 import { Queue } from './entities/queue.entity';
 import { redactField } from 'src/common/utils/redact.util';
 import { calculateAge } from '@common/patients/patients.helper';
@@ -8,7 +8,7 @@ interface FormattedQueue extends Queue {
   previousQueueId?: string;
 }
 
-export function formatQueue(queue: FormattedQueue, role?: Role | null) {
+export function formatQueue(queue: FormattedQueue, role?: UserRole | null) {
   return {
     id: queue.id,
     aid: queue.aid,

@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
 import { Session } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 import { SchemaValidatorService } from '../schema/schema-validator.service';
 import { SchemaHandler } from 'src/libs/schema/schema.service';
 
@@ -15,7 +15,7 @@ export interface GlobalJwtPayload {
   sessionId: string;
   userId: string;
   email: string;
-  role: Role;
+  role: UserRole;
   /** Company/schema the user logged into; used for tenant isolation (never trust x-schema for auth). */
   schema: string;
 }

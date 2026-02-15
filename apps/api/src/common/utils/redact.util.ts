@@ -1,11 +1,11 @@
-import { Role } from '../enums/role.enum';
+import { UserRole } from '@repo/store';
 
-export type RedactFieldConfig = Partial<Record<Role, Array<Role>>>;
+export type RedactFieldConfig = Partial<Record<UserRole, Array<UserRole>>>;
 
 export const DEFAULT_REDACT_FIELD_CONFIG: RedactFieldConfig = {
-  PATIENT: [Role.DOCTOR, Role.ADMIN, Role.RECEPTIONIST],
-  DOCTOR: [Role.ADMIN],
-  RECEPTIONIST: [Role.ADMIN],
+  PATIENT: [UserRole.DOCTOR, UserRole.ADMIN, UserRole.RECEPTIONIST],
+  DOCTOR: [UserRole.ADMIN],
+  RECEPTIONIST: [UserRole.ADMIN],
 };
 
 export function redactField({
@@ -15,8 +15,8 @@ export function redactField({
   config = DEFAULT_REDACT_FIELD_CONFIG,
 }: {
   value: string | null | undefined;
-  currentRole: Role;
-  targetRole: Role;
+  currentRole: UserRole;
+  targetRole: UserRole;
   config?: RedactFieldConfig;
 }) {
   if (!value) return null;

@@ -34,7 +34,7 @@ import { PdfService } from '@client/pdf/pdf.service';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { PaymentReferenceType } from '@client/payments/entities/payment.entity';
 import { Currency } from '@client/payments/dto/create-payment.dto';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 import { PaymentMode } from './enums/queue.enum';
 import { appointmentConfirmationTemplate } from './templates/confirm-appointment.template';
 import { QrService } from '@client/qr/qr.service';
@@ -194,7 +194,7 @@ export class QueueService {
     });
     await this.checkDoctorExists(createQueueDto.doctorId);
 
-    if (existingQueue && this.request.user.role === Role.PATIENT) {
+    if (existingQueue && this.request.user.role === UserRole.PATIENT) {
       throw new BadRequestException(
         `You already have an appointment booked  <a class="underline text-primary-500" href="/appointments/queues/${existingQueue.id}">view</a>`,
       );
@@ -215,8 +215,9 @@ export class QueueService {
 
       if (
         createQueueDto.paymentMode === PaymentMode.CASH &&
-        (this.request.user.role === Role.ADMIN ||
-          this.request.user.role === Role.RECEPTIONIST)
+        (this.request.user.role === UserRole.ADMIN ||
+          this.request.user.role === UserRole.RECEPTIONIST ||
+          this.request.user.role === UserRole.NURSE)
       ) {
         status = QueueStatus.BOOKED;
       } else if (createQueueDto.paymentMode === PaymentMode.CASH) {
@@ -590,7 +591,7 @@ export class QueueService {
     const userId = this.request.user.userId;
 
     let patientId = undefined;
-    if (this.request.user.role === Role.PATIENT) {
+    if (this.request.user.role === UserRole.PATIENT) {
       patientId = (
         await this.patientService.find_by_and_fail({ user_id: userId })
       ).id;

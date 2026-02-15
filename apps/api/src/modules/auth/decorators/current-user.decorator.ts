@@ -1,12 +1,12 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 
 export type CurrentUserPayload = {
   user_id: string;
   email: string;
   name: string;
   phone: string | null;
-  role: Role;
+  role: UserRole;
   session_id: string;
 };
 

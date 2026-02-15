@@ -1,10 +1,10 @@
 import { SetMetadata } from '@nestjs/common';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 
 export const RESTRICT_FIELDS_KEY = 'restrictFields';
 
 export interface FieldRestriction {
-  role: Role | Role[];
+  role: UserRole | UserRole[];
   fields: string[];
 }
 

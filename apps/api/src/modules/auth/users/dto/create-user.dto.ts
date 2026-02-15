@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Role } from 'src/common/enums/role.enum';
+import { UserRole } from '@repo/store';
 import { CompanyType } from '../../entities/company.entity';
 import { AuthSource } from '../../entities/user.entity';
 
@@ -23,9 +23,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  @IsEnum(Role)
+  @IsEnum(UserRole)
   @IsOptional()
-  role?: Role = Role.PATIENT;
+  role?: UserRole = UserRole.PATIENT;
 
   @IsEnum(CompanyType)
   @IsOptional()
