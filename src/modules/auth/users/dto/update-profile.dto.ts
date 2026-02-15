@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -33,9 +34,15 @@ export class UpdateDoctorProfileDto {
   @IsOptional()
   code?: string;
 
-  @IsString()
+  /**
+   * Full list of specialization IDs to assign to the doctor.
+   * Replace semantics: send the complete list you want (add = include new ids,
+   * remove = omit ids, update = send the new list). Empty array clears all.
+   */
   @IsOptional()
-  specialization?: string;
+  @IsArray()
+  @IsString({ each: true })
+  specializations?: string[];
 
   @IsString()
   @IsOptional()

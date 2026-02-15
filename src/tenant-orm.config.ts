@@ -7,6 +7,7 @@ import { Patient } from './modules/common/patients/entities/patient.entity';
 import { Doctor } from './modules/common/doctors/entities/doctor.entity';
 import { AuditLog } from './modules/common/audit-logs/entities/audit-logs.entity';
 import { AuditLogSubscriber } from './modules/common/audit-logs/audit-log.subscriber';
+import { Specialization } from './modules/common/doctors/entities/specialization.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
   // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public
@@ -33,6 +34,7 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
       Session,
       Patient,
       Doctor,
+      Specialization,
     ],
     subscribers: [AuditLogSubscriber],
     synchronize: false,

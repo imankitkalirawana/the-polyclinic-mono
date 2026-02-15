@@ -53,7 +53,11 @@ export function formatQueue(queue: FormattedQueue, role?: Role | null) {
     doctor: queue.doctor
       ? {
           id: queue.doctor.id,
-          specialization: queue.doctor.specialization,
+          specializations:
+            queue.doctor.specializations?.map((s) => ({
+              id: s.id,
+              name: s.name,
+            })) ?? [],
           email: redactField({
             value: queue.doctor.user?.email ?? null,
             currentRole: role,

@@ -61,7 +61,7 @@ const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
 
 const defaultQueueFindRelations = {
   patient: { user: true },
-  doctor: { user: true },
+  doctor: { user: true, specializations: true },
   bookedByUser: true,
   completedByUser: true,
 };
@@ -604,7 +604,7 @@ export class QueueService {
     if (!queue) {
       throw new NotFoundException(`Appointment with AID ${aid} not found`);
     }
-    return formatQueue(queue, this.request.user.role);
+    return queue;
   }
 
   // Call queue by id

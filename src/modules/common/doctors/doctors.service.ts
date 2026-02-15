@@ -7,11 +7,18 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { UpdateDoctorProfileDto } from '@auth/users/dto/update-profile.dto';
 import { DoctorFindOptions } from './doctor.types';
+import { SpecializationsService } from './specializations.service';
+
+const defaultRelations = { user: true, specializations: true };
 
 @Injectable()
 export class DoctorsService {
   private readonly schema: string;
-  constructor(@Inject(REQUEST) private request: Request) {
+
+  constructor(
+    @Inject(REQUEST) private request: Request,
+    private readonly specializationsService: SpecializationsService,
+  ) {
     this.schema = this.request.schema;
   }
 
@@ -26,9 +33,7 @@ export class DoctorsService {
 
   async find_by(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {
-      relations: { user: true },
-    },
+    options: DoctorFindOptions = { relations: defaultRelations },
   ): Promise<Doctor | null> {
     const { globally, ...rest } = options;
     const doctorRepository = await this.getDoctorRepository();
@@ -43,9 +48,7 @@ export class DoctorsService {
 
   async find_by_and_fail(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {
-      relations: { user: true },
-    },
+    options: DoctorFindOptions = { relations: defaultRelations },
   ): Promise<Doctor> {
     const doctor = await this.find_by(where, options);
     if (!doctor) {
@@ -56,9 +59,7 @@ export class DoctorsService {
 
   async find_all(
     where: FindOptionsWhere<Doctor>,
-    options: DoctorFindOptions = {
-      relations: { user: true },
-    },
+    options: DoctorFindOptions = { relations: defaultRelations },
   ): Promise<Doctor[]> {
     const { globally, ...rest } = options;
     const doctorRepository = await this.getDoctorRepository();
@@ -73,9 +74,26 @@ export class DoctorsService {
 
   async update_by_user_id(userId: string, dto: UpdateDoctorProfileDto) {
     const repo = await this.getDoctorRepository();
-    if (dto && Object.keys(dto).length > 0) {
-      await repo.update({ user_id: userId }, dto);
+    if (!dto || Object.keys(dto).length === 0) {
+      return this.find_by_and_fail({ user_id: userId });
     }
+
+    const { specializations, ...flatDto } = dto;
+    if (Object.keys(flatDto).length > 0) {
+      await repo.update({ user_id: userId }, flatDto);
+    }
+
+    if (specializations) {
+      const doctor = await this.find_by({ user_id: userId });
+      if (doctor) {
+        doctor.specializations =
+          specializations.length > 0
+            ? await this.specializationsService.find_by_ids(specializations)
+            : [];
+        await repo.save(doctor);
+      }
+    }
+
     return this.find_by_and_fail({ user_id: userId });
   }
 
@@ -85,11 +103,20 @@ export class DoctorsService {
    */
   async create_for_user(userId: string, dto: UpdateDoctorProfileDto) {
     const repo = await this.getDoctorRepository();
+    const { specializations, ...flatDto } = dto;
 
     const doctor = repo.create({
       user_id: userId,
-      ...dto,
+      ...flatDto,
     });
-    return repo.save(doctor);
+    const saved = await repo.save(doctor);
+
+    if (specializations?.length) {
+      saved.specializations =
+        await this.specializationsService.find_by_ids(specializations);
+      await repo.save(saved);
+    }
+
+    return this.find_by_and_fail({ user_id: userId });
   }
 }

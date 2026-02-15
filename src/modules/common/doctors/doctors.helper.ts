@@ -19,7 +19,7 @@ export function formatDoctor(doctor: Doctor, currentRole: Role) {
       currentRole,
       targetRole: currentRole,
     }),
-    specialization: doctor.specialization,
+    specializations: doctor.specializations ?? [],
     education: doctor.education,
     // TODO: Add designation and seating
     designation: null,
