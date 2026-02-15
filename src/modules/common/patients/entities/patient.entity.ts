@@ -17,6 +17,15 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
+export type Vitals = {
+  bloodType: string;
+  bloodPressure: string;
+  heartRate: string;
+  weight: string;
+  height: string;
+  allergy: string;
+};
+
 @Entity('patient_patients', { schema: 'public' })
 export class Patient {
   @PrimaryGeneratedColumn('uuid')
@@ -39,11 +48,14 @@ export class Patient {
   })
   gender: Gender;
 
-  @Column({ nullable: true })
-  dob: Date;
+  @Column({ type: 'date', nullable: true })
+  dob: string | Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   address: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  vitals: Vitals;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;

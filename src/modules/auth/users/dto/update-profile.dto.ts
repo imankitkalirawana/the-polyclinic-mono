@@ -2,12 +2,13 @@ import {
   IsArray,
   IsEmail,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Gender } from '@common/patients/entities/patient.entity';
+import { Gender, Vitals } from '@common/patients/entities/patient.entity';
 
 /**
  * Base user fields shared across all roles (matches "Update a User" form).
@@ -78,6 +79,11 @@ export class UpdatePatientProfileDto {
   @IsString()
   @IsOptional()
   address?: string;
+
+  @IsObject()
+  @IsOptional()
+  // TODO: validate the items inside vitals also
+  vitals?: Vitals;
 }
 
 /**
