@@ -1,9 +1,4 @@
-export { UserStatus } from '@repo/store';
+export { UserStatus, UserRole } from '@repo/store';
 
-export enum Role {
-  ADMIN = 'ADMIN',
-  PATIENT = 'PATIENT',
-  DOCTOR = 'DOCTOR',
-  NURSE = 'NURSE',
-  RECEPTIONIST = 'RECEPTIONIST',
-}
+/** @deprecated Use UserRole from '@repo/store' instead. Kept as alias for backward compatibility. */
+export { UserRole as Role } from '@repo/store';

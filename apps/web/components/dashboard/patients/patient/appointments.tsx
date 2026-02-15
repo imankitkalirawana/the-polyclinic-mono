@@ -9,14 +9,14 @@ import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
 import Skeleton from '@/components/ui/skeleton';
 import { castData } from '@/libs/utils';
 import { useAllAppointments } from '@/services/client/appointment/appointment.query';
-import { APPOINTMENT_TYPES, AppointmentType } from '@/services/client/appointment';
+import { APPOINTMENT_TYPES, Appointment } from '@/services/client/appointment';
 
 const APPOINTMENTS_PER_PAGE = 6;
 
 export default function Appointments() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useAllAppointments();
 
-  const appointments = castData<AppointmentType[]>(appointmentsData) || [];
+  const appointments = castData<Appointment[]>(appointmentsData) || [];
 
   const [page, setPage] = useState(1);
   return (

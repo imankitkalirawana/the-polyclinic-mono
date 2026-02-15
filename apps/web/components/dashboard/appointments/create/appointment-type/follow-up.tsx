@@ -5,7 +5,7 @@ import CreateAppointmentSelectedPreviousAppointment from './appointment';
 import { useCreateAppointmentForm } from '../index';
 
 import CustomRadio from '@/components/ui/custom-radio';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 import { useDebounce } from '@/hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { SearchInput } from '@/components/dashboard/appointments/(common)';
@@ -13,7 +13,7 @@ import { usePreviousAppointments } from '@/services/client/patient';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { format } from 'date-fns';
 
-function PreviousAppointments({ appointments }: { appointments: AppointmentType[] }) {
+function PreviousAppointments({ appointments }: { appointments: Appointment[] }) {
   const { watch, setValue } = useCreateAppointmentForm();
   const appointment = watch('appointment');
   const [search, setSearch] = useState('');

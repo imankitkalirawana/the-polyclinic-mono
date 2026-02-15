@@ -24,8 +24,26 @@ import NoResults from '@/components/ui/no-results';
 import { ServiceStatuses, ServiceTypes } from '@/libs/interface';
 import { serviceValidationSchema } from '@/libs/validation';
 import { useServiceWithUID, useUpdateService } from '@/services/client/service/service.query';
+import type { Service } from '@/services/client/service/service.types';
+import { ServiceStatus, ServiceType } from '@repo/store';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
-import { ServiceType } from '@/services/client/service/service.types';
+
+const DEFAULT_SERVICE_FORM_VALUES: Service = {
+  id: '',
+  createdBy: '',
+  updatedBy: '',
+  createdAt: '',
+  updatedAt: '',
+  uniqueId: '',
+  name: '',
+  description: '',
+  summary: '',
+  price: 0,
+  duration: 0,
+  status: ServiceStatus.ACTIVE,
+  type: ServiceType.MEDICAL,
+  fields: {},
+};
 
 export default function EditService({ uid }: { uid: string }) {
   const updateService = useUpdateService();
@@ -34,8 +52,9 @@ export default function EditService({ uid }: { uid: string }) {
   const router = useRouter();
   const [hoveredColIndex, setHoveredColIndex] = useState<number | null>(null);
 
-  const formik = useFormik({
-    initialValues: service as ServiceType,
+  const formik = useFormik<Service>({
+    initialValues: service ?? DEFAULT_SERVICE_FORM_VALUES,
+    enableReinitialize: true,
     validationSchema: serviceValidationSchema,
     onSubmit: async (values) => {
       await updateService.mutateAsync(values).then(() => {

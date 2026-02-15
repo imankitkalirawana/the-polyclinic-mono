@@ -1,14 +1,4 @@
-import { GENDERS } from '@/libs/constants';
-import { Base } from '@/types';
+export type { Patient } from '@repo/store';
 
-export interface PatientType extends Base {
-  userId: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  phone: string;
-  gender?: GENDERS;
-  dob?: string;
-  age?: number;
-  address?: string | null;
-}
+/** @deprecated Use Patient instead */
+export type PatientType = import('@repo/store').Patient;

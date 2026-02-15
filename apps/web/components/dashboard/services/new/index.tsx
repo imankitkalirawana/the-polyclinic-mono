@@ -17,13 +17,6 @@ export default function NewService() {
   const createService = useCreateService();
 
   const formik = useFormik({
-    initialValues: {
-      fields: {
-        'cell-0-0': '',
-        'cell-0-1': '',
-      } as ServiceType['fields'],
-    } as ServiceType,
-
     validationSchema: serviceValidationSchema,
     onSubmit: async (values) => {
       await createService.mutateAsync(values).then(() => {

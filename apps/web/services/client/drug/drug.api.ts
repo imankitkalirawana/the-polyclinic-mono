@@ -1,11 +1,11 @@
-import { DrugType } from '@/services/client/drug/drug.types';
+import { Drug } from '@/services/client/drug/drug.types';
 import { apiRequest } from '@/libs/axios';
 
 export class DrugApi {
   private static API_BASE = '/client/drugs';
 
   static async getAll() {
-    return await apiRequest<DrugType[]>({
+    return await apiRequest<Drug[]>({
       url: this.API_BASE,
     });
   }
@@ -14,19 +14,19 @@ export class DrugApi {
     if (!uid) {
       return { success: false, message: 'UID is required', data: null };
     }
-    return await apiRequest<DrugType>({
+    return await apiRequest<Drug>({
       url: `${this.API_BASE}/${uid}`,
     });
   }
 
   static async getByDid(did: number) {
-    return await apiRequest<DrugType>({
+    return await apiRequest<Drug>({
       url: `${this.API_BASE}/${did}`,
     });
   }
 
-  static async update(data: DrugType) {
-    return await apiRequest<DrugType>({
+  static async update(data: Drug) {
+    return await apiRequest<Drug>({
       url: `${this.API_BASE}/${data.did}`,
       method: 'PUT',
       data,
@@ -34,7 +34,7 @@ export class DrugApi {
   }
 
   static async delete(did: number) {
-    return await apiRequest<DrugType>({
+    return await apiRequest<Drug>({
       url: `${this.API_BASE}/${did}`,
       method: 'DELETE',
     });

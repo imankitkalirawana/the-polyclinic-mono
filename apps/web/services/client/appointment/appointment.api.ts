@@ -1,11 +1,11 @@
-import { AppointmentType, CreateAppointmentType } from './appointment.types';
+import { Appointment, CreateAppointmentInput } from './appointment.types';
 import { apiRequest } from '@/libs/axios';
 
 export class AppointmentApi {
   private static API_BASE = '/client/appointments';
 
   static async getAll() {
-    return await apiRequest<AppointmentType[]>({
+    return await apiRequest<Appointment[]>({
       url: this.API_BASE,
     });
   }
@@ -18,13 +18,13 @@ export class AppointmentApi {
         message: 'Appointment not found',
       };
     }
-    return await apiRequest<AppointmentType>({
+    return await apiRequest<Appointment>({
       url: `${this.API_BASE}/${aid}`,
     });
   }
 
-  static async create(appointment: CreateAppointmentType) {
-    return await apiRequest<AppointmentType>({
+  static async create(appointment: CreateAppointmentInput) {
+    return await apiRequest<Appointment>({
       url: this.API_BASE,
       method: 'POST',
       data: appointment,
@@ -32,14 +32,14 @@ export class AppointmentApi {
   }
 
   static async confirm(aid: string) {
-    return await apiRequest<AppointmentType>({
+    return await apiRequest<Appointment>({
       url: `${this.API_BASE}/${aid}/confirm`,
       method: 'PATCH',
     });
   }
 
   static async cancel(aid: string, remarks: string) {
-    return await apiRequest<AppointmentType>({
+    return await apiRequest<Appointment>({
       url: `${this.API_BASE}/${aid}/cancel`,
       method: 'PATCH',
       data: { remarks },
@@ -47,7 +47,7 @@ export class AppointmentApi {
   }
 
   static async changeDoctor(aid: string, doctorId: string) {
-    return await apiRequest<AppointmentType>({
+    return await apiRequest<Appointment>({
       url: `${this.API_BASE}/${aid}/change-doctor`,
       method: 'PATCH',
       data: { doctorId },
@@ -55,7 +55,7 @@ export class AppointmentApi {
   }
 
   static async reschedule(aid: string, date: string) {
-    return await apiRequest<AppointmentType>({
+    return await apiRequest<Appointment>({
       url: `${this.API_BASE}/${aid}/reschedule`,
       method: 'PATCH',
       data: { date },

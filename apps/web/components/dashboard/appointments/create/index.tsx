@@ -5,7 +5,7 @@ import { addToast } from '@heroui/react';
 import { useForm, UseFormReturn, FormProvider } from 'react-hook-form';
 
 import CreateAppointmentAdditionalDetails from './additional-details';
-import AppointmentType from './appointment-type';
+import AppointmentTypeStep from './appointment-type';
 import AppointmentBookingConfirmation from './confirmation';
 import DateSelectionContainer from './date';
 import DoctorSelection from './doctor';
@@ -21,7 +21,7 @@ import { BookQueueSteps } from './data';
 
 const contentMap: Record<number, React.ReactNode> = {
   0: <PatientSelection />,
-  1: <AppointmentType />,
+  1: <AppointmentTypeStep />,
   2: <DoctorSelection />,
   3: <DateSelectionContainer />,
   4: <CreateAppointmentAdditionalDetails />,

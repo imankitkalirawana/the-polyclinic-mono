@@ -41,7 +41,7 @@ import { useAppointmentStore } from '@/services/client/appointment/appointment.s
 import {
   APPOINTMENT_STATUSES,
   APPOINTMENT_TYPES,
-  AppointmentType,
+  Appointment,
 } from '@/services/client/appointment';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { useClipboard } from '@/hooks/useClipboard';
@@ -113,7 +113,7 @@ const MeetDirections = memo(
 MeetDirections.displayName = 'MeetDirections';
 
 // Extracted shared content component
-const AppointmentContent = memo(({ appointment }: { appointment: AppointmentType }) => {
+const AppointmentContent = memo(({ appointment }: { appointment: Appointment }) => {
   const { data: previousAppointment, isLoading } = useAppointmentWithAID(
     appointment?.previousAppointment || ''
   );
@@ -241,7 +241,7 @@ const AppointmentContent = memo(({ appointment }: { appointment: AppointmentType
           APPOINTMENT_STATUSES.booked,
           APPOINTMENT_STATUSES.confirmed,
           APPOINTMENT_STATUSES.in_progress,
-        ] as AppointmentType['status'][]
+        ] as Appointment['status'][]
       ).includes(appointment.status) && (
         <>
           <Divider className="my-2" />
@@ -344,7 +344,7 @@ AppointmentContent.displayName = 'AppointmentContent';
 
 // Shared header component
 const AppointmentHeader = memo(
-  ({ appointment, onClose }: { appointment: AppointmentType; onClose: () => void }) => {
+  ({ appointment, onClose }: { appointment: Appointment; onClose: () => void }) => {
     const formattedDate = useMemo(
       () => format(new Date(appointment.date), 'EEEE, MMMM d · hh:mm a'),
       [appointment.date]
@@ -424,7 +424,7 @@ const AppointmentHeader = memo(
 AppointmentHeader.displayName = 'AppointmentHeader';
 
 // Shared footer component
-const AppointmentFooter = memo(({ appointment }: { appointment: AppointmentType }) => {
+const AppointmentFooter = memo(({ appointment }: { appointment: Appointment }) => {
   const { action } = useAppointmentStore();
   const { user } = useSession();
   const buttons = useAppointmentButtonsInDrawer({

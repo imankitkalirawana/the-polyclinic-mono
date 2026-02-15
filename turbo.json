@@ -9,6 +9,9 @@
       "cache": false
     },
     "lint": {},
-    "test": {}
+    "test": {},
+    "tsc": {
+      "dependsOn": ["^build"]
+    }
   }
 }

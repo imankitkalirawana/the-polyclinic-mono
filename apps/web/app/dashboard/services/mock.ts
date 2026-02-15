@@ -2,14 +2,15 @@
 
 import { faker } from '@faker-js/faker';
 
-import { ServiceStatus, ServiceType, ServiceTypes } from '@/services/client/service/service.types';
+import { ServiceStatus, ServiceType } from '@/services/client/service/service.types';
+import type { Service } from '@repo/store';
 
 export async function generateServices(count: number) {
-  const services: ServiceType[] = [];
+  const services: Service[] = [];
 
   for (let i = 0; i < count; i++) {
-    const service: ServiceType = {
-      _id: faker.string.uuid(),
+    const service: Service = {
+      id: faker.string.uuid(),
       uniqueId: faker.number.int({ min: 1000, max: 9999 }).toString(),
       name: faker.lorem.words(2),
       description: faker.lorem.sentence(),
@@ -18,10 +19,10 @@ export async function generateServices(count: number) {
       duration: faker.number.int({ min: 1, max: 72 }),
       status: faker.helpers.arrayElement([ServiceStatus.ACTIVE, ServiceStatus.INACTIVE]),
       type: faker.helpers.arrayElement([
-        ServiceTypes.medical,
-        ServiceTypes.surgical,
-        ServiceTypes.diagnostic,
-        ServiceTypes.consultation,
+        ServiceType.MEDICAL,
+        ServiceType.SURGICAL,
+        ServiceType.DIAGNOSTIC,
+        ServiceType.CONSULTATION,
       ]),
       fields: {},
       createdBy: faker.string.uuid(),

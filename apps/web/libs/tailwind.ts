@@ -1,4 +1,4 @@
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 
 type Color =
   | 'red'
@@ -77,7 +77,7 @@ export const randomColorClass = ({
   return result;
 };
 
-export const getStatusColor = (status: AppointmentType['status']) => {
+export const getStatusColor = (status: Appointment['status']) => {
   switch (status.toLowerCase()) {
     case 'booked':
       return 'text-blue-600 bg-blue-50';

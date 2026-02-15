@@ -5,13 +5,13 @@ import { create } from 'zustand';
 
 import { ActionType } from './types';
 
-import { ServiceType } from '@/services/client/service/service.types';
+import { Service } from '@/services/client/service/service.types';
 
 interface ServiceStoreState {
-  selected: ServiceType | null;
+  selected: Service | null;
   action: ActionType | null;
   keys: Selection | undefined;
-  setSelected: (selected: ServiceType | null) => void;
+  setSelected: (selected: Service | null) => void;
   setAction: (action: ActionType | null) => void;
   setKeys: (keys: Selection) => void;
   resetState: () => void;

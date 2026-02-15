@@ -8,7 +8,7 @@ import { permissions } from './data';
 import QuickLook from '@/components/ui/dashboard/quicklook';
 import { ButtonProps, DropdownItemProps } from '@/components/ui/dashboard/quicklook/types';
 import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
-import { ServiceStatus, ServiceType } from '@/services/client/service/service.types';
+import { ServiceStatus, type Service } from '@/services/client/service/service.types';
 
 export function ServiceQuickLook() {
   const { selected, setSelected, setAction, action } = useServiceStore();
@@ -50,7 +50,7 @@ export function ServiceQuickLook() {
     [selected]
   );
 
-  const content = (service: ServiceType) => [
+  const content = (service: Service) => [
     {
       label: 'Service ID',
       value: () => service.uniqueId,

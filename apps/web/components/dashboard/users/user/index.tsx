@@ -8,15 +8,15 @@ import CellValue from '@/components/ui/cell-value';
 
 import { castData } from '@/libs/utils';
 import { useUserWithID } from '@/services/common/user/user.query';
-import { UserType } from '@/services/common/user/user.types';
+import { User } from '@/services/common/user/user.types';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { format } from 'date-fns';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 
 export default function UserCard({ id }: { id: string }) {
   const { data, isError, isLoading } = useUserWithID(id);
 
-  const user = castData<UserType>(data);
+  const user = castData<User>(data);
 
   if (isError) {
     return <p>Error fetching user data</p>;
@@ -30,16 +30,16 @@ export default function UserCard({ id }: { id: string }) {
     return <p>User not found</p>;
   }
 
-  const actionButton: Record<Role, React.ReactNode> = {
-    ADMIN: null,
-    RECEPTIONIST: null,
-    NURSE: null,
-    PATIENT: (
+  const actionButton: Partial<Record<UserRole, React.ReactNode>> = {
+    [UserRole.ADMIN]: null,
+    [UserRole.RECEPTIONIST]: null,
+    [UserRole.NURSE]: null,
+    [UserRole.PATIENT]: (
       <Button as={Link} href={`/appointments?id=${user.id}`} variant="flat" color="secondary">
         Book Appointment
       </Button>
     ),
-    DOCTOR: (
+    [UserRole.DOCTOR]: (
       <Button as={Link} href={`/dashboard/doctors/${user.id}`} variant="flat" color="secondary">
         View Doctor
       </Button>
@@ -73,7 +73,7 @@ export default function UserCard({ id }: { id: string }) {
           />
         </ScrollShadow>
       </CardBody>
-      <CardFooter className="justify-end">{actionButton[user.role]}</CardFooter>
+      <CardFooter className="justify-end">{actionButton[user.role] ?? null}</CardFooter>
     </Card>
   );
 }

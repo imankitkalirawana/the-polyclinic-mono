@@ -6,7 +6,7 @@ import { parseAsIsoDateTime, parseAsStringEnum, useQueryState } from 'nuqs';
 import { views } from '../types';
 import DateChip from './date-chip';
 
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 import AppointmentTriggerItem from './appointment-trigger-item';
 
 export default function AppointmentList({
@@ -14,7 +14,7 @@ export default function AppointmentList({
   date,
   openInNewTab = false,
 }: {
-  appointments: AppointmentType[] | null;
+  appointments: Appointment[] | null;
   date: Date;
   openInNewTab?: boolean;
 }) {

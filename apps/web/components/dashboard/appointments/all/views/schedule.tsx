@@ -7,10 +7,10 @@ import { parseAsStringEnum, useQueryState } from 'nuqs';
 import { views } from '../types';
 import AppointmentTriggerItem from '../ui/appointment-trigger-item';
 import DateChip from '../ui/date-chip';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 
 interface ScheduleViewProps {
-  appointments: AppointmentType[];
+  appointments: Appointment[];
   currentDate: Date;
 }
 
@@ -36,7 +36,7 @@ export function ScheduleView({ appointments, currentDate }: ScheduleViewProps) {
       groups[dateKey].push(apt);
       return groups;
     },
-    {} as Record<string, AppointmentType[]>
+    {} as Record<string, Appointment[]>
   );
 
   return (

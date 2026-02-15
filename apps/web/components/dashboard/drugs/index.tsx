@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
 import { useAllDrugs } from '@/services/client/drug/drug.query';
-import { DrugType } from '@/services/client/drug/drug.types';
+import { Drug } from '@/services/client/drug/drug.types';
 
 const INITIAL_VISIBLE_COLUMNS = [
   'did',
@@ -30,10 +30,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 export default function Drugs() {
   const { data, isLoading } = useAllDrugs();
 
-  const drugs: DrugType[] = data || [];
+  const drugs: Drug[] = data || [];
   const { selected, setSelected } = useDrugStore();
 
-  const dropdownMenuItems = (drug: DrugType): DropdownItemWithSection[] => {
+  const dropdownMenuItems = (drug: Drug): DropdownItemWithSection[] => {
     return [
       {
         key: 'view',
@@ -59,7 +59,7 @@ export default function Drugs() {
   };
 
   // Define columns with render functions
-  const columns: ColumnDef<DrugType>[] = useMemo(
+  const columns: ColumnDef<Drug>[] = useMemo(
     () => [
       {
         name: 'Drug ID',
@@ -117,7 +117,7 @@ export default function Drugs() {
   );
 
   // Define filters
-  const filters: FilterDef<DrugType>[] = useMemo(
+  const filters: FilterDef<Drug>[] = useMemo(
     () => [
       {
         name: 'Status',

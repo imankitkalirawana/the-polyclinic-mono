@@ -15,7 +15,7 @@ import {
   DropdownItemWithSection,
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
-import { DoctorType } from '@/services/client/doctor';
+import { Doctor } from '@/services/client/doctor';
 import { useAllDoctors } from '@/services/client/doctor/doctor.query';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import Link from 'next/link';
@@ -56,7 +56,7 @@ export default function Doctors() {
     resetPasswordModal.onOpen();
   };
 
-  const dropdownMenuItems = (doctor: DoctorType): DropdownItemWithSection[] => {
+  const dropdownMenuItems = (doctor: Doctor): DropdownItemWithSection[] => {
     return [
       {
         key: 'view',
@@ -93,7 +93,7 @@ export default function Doctors() {
   };
 
   // Define columns with render functions
-  const columns: ColumnDef<DoctorType>[] = useMemo(
+  const columns: ColumnDef<Doctor>[] = useMemo(
     () => [
       {
         name: 'Name',
@@ -145,7 +145,7 @@ export default function Doctors() {
   );
 
   // Define filters
-  const filters: FilterDef<DoctorType>[] = useMemo(
+  const filters: FilterDef<Doctor>[] = useMemo(
     () => [
       {
         name: 'Created At',

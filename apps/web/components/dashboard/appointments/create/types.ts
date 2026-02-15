@@ -1,4 +1,4 @@
-import { CreateAppointmentType } from '@/services/client/appointment';
+import { CreateAppointmentInput } from '@/services/client/appointment';
 
 type CreateAppointmentMeta = {
   currentStep: number;
@@ -9,6 +9,6 @@ type CreateAppointmentMeta = {
 };
 
 export type CreateAppointmentFormValues = {
-  appointment: CreateAppointmentType;
+  appointment: CreateAppointmentInput;
   meta: CreateAppointmentMeta;
 };

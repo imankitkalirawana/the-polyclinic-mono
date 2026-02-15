@@ -9,7 +9,6 @@ import {
   NotificationAction,
   NotificationType,
 } from '@/services/common/notifications/notifications.types';
-import { formatDistanceToNow } from 'date-fns';
 import { useMarkAsRead } from '@/services/common/notifications/notifications.query';
 import { useNotificationHandler } from '@/services/common/notifications/hooks/useNotificationHandler';
 import { Streamdown } from 'streamdown';
@@ -60,22 +59,11 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
       }
     };
 
-    /**
-     * Format the notification time
-     */
-    const formatTime = (date: Date) => {
-      try {
-        return formatDistanceToNow(new Date(date), { addSuffix: true });
-      } catch (error) {
-        return 'Recently';
-      }
-    };
-
     return (
       <div
         ref={ref}
         className={cn(
-          'flex gap-3 border-b border-divider px-6 py-4 transition-colors',
+          'border-divider flex gap-3 border-b px-6 py-4 transition-colors',
           {
             'bg-default-100': !isRead,
           },
@@ -93,7 +81,7 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
           >
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full bg-default-100',
+                'bg-default-100 flex h-10 w-10 items-center justify-center rounded-full',
                 {
                   'bg-default-200': !isRead,
                 }
@@ -104,7 +92,7 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
           </Badge>
         </div>
         <div className="flex flex-1 flex-col gap-1">
-          {title && <h6 className="font-semibold text-foreground text-small">{title}</h6>}
+          {title && <h6 className="text-foreground text-small font-semibold">{title}</h6>}
           {/* <p className="text-foreground text-small"> */}
           <Streamdown>{message}</Streamdown>
           {/* </p> */}
@@ -125,10 +113,10 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
             </div>
           )}
           <div className="flex items-center gap-2">
-            <time className="text-default-400 text-tiny">{formatTime(createdAt)}</time>
+            <time className="text-default-400 text-tiny">{createdAt.toLocaleString()}</time>
             {priority && priority !== 'medium' && (
               <span
-                className={cn('capitalize text-tiny', {
+                className={cn('text-tiny capitalize', {
                   'text-danger': priority === 'high',
                   'text-default-400': priority === 'low',
                 })}

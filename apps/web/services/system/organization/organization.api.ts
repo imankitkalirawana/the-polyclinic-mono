@@ -1,8 +1,8 @@
-import { UserType } from '@/services/common/user/user.types';
-import {
-  CreateOrganizationType,
-  OrganizationType,
-  UpdateOrganizationType,
+import { User } from '@/services/common/user/user.types';
+import type {
+  CreateOrganizationInput,
+  Organization,
+  UpdateOrganizationInput,
 } from './organization.types';
 
 import { apiRequest } from '@/libs/axios';
@@ -10,7 +10,7 @@ import { apiRequest } from '@/libs/axios';
 export class OrganizationApi {
   private static readonly API_BASE = '/system/organizations';
   static async getAll() {
-    return await apiRequest<OrganizationType[]>({
+    return await apiRequest<Organization[]>({
       url: this.API_BASE,
     });
   }
@@ -18,16 +18,16 @@ export class OrganizationApi {
   // Get organization by ID
   static async getById(organizationId: string) {
     return await apiRequest<{
-      organization: OrganizationType;
-      users: UserType[];
+      organization: Organization;
+      users: User[];
     }>({
       url: `${this.API_BASE}/${organizationId}`,
     });
   }
 
   // Create organization
-  static async create(organization: CreateOrganizationType) {
-    return await apiRequest<OrganizationType>({
+  static async create(organization: CreateOrganizationInput) {
+    return await apiRequest<Organization>({
       url: this.API_BASE,
       method: 'POST',
       data: organization,
@@ -35,7 +35,7 @@ export class OrganizationApi {
   }
 
   // Update organization
-  static async update(organizationId: string, organization: UpdateOrganizationType) {
+  static async update(organizationId: string, organization: UpdateOrganizationInput) {
     return await apiRequest<unknown>({
       url: `${this.API_BASE}/${organizationId}`,
       method: 'PUT',
@@ -45,7 +45,7 @@ export class OrganizationApi {
 
   // Delete organization
   static async delete(organizationId: string) {
-    return await apiRequest<OrganizationType>({
+    return await apiRequest<Organization>({
       url: `${this.API_BASE}/${organizationId}`,
       method: 'DELETE',
     });
@@ -53,7 +53,7 @@ export class OrganizationApi {
 
   // Toggle organization status
   static async toggleStatus(organizationId: string, status: 'active' | 'inactive') {
-    return await apiRequest<OrganizationType>({
+    return await apiRequest<Organization>({
       url: `${this.API_BASE}/${organizationId}/status`,
       method: 'PUT',
       data: { status },

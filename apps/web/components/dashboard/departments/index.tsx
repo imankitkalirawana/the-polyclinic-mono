@@ -23,16 +23,16 @@ import {
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import NewDepartment from './new-edit';
-import { DepartmentType } from '@/services/client/department';
+import { Department } from '@/services/client/department';
 
 export default function Departments() {
   const { data: departments, isLoading } = useAllDepartments();
   const deleteDepartment = useDeleteDepartment();
   const newDepartment = useDisclosure();
   const editDepartment = useDisclosure();
-  const [selectedDepartment, setSelectedDepartment] = useState<DepartmentType | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
 
-  const handleDeleteDepartment = async (department: DepartmentType) => {
+  const handleDeleteDepartment = async (department: Department) => {
     if (
       confirm(`Are you sure you want to delete "${department.name}"? This action cannot be undone.`)
     ) {

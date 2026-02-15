@@ -4,12 +4,12 @@ import Modal from '@/components/ui/modal';
 import {
   createDepartmentSchema,
   updateDepartmentSchema,
-  CreateDepartmentType,
-  UpdateDepartmentType,
+  CreateDepartmentInput,
+  UpdateDepartmentInput,
   MAX_DESCRIPTION_LENGTH,
   useCreateDepartment,
   useUpdateDepartment,
-  DepartmentType,
+  Department,
 } from '@/services/client/department';
 
 import { Button, Input, Textarea } from '@heroui/react';
@@ -19,7 +19,7 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 
 interface DepartmentModalProps {
   onClose: () => void;
-  department?: DepartmentType | null;
+  department?: Department | null;
   mode?: 'create' | 'edit';
 }
 
@@ -40,7 +40,7 @@ export default function DepartmentModal({
     formState: { errors },
     watch,
     control,
-  } = useForm<CreateDepartmentType | UpdateDepartmentType>({
+  } = useForm<CreateDepartmentInput | UpdateDepartmentInput>({
     resolver: zodResolver(schema),
     defaultValues: department ?? {
       features: [],
@@ -54,11 +54,11 @@ export default function DepartmentModal({
 
   const desciption = watch('description');
 
-  const onSubmit = async (data: CreateDepartmentType | UpdateDepartmentType) => {
+  const onSubmit = async (data: CreateDepartmentInput | UpdateDepartmentInput) => {
     if (isEdit) {
-      await updateDepartment.mutateAsync(data as UpdateDepartmentType);
+      await updateDepartment.mutateAsync(data as UpdateDepartmentInput);
     } else {
-      await createDepartment.mutateAsync(data as CreateDepartmentType);
+      await createDepartment.mutateAsync(data as CreateDepartmentInput);
     }
     onClose();
   };

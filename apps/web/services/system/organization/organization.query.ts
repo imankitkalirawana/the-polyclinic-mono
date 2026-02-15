@@ -1,4 +1,4 @@
-import { CreateOrganizationType, UpdateOrganizationType } from './organization.types';
+import { CreateOrganizationInput, UpdateOrganizationInput } from './organization.types';
 import { OrganizationApi } from './organization.api';
 import { useGenericQuery } from '@/services/useGenericQuery';
 import { useGenericMutation } from '@/services/useGenericMutation';
@@ -20,14 +20,14 @@ export const useOrganization = (id: string) =>
 
 export const useCreateOrganization = () => {
   return useGenericMutation({
-    mutationFn: (data: CreateOrganizationType) => OrganizationApi.create(data),
+    mutationFn: (data: CreateOrganizationInput) => OrganizationApi.create(data),
     invalidateQueries: [['organizations']],
   });
 };
 
 export const useUpdateOrganization = () => {
   return useGenericMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateOrganizationType }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateOrganizationInput }) =>
       OrganizationApi.update(id, data),
     invalidateQueriesWithVariables: ({ variables }) => [
       ['organizations'],

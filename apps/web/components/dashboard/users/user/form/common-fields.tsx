@@ -1,4 +1,4 @@
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 import { UserFormValues } from '@/services/common/user/user.types';
 import { Input, Select, SelectItem } from '@heroui/react';
 import { Control, Controller } from 'react-hook-form';
@@ -81,7 +81,7 @@ export default function CommonFields({
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
             >
-              {Object.values(Role).map((role) => (
+              {Object.values(UserRole).map((role) => (
                 <SelectItem key={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</SelectItem>
               ))}
             </Select>

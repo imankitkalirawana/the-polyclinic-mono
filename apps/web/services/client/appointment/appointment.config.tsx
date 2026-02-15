@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { APPOINTMENT_STATUSES, AppointmentType, ButtonConfig } from '@/services/client/appointment';
+import { APPOINTMENT_STATUSES, Appointment, ButtonConfig } from '@/services/client/appointment';
 import { useAppointmentActions } from './hooks/useAppointmentActions';
 import RescheduleAppointment from '@/services/client/appointment/components/reschedule-modal';
 import CancelModal from './components/cancel-modal';
@@ -8,8 +8,8 @@ import { Role } from '@/services/common/user/user.constants';
 import ChangeDoctorModal from './components/change-doctor-modal';
 
 export const createAppointmentButtonConfigs = (actions: {
-  handleConfirm: (appointment: AppointmentType) => Promise<void>;
-  handleReminder: (appointment: AppointmentType) => Promise<void>;
+  handleConfirm: (appointment: Appointment) => Promise<void>;
+  handleReminder: (appointment: Appointment) => Promise<void>;
 }): ButtonConfig[] => [
   {
     key: 'cancel',
@@ -194,7 +194,7 @@ export const useAppointmentButtonConfigs = () => {
 
 export const isButtonVisible = (
   config: ButtonConfig,
-  appointment: AppointmentType | null,
+  appointment: Appointment | null,
   role: Role
 ): boolean => {
   if (!appointment) return false;

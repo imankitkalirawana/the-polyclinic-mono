@@ -24,11 +24,11 @@ import DateChip from '../ui/date-chip';
 import { TIMINGS } from '@/libs/config';
 import { cn } from '@heroui/react';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 import { Role } from '@/services/common/user/user.constants';
 
 interface MonthViewProps {
-  appointments: AppointmentType[];
+  appointments: Appointment[];
   onTimeSlotClick: (date: Date) => void;
 }
 

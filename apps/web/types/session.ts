@@ -1,5 +1,5 @@
 import { Role } from '@/services/common/user/user.constants';
-import { OrganizationType } from '@/services/system/organization';
+import type { Organization } from '@/services/system/organization';
 
 export interface SessionUser {
   id: string;
@@ -14,5 +14,5 @@ export interface SessionUser {
 
 export interface Session {
   user?: SessionUser | null;
-  organization?: OrganizationType | null;
+  organization?: Organization | null;
 }

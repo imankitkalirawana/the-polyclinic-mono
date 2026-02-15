@@ -1,5 +1,5 @@
 import { ServiceApi } from '@/services/client/service/service.api';
-import { ServiceType } from '@/services/client/service/service.types';
+import type { Service } from '@/services/client/service/service.types';
 
 import { useGenericQuery } from '@/services/useGenericQuery';
 import { useGenericMutation } from '@/services/useGenericMutation';
@@ -19,14 +19,14 @@ export const useServiceWithUID = (uid: string) =>
 
 export const useCreateService = () => {
   return useGenericMutation({
-    mutationFn: (data: ServiceType) => ServiceApi.create(data),
+    mutationFn: (data: Service) => ServiceApi.create(data),
     invalidateQueries: [['services']],
   });
 };
 
 export const useUpdateService = () => {
   return useGenericMutation({
-    mutationFn: (data: ServiceType) => ServiceApi.update(data.uniqueId, data),
+    mutationFn: (data: Service) => ServiceApi.update(data.uniqueId, data),
     invalidateQueriesWithVariables: ({ variables }) => [
       ['services'],
       ['service', variables?.uniqueId],

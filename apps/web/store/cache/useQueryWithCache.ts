@@ -261,7 +261,7 @@ export function useIndexedQuery<TData, TError = Error, K extends CacheKey = Cach
  * });
  * const doctor = useIndexedCacheValueOrFetch('doctorById', appointment.doctorId, {
  *   queryKey: ['doctor', appointment.doctorId],
- *   queryFn: () => Doctor.getById(appointment.doctorId!),
+ *   queryFn: () => DoctorApi.getById(appointment.doctorId!),
  * });
  * ```
  */

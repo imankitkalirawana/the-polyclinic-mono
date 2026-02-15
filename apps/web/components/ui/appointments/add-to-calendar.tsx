@@ -22,7 +22,7 @@ import {
   handleAddToCalendar,
 } from '@/libs/client-functions';
 import { EventType } from '@/libs/interface';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 
 type ActionType = 'google' | 'outlook' | 'download';
 
@@ -30,7 +30,7 @@ export default function AddToCalendar({
   appointment,
   onClose,
 }: {
-  appointment: AppointmentType;
+  appointment: Appointment;
   onClose: () => void;
 }) {
   const [selectedOption, setSelectedOption] = useState(new Set(['google']));

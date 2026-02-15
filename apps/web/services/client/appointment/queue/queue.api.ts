@@ -1,5 +1,5 @@
 import { apiRequest } from '@/libs/axios';
-import { AppointmentQueueType, PaymentDetails, VerifyPaymentRequest } from './queue.types';
+import { AppointmentQueue, PaymentDetails, VerifyPaymentRequest } from './queue.types';
 import { PrescriptionFormSchema } from '@/components/dashboard/appointments/queue/views/doctor/prescription-panel';
 import { AppointmentQueueRequest } from './queue.types';
 import { ActivityLogResponse } from '@/services/common/activity/activity.types';
@@ -22,7 +22,7 @@ export class AppointmentQueueApi {
     if (!aid) {
       throw new Error('Appointment ID is required');
     }
-    return await apiRequest<AppointmentQueueType>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${aid}`,
     });
   }
@@ -38,7 +38,7 @@ export class AppointmentQueueApi {
 
   // create appointment queue
   static async create(data: AppointmentQueueRequest) {
-    return await apiRequest<AppointmentQueueType & PaymentDetails>({
+    return await apiRequest<AppointmentQueue & PaymentDetails>({
       url: `${this.API_BASE}`,
       method: 'POST',
       data,
@@ -69,9 +69,9 @@ export class AppointmentQueueApi {
       : undefined;
 
     return await apiRequest<{
-      previous: AppointmentQueueType[];
-      current: AppointmentQueueType | null;
-      next: AppointmentQueueType[];
+      previous: AppointmentQueue[];
+      current: AppointmentQueue | null;
+      next: AppointmentQueue[];
     }>({
       url: `${this.API_BASE}/doctor/${doctorId}/queue`,
       params: { id: queueId, date: sanitizedAppointmentDate },
@@ -79,28 +79,28 @@ export class AppointmentQueueApi {
   }
 
   static async call(queueId: string) {
-    return await apiRequest<AppointmentQueueType>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${queueId}/call`,
       method: 'PATCH',
     });
   }
 
   static async skip(queueId: string) {
-    return await apiRequest<AppointmentQueueType>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${queueId}/skip`,
       method: 'PATCH',
     });
   }
 
   static async clockIn(queueId: string) {
-    return await apiRequest<AppointmentQueueType>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${queueId}/clock-in`,
       method: 'PATCH',
     });
   }
 
   static async complete(queueId: string, data: PrescriptionFormSchema) {
-    return await apiRequest<AppointmentQueueType>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${queueId}/complete`,
       method: 'PATCH',
       data: data,

@@ -2,7 +2,7 @@ import React from 'react';
 import { cn, Tooltip } from '@heroui/react';
 
 import { chipColorMap } from '@/libs/chip';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 import { formatLabel } from '@/libs/utils';
 
 export default function StatusRenderer({
@@ -11,7 +11,7 @@ export default function StatusRenderer({
   isDotOnly = false,
   className,
 }: {
-  status: AppointmentType['status'];
+  status: Appointment['status'];
   size?: 'sm' | 'md' | 'lg';
   isDotOnly?: boolean;
   className?: string;

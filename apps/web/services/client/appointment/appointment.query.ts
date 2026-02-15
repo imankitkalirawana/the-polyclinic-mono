@@ -2,7 +2,7 @@ import { AppointmentApi } from '@/services/client/appointment/appointment.api';
 import { useGenericMutation } from '../../useGenericMutation';
 import { useGenericQuery } from '../../useGenericQuery';
 
-import { CreateAppointmentType } from './appointment.types';
+import { CreateAppointmentInput } from './appointment.types';
 
 export const useAllAppointments = () =>
   useGenericQuery({
@@ -22,7 +22,7 @@ export const useAppointmentWithAID = (aid?: string | null) =>
 
 export const useCreateAppointment = () => {
   return useGenericMutation({
-    mutationFn: (appointment: CreateAppointmentType) => AppointmentApi.create(appointment),
+    mutationFn: (appointment: CreateAppointmentInput) => AppointmentApi.create(appointment),
     invalidateQueries: [['appointments']],
   });
 };

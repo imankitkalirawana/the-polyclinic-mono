@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
 import { useAllUsers } from '@/services/common/user/user.query';
-import { UserType } from '@/services/common/user/user.types';
+import { User } from '@/services/common/user/user.types';
 import { CopyText } from '@/components/ui/copy';
 import ResetPasswordModal from './ui/reset-password-modal';
 import DeleteUserModal from './ui/delete-user-modal';
@@ -54,7 +54,7 @@ const PERMISSIONS: Record<Action, Partial<Record<Role, Role[]>>> = {
   },
 };
 
-const getRoles = (targetUser: UserType, action: Action): Role[] => {
+const getRoles = (targetUser: User, action: Action): Role[] => {
   return PERMISSIONS[action]?.[targetUser.role] ?? [];
 };
 
@@ -79,7 +79,7 @@ export default function Users() {
     resetPasswordModal.onOpen();
   };
 
-  const dropdownMenuItems = (user: UserType): DropdownItemWithSection[] => {
+  const dropdownMenuItems = (user: User): DropdownItemWithSection[] => {
     return [
       {
         key: 'view',
@@ -114,7 +114,7 @@ export default function Users() {
   };
 
   // Define columns with render functions
-  const columns: ColumnDef<UserType>[] = useMemo(
+  const columns: ColumnDef<User>[] = useMemo(
     () => [
       {
         name: 'Name',
@@ -180,7 +180,7 @@ export default function Users() {
   );
 
   // Define filters
-  const filters: FilterDef<UserType>[] = useMemo(
+  const filters: FilterDef<User>[] = useMemo(
     () => [
       {
         name: 'Role',
@@ -303,7 +303,7 @@ export default function Users() {
     </DropdownMenu>
   );
 
-  let users: UserType[] = [];
+  let users: User[] = [];
   if (data) {
     users = data;
   }
@@ -343,7 +343,7 @@ export default function Users() {
       {/* {quickLook.isOpen && quickLookItem && (
         <QuickLook
           onClose={quickLook.onClose}
-          item={quickLookItem as UserType}
+          item={quickLookItem as User}
         />
       )} */}
       <UserQuickLook />

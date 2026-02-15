@@ -20,7 +20,7 @@ import {
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
 import { CLINIC_INFO } from '@/libs/config';
 import { useAllServices, useDeleteService } from '@/services/client/service/service.query';
-import { ServiceType } from '@/services/client/service/service.types';
+import { Service } from '@/services/client/service/service.types';
 
 const INITIAL_VISIBLE_COLUMNS = [
   'uniqueId',
@@ -37,7 +37,7 @@ export default function Services() {
   const { selected, setSelected } = useServiceStore();
   const deleteService = useDeleteService();
 
-  const services: ServiceType[] = data || [];
+  const services: Service[] = data || [];
 
   const handleDelete = async (uid: string) => {
     toast.promise(deleteService.mutateAsync(uid), {
@@ -47,7 +47,7 @@ export default function Services() {
     });
   };
 
-  const dropdownMenuItems = (service: ServiceType): DropdownItemWithSection[] => {
+  const dropdownMenuItems = (service: Service): DropdownItemWithSection[] => {
     return [
       {
         key: 'view',
@@ -73,7 +73,7 @@ export default function Services() {
   };
 
   // Define columns with render functions
-  const columns: ColumnDef<ServiceType>[] = useMemo(
+  const columns: ColumnDef<Service>[] = useMemo(
     () => [
       {
         name: 'ID',
@@ -153,7 +153,7 @@ export default function Services() {
   );
 
   // Define filters
-  const filters: FilterDef<ServiceType>[] = useMemo(
+  const filters: FilterDef<Service>[] = useMemo(
     () => [
       {
         name: 'Type',

@@ -8,7 +8,7 @@ import { useAppointmentStore } from '@/services/client/appointment/appointment.s
 import {
   APPOINTMENT_STATUSES,
   APPOINTMENT_TYPES,
-  AppointmentType,
+  Appointment,
 } from '@/services/client/appointment';
 import { extractFirstName } from '@/libs/utils';
 
@@ -16,7 +16,7 @@ export default function AppointmentTriggerItem({
   appointment,
   openInNewTab = false,
 }: {
-  appointment: AppointmentType;
+  appointment: Appointment;
   openInNewTab?: boolean;
 }) {
   const { setAid } = useAppointmentStore();

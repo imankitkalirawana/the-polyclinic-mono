@@ -1,13 +1,64 @@
+/** Re-export shared domain types and enums from store */
+export type {
+  Base,
+  User,
+  Doctor,
+  DoctorSpecialization,
+  Patient,
+  Drug,
+  Service,
+  Department,
+  Organization,
+  Appointment,
+  CreateAppointmentInput,
+  AppointmentPatientInfo,
+  AppointmentDoctorInfo,
+  AppointmentQueue,
+  AppointmentQueueRequest,
+  QueuePatientInfo,
+  QueueDoctorInfo,
+  QueueUserInfo,
+  PaymentMode,
+  VerifyPaymentRequest,
+  PaymentDetails,
+  RegistrationRequest,
+  RegistrationResponse,
+  LoginRequest,
+  LoginResponse,
+  SendOTPRequest,
+  VerifyOTPRequest,
+  VerifyOTPResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  GoogleLoginRequest,
+  GoogleLoginResponse,
+  TimeSlot,
+  DaySchedule,
+  WeeklySchedule,
+  GuestPermissions,
+  SpecificDateAvailability,
+  SlotConfig,
+  ColumnDefinition,
+  SelectedColumnDefinition,
+  ActivityLog,
+  ActivityLogResponse,
+  ChangedField,
+  Actor,
+  ActivitySchema,
+  VerificationType,
+} from "@repo/store";
+
+export {
+  ColumnDataType,
+  ColumnType,
+  TableViewType,
+  ActivityAction,
+  ActorType,
+  ActivityStatus,
+} from "@repo/store";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type $FixMe = any;
-
-export type Base = {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;
-  updatedBy: string;
-};
 
 export interface CountryProps {
   id: number;
@@ -36,8 +87,6 @@ export interface CityProps {
   id: number;
   name: string;
 }
-
-export type VerificationType = 'register' | 'reset-password' | 'verify-email';
 
 export interface RazorpayPaymentResponse {
   razorpay_payment_id: string;

@@ -12,7 +12,7 @@ import {
   useUserProfileByID,
 } from '@/services/common/user/user.query';
 import { userFormValuesSchema } from '@/services/common/user/user.validation';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 import { useQueryState } from 'nuqs';
 import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
 import { UserFormValues } from '@/services/common/user/user.types';
@@ -86,10 +86,10 @@ export default function UserForm({ id }: { id?: string }) {
         <ScrollShadow className="grid grid-cols-1 gap-4 p-1 sm:grid-cols-2 md:grid-cols-3">
           <CommonFields control={control} showRole={!id} />
 
-          {[Role.PATIENT, Role.DOCTOR].includes(role) && <Divider className="col-span-full" />}
+          {[UserRole.PATIENT, UserRole.DOCTOR].includes(role) && <Divider className="col-span-full" />}
 
-          {role === Role.PATIENT && <PatientFields control={control} />}
-          {role === Role.DOCTOR && <DoctorFields control={control} />}
+          {role === UserRole.PATIENT && <PatientFields control={control} />}
+          {role === UserRole.DOCTOR && <DoctorFields control={control} />}
         </ScrollShadow>
       </CardBody>
 

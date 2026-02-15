@@ -1,11 +1,11 @@
-import { PatientType } from '@/services/client/patient';
-import { DoctorSpecialization, DoctorType } from '@/services/client/doctor';
-import { DepartmentType } from '@/services/client/department/department.types';
-import { ServiceType } from '@/services/client/service/service.types';
-import { DrugType } from '@/services/client/drug/drug.types';
-import { AppointmentType } from '@/services/client/appointment/appointment.types';
-import { AppointmentQueueType } from '@/services/client/appointment/queue/queue.types';
-import { UserType } from '@/services/common/user/user.types';
+import { Patient } from '@/services/client/patient';
+import { DoctorSpecialization, Doctor } from '@/services/client/doctor';
+import { Department } from '@/services/client/department/department.types';
+import { Service } from '@/services/client/service/service.types';
+import { Drug } from '@/services/client/drug/drug.types';
+import { Appointment } from '@/services/client/appointment/appointment.types';
+import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
+import { User } from '@/services/common/user/user.types';
 
 /**
  * Cache Registry - Central type definition for all cacheable entities
@@ -18,34 +18,34 @@ import { UserType } from '@/services/common/user/user.types';
  */
 export interface CacheRegistry {
   // Collections (arrays)
-  patients: PatientType[];
-  doctors: DoctorType[];
-  departments: DepartmentType[];
-  services: ServiceType[];
-  drugs: DrugType[];
-  appointments: AppointmentType[];
-  appointmentQueues: AppointmentQueueType[];
-  users: UserType[];
+  patients: Patient[];
+  doctors: Doctor[];
+  departments: Department[];
+  services: Service[];
+  drugs: Drug[];
+  appointments: Appointment[];
+  appointmentQueues: AppointmentQueue[];
+  users: User[];
   specializations: DoctorSpecialization[];
   // Single entities (for selections, current items, etc.)
-  selectedPatient: PatientType | null;
-  selectedDoctor: DoctorType | null;
-  selectedDepartment: DepartmentType | null;
-  selectedService: ServiceType | null;
-  selectedDrug: DrugType | null;
-  selectedAppointment: AppointmentType | null;
-  selectedAppointmentQueue: AppointmentQueueType | null;
-  selectedUser: UserType | null;
+  selectedPatient: Patient | null;
+  selectedDoctor: Doctor | null;
+  selectedDepartment: Department | null;
+  selectedService: Service | null;
+  selectedDrug: Drug | null;
+  selectedAppointment: Appointment | null;
+  selectedAppointmentQueue: AppointmentQueue | null;
+  selectedUser: User | null;
 
   // Indexed entities (by ID)
-  patientById: Record<string, PatientType>;
-  doctorById: Record<string, DoctorType>;
-  departmentById: Record<string, DepartmentType>;
-  serviceById: Record<string, ServiceType>;
-  drugById: Record<string, DrugType>;
-  appointmentById: Record<string, AppointmentType>;
-  appointmentQueueById: Record<string, AppointmentQueueType>;
-  userById: Record<string, UserType>;
+  patientById: Record<string, Patient>;
+  doctorById: Record<string, Doctor>;
+  departmentById: Record<string, Department>;
+  serviceById: Record<string, Service>;
+  drugById: Record<string, Drug>;
+  appointmentById: Record<string, Appointment>;
+  appointmentQueueById: Record<string, AppointmentQueue>;
+  userById: Record<string, User>;
 }
 
 /**

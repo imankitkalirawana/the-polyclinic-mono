@@ -9,14 +9,14 @@ import { useCreateAppointmentForm } from '../index';
 
 import CustomRadio from '@/components/ui/custom-radio';
 import { cn } from '@heroui/react';
-import { APPOINTMENT_TYPES, AppointmentTypes } from '@/services/client/appointment';
+import { APPOINTMENT_TYPES, type AppointmentType as AppointmentTypeValue } from '@/services/client/appointment';
 import { useKeyPress } from '@/hooks/useKeyPress';
 
-const isValidAppointmentType = (value: string): value is AppointmentTypes => {
+const isValidAppointmentType = (value: string): value is AppointmentTypeValue => {
   return Object.values(APPOINTMENT_TYPES).some((type) => type.value === value);
 };
 
-export default function AppointmentType() {
+export default function AppointmentTypeStep() {
   const { watch, setValue, formState } = useCreateAppointmentForm();
 
   const appointment = watch('appointment');

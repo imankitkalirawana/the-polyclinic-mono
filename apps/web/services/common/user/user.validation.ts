@@ -1,4 +1,3 @@
-import { GENDERS } from '@/libs/constants';
 import {
   emailValidation,
   nameValidation,
@@ -8,10 +7,10 @@ import {
 } from '@/utils/factories/validation.factory';
 
 import { z } from 'zod';
-import { Role } from './user.constants';
+import { UserRole, Gender } from '@repo/store';
 
 const userProfileUpdateSchema = z.object({
-  role: z.enum(Role).readonly(),
+  role: z.nativeEnum(UserRole),
   name: nameValidation,
   email: emailValidation,
   phone: phoneNumberValidation.optional(),
@@ -28,7 +27,7 @@ export const doctorProfileUpdateSchema = z.object({
 });
 
 const patientProfileUpdateSchema = z.object({
-  gender: z.enum(GENDERS).nullable().optional(),
+  gender: z.nativeEnum(Gender).nullable().optional(),
   dob: z.iso.datetime().nullable().optional(),
   address: nullableStringValidation,
 });

@@ -3,7 +3,7 @@ import { renderChip, RenderUser } from '@/components/ui/static-data-table/cell-r
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { useUserWithID } from '@/services/common/user/user.query';
 import { Button, Card, CardBody, CardFooter, CardHeader, Link, Tooltip } from '@heroui/react';
-import { UserType } from '@/services/common/user/user.types';
+import { User } from '@/services/common/user/user.types';
 
 export const UserDetailsPopover = ({
   name,
@@ -30,7 +30,7 @@ export const UserDetailsPopover = ({
   );
 };
 
-const UserDetailsPopoverContent = ({ user }: { user?: UserType | null }) => {
+const UserDetailsPopoverContent = ({ user }: { user?: User | null }) => {
   if (!user) return <MinimalPlaceholder message="User not found..." isLoading={false} />;
 
   return (

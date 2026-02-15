@@ -7,13 +7,13 @@ import { useMemo, useState } from 'react';
 
 import { Table } from '@/components/ui/new-data-table';
 import { useAllAppointmentQueues } from '@/services/client/appointment/queue/queue.query';
-import { AppointmentQueueType } from '@/services/client/appointment/queue/queue.types';
+import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
 import QueueQuickLook from './quicklook';
 import QueueColumns from './columns';
 import { Input } from '@heroui/react';
 
 export default function DefaultQueueView() {
-  const [selectedQueue, setSelectedQueue] = useState<AppointmentQueueType | null>(null);
+  const [selectedQueue, setSelectedQueue] = useState<AppointmentQueue | null>(null);
 
   const { data, dataUpdatedAt } = useAllAppointmentQueues();
 

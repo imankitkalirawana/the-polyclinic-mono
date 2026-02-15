@@ -4,7 +4,7 @@ import { useCreateAppointmentForm } from '../index';
 
 import { castData } from '@/libs/utils';
 import { useAppointmentWithAID } from '@/services/client/appointment/appointment.query';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 
 export default function CreateAppointmentSelectedPreviousAppointment() {
@@ -12,7 +12,7 @@ export default function CreateAppointmentSelectedPreviousAppointment() {
   const appointment = watch('appointment');
 
   const { data, isLoading } = useAppointmentWithAID(appointment.previousAppointment ?? '');
-  const previousAppointment = castData<AppointmentType>(data);
+  const previousAppointment = castData<Appointment>(data);
 
   return (
     <div className="flex-1 border-t border-divider p-4">

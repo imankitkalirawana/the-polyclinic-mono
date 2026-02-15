@@ -3,6 +3,18 @@ import { Role } from '@/services/common/user/user.constants';
 import { ChipProps } from '@heroui/react';
 
 const USER_ROLE_CONFIG: Record<Role, ChipProps['classNames']> = {
+  SUPER_ADMIN: {
+    base: 'bg-red-100 text-red-700',
+    content: 'text-red-700',
+  },
+  MODERATOR: {
+    base: 'bg-orange-100 text-orange-700',
+    content: 'text-orange-700',
+  },
+  OPS: {
+    base: 'bg-amber-100 text-amber-700',
+    content: 'text-amber-700',
+  },
   ADMIN: {
     base: 'bg-red-100 text-red-700',
     content: 'text-red-700',
@@ -22,6 +34,10 @@ const USER_ROLE_CONFIG: Record<Role, ChipProps['classNames']> = {
   PATIENT: {
     base: 'bg-green-100 text-green-700',
     content: 'text-green-700',
+  },
+  GUEST: {
+    base: 'bg-default-100 text-default-700',
+    content: 'text-default-700',
   },
 };
 

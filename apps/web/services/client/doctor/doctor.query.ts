@@ -1,4 +1,4 @@
-import { Doctor, DoctorSlots } from './doctor.api';
+import { DoctorApi, DoctorSlots } from './doctor.api';
 import { useGenericQuery } from '@/services/useGenericQuery';
 import { useGenericMutation } from '@/services/useGenericMutation';
 import { useCollectionQuery, useIndexedQuery } from '@/store/cache';
@@ -8,14 +8,14 @@ import { SlotConfig } from './doctor.types';
 export const useAllDoctors = (search?: string) =>
   useCollectionQuery({
     queryKey: ['doctors', search],
-    queryFn: () => Doctor.getAll(search),
+    queryFn: () => DoctorApi.getAll(search),
     cacheKey: 'doctors',
   });
 
 export const useDoctorByIdQuery = (id?: string | null) =>
   useIndexedQuery({
     queryKey: ['doctor', id],
-    queryFn: () => Doctor.getById(id),
+    queryFn: () => DoctorApi.getById(id),
     indexKey: 'doctorById',
     entityId: id,
     enabled: !!id,
@@ -40,6 +40,6 @@ export const useUpdateSlots = (uid: string) => {
 export const useSpecializations = () =>
   useCollectionQuery({
     queryKey: ['specializations'],
-    queryFn: () => Doctor.getSpecializations(),
+    queryFn: () => DoctorApi.getSpecializations(),
     cacheKey: 'specializations',
   });

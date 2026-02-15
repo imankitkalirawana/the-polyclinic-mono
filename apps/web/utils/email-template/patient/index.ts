@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
 
 import { API_BASE_URL, CLINIC_INFO } from '@/libs/config';
-import { AppointmentType } from '@/services/client/appointment';
+import { Appointment } from '@/services/client/appointment';
 
-export function AppointmentStatus(appointment: AppointmentType) {
+export function AppointmentStatus(appointment: Appointment) {
   const statusDescriptionMap: Record<string, string> = {
     booked:
       "We've received your appointment request. Your appointment is currently booked and awaiting confirmation. Stay tuned for updates!",
@@ -82,7 +82,7 @@ export function AppointmentStatus(appointment: AppointmentType) {
   </body>`;
 }
 
-export function RescheduledAppointment(appointment: AppointmentType, previousDate: Date | string) {
+export function RescheduledAppointment(appointment: Appointment, previousDate: Date | string) {
   return `<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #ffffff; color: #1a1a1a; line-height: 1.5;">
     <div style="max-width: 800px; margin: 0 auto; text-align: center;">
         <h1 style="color: #73CD7D; font-size: 32px; margin-bottom: 40px; font-weight: 700;">Your Appointment Has Been Rescheduled</h1>
