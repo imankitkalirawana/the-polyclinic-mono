@@ -4,6 +4,8 @@
   "packageManager": "pnpm@10.9.0",
   "scripts": {
     "build": "turbo run build",
+    "build:web": "turbo run build --filter=web",
+    "build:api": "turbo run build --filter=api",
     "start": "turbo run start",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
