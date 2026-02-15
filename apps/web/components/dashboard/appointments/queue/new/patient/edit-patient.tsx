@@ -6,9 +6,9 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import Modal from '@/components/ui/modal';
-import { GENDERS } from '@/libs/constants';
 import { PatientType } from '@/services/client/patient';
 import { useUpdateUser } from '@/services/common/user/user.query';
+import { Gender } from '@repo/store';
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
@@ -20,7 +20,7 @@ const editPatientSchema = z.object({
     .refine((value) => !value || PHONE_REGEX.test(value), {
       message: 'Phone number must be a valid 10-digit number.',
     }),
-  gender: z.union([z.enum(GENDERS), z.literal(''), z.undefined(), z.null()]),
+  gender: z.union([z.enum(Gender), z.literal(''), z.undefined(), z.null()]),
   age: z.union([
     z
       .number()
@@ -67,7 +67,7 @@ export default function EditPatientModal({ patient, onClose, isOpen }: EditPatie
 
   const renderBody = () => {
     if (!patient) {
-      return <p className="py-6 text-center text-default-500">Unable to load patient details.</p>;
+      return <p className="text-default-500 py-6 text-center">Unable to load patient details.</p>;
     }
 
     return (
@@ -132,7 +132,7 @@ export default function EditPatientModal({ patient, onClose, isOpen }: EditPatie
           <Controller
             name="gender"
             control={form.control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Select
                 label="Gender"
                 placeholder="Select gender"
@@ -142,10 +142,10 @@ export default function EditPatientModal({ patient, onClose, isOpen }: EditPatie
                   field.onChange(typeof selected === 'string' ? selected : '');
                 }}
                 isClearable
-                isInvalid={!!form.formState.errors.gender}
-                errorMessage={form.formState.errors.gender?.message}
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
               >
-                {Object.keys(GENDERS).map((gender) => (
+                {Object.keys(Gender).map((gender) => (
                   <SelectItem key={gender}>
                     {gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()}
                   </SelectItem>

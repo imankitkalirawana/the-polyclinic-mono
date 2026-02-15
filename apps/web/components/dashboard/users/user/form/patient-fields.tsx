@@ -1,9 +1,9 @@
-import { GENDERS } from '@/libs/constants';
 import { handleDateChange } from '@/libs/utils';
 import { UserFormValues } from '@/services/common/user/user.types';
 import { DatePicker, Input, Select, SelectItem } from '@heroui/react';
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 import { I18nProvider } from '@react-aria/i18n';
+import { Gender } from '@repo/store';
 import { Control, Controller } from 'react-hook-form';
 
 export default function PatientFields({ control }: { control: Control<UserFormValues> }) {
@@ -22,7 +22,7 @@ export default function PatientFields({ control }: { control: Control<UserFormVa
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
           >
-            {Object.values(GENDERS).map((gender) => (
+            {Object.values(Gender).map((gender) => (
               <SelectItem key={gender}>
                 {gender.charAt(0).toUpperCase() + gender.slice(1)}
               </SelectItem>
