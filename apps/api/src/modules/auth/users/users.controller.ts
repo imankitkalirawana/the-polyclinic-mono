@@ -13,11 +13,15 @@ import { BearerAuthGuard } from '../guards/bearer-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
-import { UpdateProfileDto, updateProfileSchema } from '@repo/store';
+import {
+  ConfirmResetPasswordDto,
+  UpdateProfileDto,
+  confirmResetPasswordSchema,
+  updateProfileSchema,
+} from '@repo/store';
 import { CreateProfileDto, createProfileSchema, UserRole } from '@repo/store';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { StandardParam, StandardParams } from 'nest-standard-response';
-import { ResetPasswordDto } from '../dto/reset-password-dto';
 import { formatUser } from './users.helper';
 
 @Controller('users')
@@ -92,7 +96,8 @@ export class UsersController {
   async reset_password(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
-    @Body() dto: ResetPasswordDto,
+    @Body(ZodValidationPipe.create(confirmResetPasswordSchema))
+    dto: ConfirmResetPasswordDto,
   ) {
     await this.userService.update_password(id, dto.password);
     params.setMessage('Password reset successfully');
