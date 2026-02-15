@@ -1,11 +1,11 @@
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 import { Organization } from '@repo/store';
 
 export interface SessionUser {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: UserRole;
   image: string;
   organization: string | null;
   phone: string;

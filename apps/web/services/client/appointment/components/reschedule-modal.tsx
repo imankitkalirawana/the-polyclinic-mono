@@ -3,7 +3,6 @@ import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 
 import Modal from '@/components/ui/modal';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { useAppointmentWithAID, useRescheduleAppointment } from '@/services/client/appointment';
 import { useSession } from '@/libs/providers/session-provider';
 import { useSlotsByUID } from '@/services/client/doctor';
 import { SlotsPreview } from '@/components/dashboard/doctors/doctor/slots/slots-preview';
@@ -14,6 +13,7 @@ import { isDateUnavailable } from '@/components/dashboard/appointments/create/he
 import { useLocale } from '@react-aria/i18n';
 import CalendarTimeSelect from '@/components/dashboard/appointments/all/booking/calendar-time-select';
 import { isPast } from 'date-fns';
+import { useAppointmentWithAID, useRescheduleAppointment } from '../appointment.query';
 
 export default function RescheduleAppointment() {
   const { mutateAsync: rescheduleMutation } = useRescheduleAppointment();

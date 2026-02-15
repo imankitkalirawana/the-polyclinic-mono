@@ -9,8 +9,11 @@ import { useCreateAppointmentForm } from '../index';
 
 import CustomRadio from '@/components/ui/custom-radio';
 import { cn } from '@heroui/react';
-import { APPOINTMENT_TYPES, type AppointmentType as AppointmentTypeValue } from '@/services/client/appointment';
 import { useKeyPress } from '@/hooks/useKeyPress';
+import { APPOINTMENT_TYPES } from '@/services/client/appointment/appointment.constants';
+
+type AppointmentTypeValue =
+  (typeof APPOINTMENT_TYPES)[keyof typeof APPOINTMENT_TYPES]['value'];
 
 const isValidAppointmentType = (value: string): value is AppointmentTypeValue => {
   return Object.values(APPOINTMENT_TYPES).some((type) => type.value === value);
@@ -68,7 +71,7 @@ export default function AppointmentTypeStep() {
           radius="lg"
           className="btn btn-primary"
           isDisabled={isSubmitting || isNextButtonDisabled}
-          endContent={<Kbd keys={['enter']} className="bg-transparent text-primary-foreground" />}
+          endContent={<Kbd keys={['enter']} className="text-primary-foreground bg-transparent" />}
           onPress={() => {
             if (appointment.type === APPOINTMENT_TYPES.follow_up.value) {
               setValue('meta.currentStep', 3);

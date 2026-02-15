@@ -1,5 +1,4 @@
-import { Patient } from '@repo/store';
-import { Appointment } from '../appointment';
+import { Appointment, Patient } from '@repo/store';
 import { apiRequest } from '@/libs/axios';
 
 export class PatientApi {

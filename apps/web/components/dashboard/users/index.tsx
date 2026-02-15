@@ -24,37 +24,37 @@ import { CopyText } from '@/components/ui/copy';
 import ResetPasswordModal from './ui/reset-password-modal';
 import DeleteUserModal from './ui/delete-user-modal';
 import { useSession } from '@/libs/providers/session-provider';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 import { useRouter } from 'nextjs-toploader/app';
 
 const INITIAL_VISIBLE_COLUMNS = ['image', 'name', 'email', 'role', 'createdAt'];
 
 type Action = 'edit' | 'delete' | 'change-password';
 
-const PERMISSIONS: Record<Action, Partial<Record<Role, Role[]>>> = {
+const PERMISSIONS: Record<Action, Partial<Record<UserRole, UserRole[]>>> = {
   edit: {
-    PATIENT: [Role.ADMIN, Role.RECEPTIONIST],
-    DOCTOR: [Role.ADMIN],
-    RECEPTIONIST: [Role.ADMIN],
-    ADMIN: [Role.ADMIN],
+    PATIENT: [UserRole.ADMIN, UserRole.RECEPTIONIST],
+    DOCTOR: [UserRole.ADMIN],
+    RECEPTIONIST: [UserRole.ADMIN],
+    ADMIN: [UserRole.ADMIN],
   },
 
   delete: {
-    PATIENT: [Role.ADMIN],
-    DOCTOR: [Role.ADMIN],
-    RECEPTIONIST: [Role.ADMIN],
-    ADMIN: [Role.ADMIN],
+    PATIENT: [UserRole.ADMIN],
+    DOCTOR: [UserRole.ADMIN],
+    RECEPTIONIST: [UserRole.ADMIN],
+    ADMIN: [UserRole.ADMIN],
   },
 
   'change-password': {
-    PATIENT: [Role.ADMIN],
-    DOCTOR: [Role.ADMIN],
-    RECEPTIONIST: [Role.ADMIN],
-    ADMIN: [Role.ADMIN],
+    PATIENT: [UserRole.ADMIN],
+    DOCTOR: [UserRole.ADMIN],
+    RECEPTIONIST: [UserRole.ADMIN],
+    ADMIN: [UserRole.ADMIN],
   },
 };
 
-const getRoles = (targetUser: User, action: Action): Role[] => {
+const getRoles = (targetUser: User, action: Action): UserRole[] => {
   return PERMISSIONS[action]?.[targetUser.role] ?? [];
 };
 
@@ -124,7 +124,7 @@ export default function Users() {
           <RenderUser
             size="md"
             name={user.name}
-            variant={user.role === Role.DOCTOR ? 'beam' : 'marble'}
+            variant={user.role === UserRole.DOCTOR ? 'beam' : 'marble'}
             description={user.phone || '-'}
             classNames={{
               description: 'lowercase',

@@ -1,6 +1,6 @@
 import { useSession } from '@/libs/providers/session-provider';
 import { useConfirmAppointment, useSendReminder } from '../appointment.query';
-import { Appointment } from '../appointment.types';
+import { Appointment, UserRole } from '@repo/store';
 
 export const useAppointmentActions = () => {
   const confirmMutation = useConfirmAppointment();
@@ -15,7 +15,7 @@ export const useAppointmentActions = () => {
   const handleReminder = async (appointment: Appointment) => {
     let emails: string[] = [];
 
-    if (role === 'DOCTOR') {
+    if (role === UserRole.DOCTOR) {
       emails = [appointment.patient.email];
     } else {
       emails = [appointment.patient.email, appointment.doctor?.email || ''];

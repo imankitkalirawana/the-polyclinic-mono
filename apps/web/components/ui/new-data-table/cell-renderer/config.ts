@@ -1,8 +1,7 @@
-import { QueueStatus } from '@/services/client/appointment/queue/queue.types';
-import { Role } from '@/services/common/user/user.constants';
+import { QueueStatus, UserRole } from '@repo/store';
 import { ChipProps } from '@heroui/react';
 
-const USER_ROLE_CONFIG: Record<Role, ChipProps['classNames']> = {
+const USER_ROLE_CONFIG: Record<UserRole, ChipProps['classNames']> = {
   SUPER_ADMIN: {
     base: 'bg-red-100 text-red-700',
     content: 'text-red-700',

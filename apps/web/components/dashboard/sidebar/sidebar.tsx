@@ -10,7 +10,7 @@ import {
 } from '@heroui/react';
 import { cn, Link, Listbox, ListboxItem, ListboxSection, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 
 export enum SidebarItemType {
   Nest = 'nest',
@@ -26,7 +26,7 @@ export type SidebarItem = {
   endContent?: React.ReactNode;
   items?: SidebarItem[];
   className?: string;
-  roles?: Role[];
+  roles?: UserRole[];
 };
 
 export type SidebarProps = Omit<ListboxProps<SidebarItem>, 'children'> & {

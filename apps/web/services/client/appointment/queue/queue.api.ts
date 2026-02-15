@@ -1,7 +1,11 @@
 import { apiRequest } from '@/libs/axios';
-import { AppointmentQueue, PaymentDetails, VerifyPaymentRequest } from './queue.types';
+import {
+  AppointmentQueue,
+  AppointmentQueueRequest,
+  PaymentDetails,
+  VerifyPaymentRequest,
+} from '@repo/store';
 import { PrescriptionFormSchema } from '@/components/dashboard/appointments/queue/views/doctor/prescription-panel';
-import { AppointmentQueueRequest } from './queue.types';
 import { ActivityLogResponse } from '@/services/common/activity/activity.types';
 import { format } from 'date-fns/format';
 import { ColumnDefinition, RowData } from '@/components/ui/new-data-table/types';
@@ -79,13 +83,21 @@ export class AppointmentQueueApi {
   }
 
   static async getQueuesForPatient() {
-    return await apiRequest<any>({
+    return await apiRequest<{
+      previous: AppointmentQueue[];
+      current: AppointmentQueue | null;
+      next: AppointmentQueue[];
+      metaData: {
+        totalPrevious: number;
+        totalNext: number;
+      };
+    }>({
       url: `${this.API_BASE}/patient/me`,
     });
   }
 
   static async getQueueByAid(aid: string) {
-    return await apiRequest<any>({
+    return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${aid}`,
     });
   }

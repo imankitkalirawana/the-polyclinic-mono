@@ -2,7 +2,7 @@
 
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { useQueueForDoctor } from '@/services/client/appointment/queue/queue.query';
-import { QueueStatus } from '@/services/client/appointment/queue/queue.types';
+import { QueueStatus } from '@repo/store';
 import { Button, Chip, ScrollShadow, Tab, Tabs, Tooltip } from '@heroui/react';
 import PrescriptionPanel, {
   prescriptionFormSchema,
@@ -112,7 +112,7 @@ export default function QueuesDoctorView() {
           )}
 
           <QueueFooter currentQueue={currentQueue} />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          <div className="absolute top-1/2 right-0 -translate-y-1/2">
             <Tooltip content="Show next appointments" placement="left">
               <Button
                 isIconOnly

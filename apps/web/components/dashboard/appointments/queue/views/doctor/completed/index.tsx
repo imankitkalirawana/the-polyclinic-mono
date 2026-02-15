@@ -1,5 +1,5 @@
 import DataItem from '@/components/ui/data-item';
-import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
+import { AppointmentQueue } from '@repo/store';
 import { formatDate } from 'date-fns';
 
 export default function CompletedAppointmentQueue({

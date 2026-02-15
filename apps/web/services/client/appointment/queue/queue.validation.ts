@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QueueStatus } from './queue.types';
+import { QueueStatus } from '@repo/store';
 
 /**
  * Schema for API filter payload (date as ISO date strings).

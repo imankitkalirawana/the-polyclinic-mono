@@ -24,8 +24,7 @@ import DateChip from '../ui/date-chip';
 import { TIMINGS } from '@/libs/config';
 import { cn } from '@heroui/react';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { Appointment } from '@/services/client/appointment';
-import { Role } from '@/services/common/user/user.constants';
+import { Appointment, UserRole } from '@repo/store';
 
 interface WeekViewProps {
   appointments: Appointment[];
@@ -48,7 +47,7 @@ export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekVie
   const weekEnd = endOfWeek(currentDate);
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
   const isAllowedToCreateAppointment = allowedRolesToCreateAppointment.includes(
-    user?.role || Role.PATIENT
+    user?.role || UserRole.PATIENT
   );
 
   const { aid, setIsTooltipOpen } = useAppointmentStore();
@@ -109,7 +108,7 @@ export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekVie
             <React.Fragment key={`hour-${hour}`}>
               {/* Time Label Cell */}
               <div
-                className="border-divider text-default-500 text-small row-span-1 w-20 shrink-0 border-b border-r p-2 text-right"
+                className="border-divider text-default-500 text-small row-span-1 w-20 shrink-0 border-r border-b p-2 text-right"
                 style={{ gridRowStart: hourIndex + 1, gridColumnStart: 1 }}
               >
                 {hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
@@ -123,7 +122,7 @@ export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekVie
                     key={`cell-${day.toISOString()}-${hour}`}
                     title={isHourDisabled ? 'Cannot create appointments in the past' : ''}
                     className={cn(
-                      'border-divider relative min-h-[80px] cursor-pointer overflow-hidden border-b border-r p-1',
+                      'border-divider relative min-h-[80px] cursor-pointer overflow-hidden border-r border-b p-1',
                       {
                         'last:border-r-0': dayIndex === weekDays.length - 1,
                         'cursor-not-allowed': isHourDisabled,

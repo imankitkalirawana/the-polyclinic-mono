@@ -9,8 +9,7 @@ import { permissions, sidebarContent } from './data';
 import QuickLook from '@/components/ui/dashboard/quicklook';
 import { ButtonProps, DropdownItemProps } from '@/components/ui/dashboard/quicklook/types';
 import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
-import { User } from '@repo/store';
-import { UserStatus } from '@/services/common/user/user.constants';
+import { User, UserStatus } from '@repo/store';
 
 export function UserQuickLook() {
   const { selected, setSelected, setAction, action } = useUserStore();

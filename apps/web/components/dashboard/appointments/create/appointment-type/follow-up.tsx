@@ -5,7 +5,7 @@ import CreateAppointmentSelectedPreviousAppointment from './appointment';
 import { useCreateAppointmentForm } from '../index';
 
 import CustomRadio from '@/components/ui/custom-radio';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 import { useDebounce } from '@/hooks/useDebounce';
 import Fuse from 'fuse.js';
 import { SearchInput } from '@/components/dashboard/appointments/(common)';
@@ -48,7 +48,7 @@ function PreviousAppointments({ appointments }: { appointments: Appointment[] })
   return (
     <div className="flex h-full flex-col p-4">
       <div className="flex flex-1 flex-col gap-2 overflow-hidden">
-        <h3 className="text-sm text-default-500">Previous Appointments</h3>
+        <h3 className="text-default-500 text-sm">Previous Appointments</h3>
 
         <SearchInput
           value={search}
@@ -76,7 +76,7 @@ function PreviousAppointments({ appointments }: { appointments: Appointment[] })
             ))}
           </RadioGroup>
         ) : (
-          <p className="text-sm text-default-500">
+          <p className="text-default-500 text-sm">
             {search ? `No appointments found for ${search}` : 'No appointments available'}
           </p>
         )}
@@ -100,7 +100,7 @@ export default function CreateAppointmentFollowUp() {
   if (!appointments || appointments.length === 0) {
     return (
       <div className="flex h-full flex-col p-4">
-        <p className="text-sm text-default-500">No previous appointments found</p>
+        <p className="text-default-500 text-sm">No previous appointments found</p>
       </div>
     );
   }

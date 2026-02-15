@@ -24,8 +24,8 @@ import DateChip from '../ui/date-chip';
 import { TIMINGS } from '@/libs/config';
 import { cn } from '@heroui/react';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { Appointment } from '@/services/client/appointment';
-import { Role } from '@/services/common/user/user.constants';
+import { Appointment } from '@repo/store';
+import { UserRole } from '@repo/store';
 
 interface MonthViewProps {
   appointments: Appointment[];
@@ -57,7 +57,7 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
     appointments.filter((apt) => isSameDay(new Date(apt.date), date));
 
   const isAllowedToCreateAppointment = allowedRolesToCreateAppointment.includes(
-    user?.role || Role.PATIENT
+    user?.role || UserRole.PATIENT
   );
 
   return (
@@ -98,7 +98,7 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
               key={day.toISOString()}
               title={isDateDisabled ? 'Booking is not allowed in the past' : ''}
               className={cn(
-                'border-divider flex select-none flex-col justify-start overflow-hidden border-b border-r p-1 last:border-r-0',
+                'border-divider flex flex-col justify-start overflow-hidden border-r border-b p-1 select-none last:border-r-0',
                 {
                   'bg-default-100 text-default-500': !isCurrentMonth,
                   'bg-default-50 cursor-not-allowed': isDateDisabled,

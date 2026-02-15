@@ -1,6 +1,6 @@
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { cn } from '@heroui/react';
-import { AppointmentQueue, QueueStatus } from '@/services/client/appointment/queue/queue.types';
+import { AppointmentQueue, QueueStatus } from '@repo/store';
 import {
   Accordion,
   AccordionItem,
@@ -52,7 +52,7 @@ export default function QueuesList({
                 <Card
                   key={queue.id}
                   className={cn(
-                    'rounded-small border-l-5 border-divider border-l-default bg-default-50 group border shadow-none transition-all',
+                    'rounded-small border-divider border-l-default bg-default-50 group border border-l-5 shadow-none transition-all',
                     {
                       'rounded-b-none border-b-0': selectedKeys.has(queue.id),
                     },
@@ -106,7 +106,7 @@ export default function QueuesList({
             >
               <div
                 className={cn(
-                  'rounded-b-small border-l-5 border-divider border-l-default border border-t-0 p-4',
+                  'rounded-b-small border-divider border-l-default border border-t-0 border-l-5 p-4',
                   getQueueStatusColor(queue.status)
                 )}
               >

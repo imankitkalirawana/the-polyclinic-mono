@@ -4,7 +4,7 @@ import { useCreateAppointmentForm } from '../index';
 
 import { castData } from '@/libs/utils';
 import { useAppointmentWithAID } from '@/services/client/appointment/appointment.query';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 
 export default function CreateAppointmentSelectedPreviousAppointment() {

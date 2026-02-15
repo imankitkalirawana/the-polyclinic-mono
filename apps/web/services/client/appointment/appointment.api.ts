@@ -1,4 +1,4 @@
-import { Appointment, CreateAppointmentInput } from './appointment.types';
+import { Appointment, CreateAppointmentInput } from '@repo/store';
 import { apiRequest } from '@/libs/axios';
 
 export class AppointmentApi {

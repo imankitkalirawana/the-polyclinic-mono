@@ -9,7 +9,7 @@ import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
 import Skeleton from '@/components/ui/skeleton';
 import { castData } from '@/libs/utils';
 import { useAllAppointments } from '@/services/client/appointment/appointment.query';
-import { APPOINTMENT_TYPES, Appointment } from '@/services/client/appointment';
+import { APPOINTMENT_TYPES, Appointment } from '@repo/store';
 
 const APPOINTMENTS_PER_PAGE = 6;
 
@@ -69,13 +69,13 @@ export default function Appointments() {
                 key={appointment.aid}
                 className={cn('flex flex-col gap-2 p-4', {
                   'border-danger-100 bg-danger-50 border':
-                    appointment.type === APPOINTMENT_TYPES.emergency.value,
+                    appointment.type === APPOINTMENT_TYPES.emergency.valueOf(),
                   'border border-blue-100 bg-blue-50':
-                    appointment.type === APPOINTMENT_TYPES.follow_up.value,
+                    appointment.type === APPOINTMENT_TYPES.follow_up.valueOf(),
                 })}
               >
                 <CardHeader className="justify-between p-0">
-                  <p className="whitespace-nowrap font-medium">
+                  <p className="font-medium whitespace-nowrap">
                     {format(appointment.date, 'hh:mm a')}
                   </p>
                   {renderChip({

@@ -3,7 +3,7 @@ import { getQueueStatusColor } from '../helper';
 import { CellRenderer } from '@/components/ui/cell/rich-color/cell-renderer';
 import { Accordion, AccordionItem, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react/dist/iconify.js';
-import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
+import { AppointmentQueue } from '@repo/store';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import DataItem from '@/components/ui/data-item';
@@ -28,7 +28,7 @@ export default function DetailsHeader({ currentQueue }: { currentQueue: Appointm
           getQueueStatusColor(currentQueue.status)
         )}
       >
-        <div className="absolute right-2 top-2">
+        <div className="absolute top-2 right-2">
           <Chip color="primary" size="sm" className="capitalize" variant="dot">
             {currentQueue.status.split('_').join(' ').toLowerCase()}
           </Chip>

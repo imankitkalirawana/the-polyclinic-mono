@@ -21,7 +21,7 @@ import AppointmentList from '../ui/appointment-list';
 
 import { cn } from '@heroui/react';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 
 interface YearViewProps {
   appointments: Appointment[];

@@ -9,7 +9,7 @@ import ReviewAndPay from './review-n-pay';
 import { CreateAppointmentQueueFormValues } from '@/services/client/appointment/queue/queue.types';
 import AppointmentQueueReceipt from './receipt';
 import { useSession } from '@/libs/providers/session-provider';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 
 const contentMap: Record<BookQueueSteps, React.ReactNode> = {
   [BookQueueSteps.PATIENT_INFORMATION]: <PatientSelection />,
@@ -22,12 +22,12 @@ export default function NewQueueAppointment() {
   const { user } = useSession();
   const integratedUserId = user?.integrated_user_id ?? '';
 
-  const role = user?.role ?? Role.PATIENT;
+  const role = user?.role ?? UserRole.PATIENT;
   const form = useForm<CreateAppointmentQueueFormValues>({
     defaultValues: {
       appointment: {
         aid: null,
-        patientId: role === Role.PATIENT ? integratedUserId : '',
+        patientId: role === UserRole.PATIENT ? integratedUserId : '',
         doctorId: '',
         appointmentDate: new Date(),
         notes: null,

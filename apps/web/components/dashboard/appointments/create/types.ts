@@ -1,4 +1,4 @@
-import { CreateAppointmentInput } from '@/services/client/appointment';
+import { CreateAppointmentInput } from '@repo/store';
 
 type CreateAppointmentMeta = {
   currentStep: number;

@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { create } from 'zustand';
 
 import { ActionType } from './types';
-import { Patient } from '@/services/client/patient';
+import { Patient } from '@repo/store';
 
 interface PatientStoreState {
   selected: Patient | null;

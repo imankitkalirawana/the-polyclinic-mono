@@ -2,7 +2,7 @@ import { AppointmentApi } from '@/services/client/appointment/appointment.api';
 import { useGenericMutation } from '../../useGenericMutation';
 import { useGenericQuery } from '../../useGenericQuery';
 
-import { CreateAppointmentInput } from './appointment.types';
+import { CreateAppointmentInput } from '@repo/store';
 
 export const useAllAppointments = () =>
   useGenericQuery({

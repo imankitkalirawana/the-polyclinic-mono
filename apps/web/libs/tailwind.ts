@@ -1,4 +1,4 @@
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 
 type Color =
   | 'red'

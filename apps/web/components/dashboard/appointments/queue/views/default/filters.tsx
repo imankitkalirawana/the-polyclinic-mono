@@ -7,7 +7,7 @@ import {
   DEFAULT_APPOINTMENT_QUEUE_FILTERS,
   type AppointmentQueueFilters,
 } from '@/services/client/appointment/queue/queue.types';
-import { QueueStatus } from '@/services/client/appointment/queue/queue.types';
+import { QueueStatus } from '@repo/store';
 import { useAllDoctors } from '@/services/client/doctor/doctor.query';
 import { getActiveFilterCount } from './helper';
 

@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 
 import { Table } from '@/components/ui/new-data-table';
 import { useAllAppointmentQueues } from '@/services/client/appointment/queue/queue.query';
-import { AppointmentQueue } from '@/services/client/appointment/queue/queue.types';
+import { AppointmentQueue } from '@repo/store';
 import QueueQuickLook from './quicklook';
 import QueueColumns from './columns';
 import { Input } from '@heroui/react';

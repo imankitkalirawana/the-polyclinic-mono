@@ -15,7 +15,7 @@ import {
   RenderUser,
 } from '@/components/ui/static-data-table/cell-renderers';
 import type { ColumnDef, FilterDef } from '@/components/ui/static-data-table/types';
-import { Patient } from '@/services/client/patient';
+import { Patient } from '@repo/store';
 import { useAllPatients } from '@/services/client/patient';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import Link from 'next/link';
@@ -23,7 +23,7 @@ import { CopyText } from '@/components/ui/copy';
 import { formatAge, formatGender } from '@/libs/utils';
 import ResetPasswordModal from '../users/ui/reset-password-modal';
 import DeleteUserModal from '../users/ui/delete-user-modal';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 import { useSession } from '@/libs/providers/session-provider';
 
 const INITIAL_VISIBLE_COLUMNS = ['image', 'name', 'email', 'age', 'gender', 'createdAt'];
@@ -60,25 +60,25 @@ export default function Patients() {
         children: 'Edit',
         as: Link,
         href: `/dashboard/patients/${patient.id}/edit`,
-        roles: [Role.ADMIN, Role.RECEPTIONIST],
+        roles: [UserRole.ADMIN, UserRole.RECEPTIONIST],
       },
       {
         key: 'change-password',
         color: 'warning',
         children: 'Reset Password',
-        onPress: () => handleChangePassword(patient.user_id),
+        onPress: () => handleChangePassword(patient.userId),
         section: 'Danger Zone',
         className: 'text-warning',
-        roles: [Role.ADMIN],
+        roles: [UserRole.ADMIN],
       },
       {
         key: 'delete',
         children: 'Delete',
         color: 'danger',
-        onPress: () => handleDelete(patient.user_id),
+        onPress: () => handleDelete(patient.userId),
         section: 'Danger Zone',
         className: 'text-danger',
-        roles: [Role.ADMIN],
+        roles: [UserRole.ADMIN],
       },
     ];
   };

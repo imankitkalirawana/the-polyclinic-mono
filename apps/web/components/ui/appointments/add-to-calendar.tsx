@@ -22,7 +22,7 @@ import {
   handleAddToCalendar,
 } from '@/libs/client-functions';
 import { EventType } from '@/libs/interface';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 
 type ActionType = 'google' | 'outlook' | 'download';
 

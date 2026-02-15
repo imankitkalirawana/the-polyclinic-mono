@@ -5,11 +5,7 @@ import { formatTime } from '../helper';
 import StatusRenderer from './status-renderer';
 
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import {
-  APPOINTMENT_STATUSES,
-  APPOINTMENT_TYPES,
-  Appointment,
-} from '@/services/client/appointment';
+import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES, Appointment } from '@repo/store';
 import { extractFirstName } from '@/libs/utils';
 
 export default function AppointmentTriggerItem({
@@ -30,7 +26,7 @@ export default function AppointmentTriggerItem({
         'text-tiny hover:bg-default-100 flex min-h-6 cursor-pointer items-center justify-start gap-1 truncate rounded-lg p-1 md:px-2',
         {
           'bg-warning-100/70 hover:bg-warning-100':
-            appointment.type === APPOINTMENT_TYPES.emergency.value,
+            appointment.type === APPOINTMENT_TYPES.emergency.valueOf(),
           'line-through opacity-50': appointment.status === APPOINTMENT_STATUSES.cancelled,
           'opacity-50': appointment.status === APPOINTMENT_STATUSES.completed,
         }

@@ -14,8 +14,7 @@ import DateChip from '../ui/date-chip';
 import { TIMINGS } from '@/libs/config'; // Assuming this provides start/end hours
 import { cn } from '@heroui/react';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import { Appointment } from '@/services/client/appointment';
-import { Role } from '@/services/common/user/user.constants';
+import { Appointment, UserRole } from '@repo/store';
 
 interface DayViewProps {
   isCompact?: boolean;
@@ -37,7 +36,7 @@ export function DayView({
   const { aid, setIsTooltipOpen } = useAppointmentStore();
 
   const isAllowedToCreateAppointment = allowedRolesToCreateAppointment.includes(
-    user?.role || Role.PATIENT
+    user?.role || UserRole.PATIENT
   );
 
   const displayHours = Array.from(
@@ -67,13 +66,13 @@ export function DayView({
       {/* Day header */}
       <div className="border-divider flex border-b">
         <div className="border-divider flex w-20 shrink-0 items-end border-r px-2 pb-1">
-          <div className="text-default-500 text-tiny uppercase tracking-wide">
+          <div className="text-default-500 text-tiny tracking-wide uppercase">
             {format(currentDate, 'z')}
           </div>
         </div>
         <div className="flex flex-1 flex-col p-2">
           <div
-            className={cn('text-default-500 text-small uppercase tracking-wide', {
+            className={cn('text-default-500 text-small tracking-wide uppercase', {
               'text-tiny': isCompact,
             })}
           >
@@ -104,7 +103,7 @@ export function DayView({
               <React.Fragment key={`hour-${hour}`}>
                 {/* Time Label Cell */}
                 <div
-                  className="border-divider text-default-500 text-small row-span-1 w-20 shrink-0 border-b border-r p-2 text-right"
+                  className="border-divider text-default-500 text-small row-span-1 w-20 shrink-0 border-r border-b p-2 text-right"
                   style={{ gridRowStart: hourIndex + 1, gridColumnStart: 1 }}
                 >
                   {hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}

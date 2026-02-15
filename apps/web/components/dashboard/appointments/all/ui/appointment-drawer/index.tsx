@@ -38,15 +38,11 @@ import useAppointmentButtonsInDrawer from '@/services/client/appointment/hooks/u
 import { useIsMobile } from '@/hooks/useMobile';
 import { useAppointmentWithAID } from '@/services/client/appointment/appointment.query';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
-import {
-  APPOINTMENT_STATUSES,
-  APPOINTMENT_TYPES,
-  Appointment,
-} from '@/services/client/appointment';
+import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES, Appointment } from '@repo/store';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { useClipboard } from '@/hooks/useClipboard';
 import { UserDetailsPopover } from './user-details-popover';
-import { Role } from '@/services/common/user/user.constants';
+import { UserRole } from '@repo/store';
 
 const DRAWER_DELAY = 200;
 
@@ -63,7 +59,7 @@ const AppointmentHeading = memo(
   }) => (
     <div
       className={cn(
-        'text-default-500 text-tiny flex w-full items-center justify-between gap-2 font-medium uppercase tracking-wide',
+        'text-default-500 text-tiny flex w-full items-center justify-between gap-2 font-medium tracking-wide uppercase',
         className
       )}
     >
@@ -359,9 +355,9 @@ const AppointmentHeader = memo(
                 'line-through': appointment.status === APPOINTMENT_STATUSES.cancelled,
               })}
             >
-              #{appointment.aid} - {APPOINTMENT_TYPES[appointment.type].label}
+              #{appointment.aid} - {APPOINTMENT_TYPES[appointment.type]}
             </h2>
-            {appointment.type === APPOINTMENT_TYPES.emergency.value && (
+            {appointment.type === APPOINTMENT_TYPES.emergency.valueOf() && (
               <Icon icon="solar:danger-triangle-bold" className="text-warning-500 animate-pulse" />
             )}
           </div>
@@ -429,10 +425,11 @@ const AppointmentFooter = memo(({ appointment }: { appointment: Appointment }) =
   const { user } = useSession();
   const buttons = useAppointmentButtonsInDrawer({
     selected: appointment,
-    role: user?.role as Role,
+    role: user?.role as UserRole,
   });
 
-  return appointment.status === APPOINTMENT_STATUSES.cancelled && user?.role === Role.PATIENT ? (
+  return appointment.status === APPOINTMENT_STATUSES.cancelled &&
+    user?.role === UserRole.PATIENT ? (
     <Alert
       color="warning"
       title="Cancelled"

@@ -1,7 +1,7 @@
 import { Selection } from '@heroui/react';
 import { create } from 'zustand';
 
-import { ActionType } from '@/services/client/appointment';
+import { ActionType } from './appointment.types';
 
 interface AppointmentStoreState {
   aid: string | null;

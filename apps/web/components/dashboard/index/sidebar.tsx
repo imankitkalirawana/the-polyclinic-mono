@@ -1,12 +1,12 @@
 'use client';
 import { DayView } from '@/components/dashboard/appointments/all/views/day';
-import { Appointment } from '@/services/client/appointment';
+import { Appointment } from '@repo/store';
 import { Calendar } from '@heroui/react';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import { faker } from '@faker-js/faker';
 import { uuidv4 } from 'zod';
 
-// @ts-ignore
+// @ts-expect-error - Appointment type is not defined
 const appointments: Appointment[] = Array.from({ length: 10 }, (_) => ({
   id: uuidv4(),
   aid: faker.string.uuid(),
@@ -38,7 +38,7 @@ const appointments: Appointment[] = Array.from({ length: 10 }, (_) => ({
 
 export default function Sidebar() {
   return (
-    <div className="flex h-full w-full max-w-fit flex-col items-center gap-4 rounded-large bg-default-100 p-2">
+    <div className="rounded-large bg-default-100 flex h-full w-full max-w-fit flex-col items-center gap-4 p-2">
       <div>
         <Calendar
           isReadOnly
@@ -53,7 +53,7 @@ export default function Sidebar() {
         />
       </div>
 
-      <section className="w-full overflow-auto rounded-large bg-background">
+      <section className="rounded-large bg-background w-full overflow-auto">
         <DayView
           isCompact
           openInNewTab
