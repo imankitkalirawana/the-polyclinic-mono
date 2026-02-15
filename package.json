@@ -11,7 +11,10 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "format": "turbo run format",
-    "tsc": "turbo run tsc"
+    "tsc": "turbo run tsc",
+    "commitlint": "commitlint",
+    "lint-staged": "pnpm --filter web run lint-staged",
+    "prepare": "husky"
   },
   "pnpm": {
     "overrides": {
@@ -35,6 +38,11 @@
     ]
   },
   "devDependencies": {
-    "turbo": "^2.8.9"
+    "turbo": "^2.8.9",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@commitlint/types": "^19.8.0",
+    "conventional-changelog-atom": "^5.0.0",
+    "husky": "^9.1.7"
   }
 }

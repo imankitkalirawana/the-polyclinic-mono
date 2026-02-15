@@ -13,6 +13,21 @@ importers:
 
   .:
     devDependencies:
+      '@commitlint/cli':
+        specifier: ^19.8.0
+        version: 19.8.1(@types/node@20.19.33)(typescript@5.9.3)
+      '@commitlint/config-conventional':
+        specifier: ^19.8.0
+        version: 19.8.1
+      '@commitlint/types':
+        specifier: ^19.8.0
+        version: 19.8.1
+      conventional-changelog-atom:
+        specifier: ^5.0.0
+        version: 5.0.0
+      husky:
+        specifier: ^9.1.7
+        version: 9.1.7
       turbo:
         specifier: ^2.8.9
         version: 2.8.9
@@ -251,9 +266,6 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.679.0
         version: 3.990.0
-      '@commitlint/types':
-        specifier: ^19.8.0
-        version: 19.8.1
       '@dnd-kit/abstract':
         specifier: ^0.2.4
         version: 0.2.4
@@ -362,9 +374,6 @@ importers:
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0
-      husky:
-        specifier: ^9.1.7
-        version: 9.1.7
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.3
@@ -465,12 +474,6 @@ importers:
         specifier: ^5.0.4
         version: 5.0.11(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
     devDependencies:
-      '@commitlint/cli':
-        specifier: ^19.8.0
-        version: 19.8.1(@types/node@20.19.33)(typescript@5.1.6)
-      '@commitlint/config-conventional':
-        specifier: ^19.8.0
-        version: 19.8.1
       '@iconify/json':
         specifier: ^2.2.332
         version: 2.2.439
@@ -510,9 +513,6 @@ importers:
       '@types/react-dom':
         specifier: 19.1.6
         version: 19.1.6(@types/react@19.1.8)
-      conventional-changelog-atom:
-        specifier: ^5.0.0
-        version: 5.0.0
       lint-staged:
         specifier: ^13.0.3
         version: 13.3.0
@@ -11764,11 +11764,11 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@commitlint/cli@19.8.1(@types/node@20.19.33)(typescript@5.1.6)':
+  '@commitlint/cli@19.8.1(@types/node@20.19.33)(typescript@5.9.3)':
     dependencies:
       '@commitlint/format': 19.8.1
       '@commitlint/lint': 19.8.1
-      '@commitlint/load': 19.8.1(@types/node@20.19.33)(typescript@5.1.6)
+      '@commitlint/load': 19.8.1(@types/node@20.19.33)(typescript@5.9.3)
       '@commitlint/read': 19.8.1
       '@commitlint/types': 19.8.1
       tinyexec: 1.0.2
@@ -11866,15 +11866,15 @@ snapshots:
       '@commitlint/rules': 20.4.1
       '@commitlint/types': 20.4.0
 
-  '@commitlint/load@19.8.1(@types/node@20.19.33)(typescript@5.1.6)':
+  '@commitlint/load@19.8.1(@types/node@20.19.33)(typescript@5.9.3)':
     dependencies:
       '@commitlint/config-validator': 19.8.1
       '@commitlint/execute-rule': 19.8.1
       '@commitlint/resolve-extends': 19.8.1
       '@commitlint/types': 19.8.1
       chalk: 5.6.2
-      cosmiconfig: 9.0.0(typescript@5.1.6)
-      cosmiconfig-typescript-loader: 6.2.0(@types/node@20.19.33)(cosmiconfig@9.0.0(typescript@5.1.6))(typescript@5.1.6)
+      cosmiconfig: 9.0.0(typescript@5.9.3)
+      cosmiconfig-typescript-loader: 6.2.0(@types/node@20.19.33)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -17872,6 +17872,13 @@ snapshots:
       jiti: 2.6.1
       typescript: 5.1.6
 
+  cosmiconfig-typescript-loader@6.2.0(@types/node@20.19.33)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3):
+    dependencies:
+      '@types/node': 20.19.33
+      cosmiconfig: 9.0.0(typescript@5.9.3)
+      jiti: 2.6.1
+      typescript: 5.9.3
+
   cosmiconfig@7.1.0:
     dependencies:
       '@types/parse-json': 4.0.2
@@ -17898,6 +17905,15 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.1.6
+
+  cosmiconfig@9.0.0(typescript@5.9.3):
+    dependencies:
+      env-paths: 2.2.1
+      import-fresh: 3.3.1
+      js-yaml: 4.1.1
+      parse-json: 5.2.0
+    optionalDependencies:
+      typescript: 5.9.3
 
   crc-32@1.2.2: {}
 
