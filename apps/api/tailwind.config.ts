@@ -1,6 +1,15 @@
 import { pixelBasedPreset } from '@react-email/components';
 
-export default {
+interface TailwindConfig {
+  presets: unknown[];
+  theme: {
+    extend: {
+      colors: Record<string, string>;
+    };
+  };
+}
+
+const config: TailwindConfig = {
   presets: [pixelBasedPreset],
   theme: {
     extend: {
@@ -12,3 +21,5 @@ export default {
     },
   },
 };
+
+export default config;

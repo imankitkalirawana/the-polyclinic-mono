@@ -1,7 +1,8 @@
 @import 'tailwindcss';
 @plugin '../hero.ts';
 
-@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+/* Monorepo: @heroui/theme is in root node_modules (transitive dep) */
+@source '../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
 @custom-variant dark (&:is([data-theme^="dark-"] *));
 
@@ -549,7 +550,7 @@
   border-top: none;
 }
 .ql-editor {
-  background: hsl(var(--nextui-default-100));
+  background: hsl(var(--heroui-default-100));
   padding: 8px 12px;
   /* border-radius: 10px; */
   font-size: 16px;
@@ -561,7 +562,7 @@
 }
 
 .ql-editor:hover {
-  background: hsl(var(--nextui-default-200));
+  background: hsl(var(--heroui-default-200));
 }
 
 .quill-input .ql-container {

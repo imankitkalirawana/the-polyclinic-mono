@@ -1,5 +1,5 @@
 {
-  "name": "the-polyclinic",
+  "name": "web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -26,7 +26,7 @@
     "@dnd-kit/react": "^0.2.4",
     "@faker-js/faker": "^9.7.0",
     "@google/generative-ai": "^0.24.1",
-    "@heroui/react": "^2.8.8",
+    "@heroui/react": "^2.8.9",
     "@hookform/resolvers": "^5.2.2",
     "@iconify/react": "^5.0.2",
     "@internationalized/date": "^3.9.0",
@@ -128,22 +128,5 @@
     "react-email": "4.2.11",
     "tailwindcss": "^4.1.18",
     "typescript": "5.1.6"
-  },
-  "packageManager": "pnpm@10.9.0",
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.1.8",
-      "@types/react-dom": "19.1.6",
-      "@react-aria/i18n": "3.12.12"
-    },
-    "onlyBuiltDependencies": [
-      "@heroui/shared-utils",
-      "@sentry/cli",
-      "core-js",
-      "esbuild",
-      "sharp",
-      "unrs-resolver",
-      "ws"
-    ]
   }
 }

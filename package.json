@@ -1,5 +1,35 @@
 {
   "name": "polyclinic",
   "private": true,
-  "packageManager": "pnpm@latest"
+  "packageManager": "pnpm@10.9.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.8",
+      "@types/react-dom": "19.1.6",
+      "@react-aria/i18n": "3.12.12"
+    },
+    "onlyBuiltDependencies": [
+      "@heroui/shared-utils",
+      "@nestjs/core",
+      "@prisma/engines",
+      "@sentry/cli",
+      "core-js",
+      "esbuild",
+      "prisma",
+      "protobufjs",
+      "puppeteer",
+      "sharp",
+      "unrs-resolver",
+      "ws"
+    ]
+  },
+  "devDependencies": {
+    "turbo": "^2.8.9"
+  }
 }
