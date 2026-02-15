@@ -2,85 +2,63 @@
 alwaysApply: true
 ---
 
-# TypeScript Standards
+1. Do NOT use suffixes like "Type", "Definition", or "Model".
+   Example (❌): UserType, UserDefinition, UserModel
+   Example (✅): User
 
-## Core Requirements
+2. Use singular PascalCase names for core domain entities.
+   Example: User, Appointment, Doctor, Invoice
 
-- Follow [TypeScript Style Guide](https://mkosir.github.io/typescript-style-guide/#naming)
-- Strict mode from [tsconfig.json](mdc:tsconfig.json)
-- **NEVER use `any`** - especially for healthcare data
-- Use `unknown` for external data before validation
-- TSDoc comments for healthcare APIs and compliance-critical code
+3. For input payloads, use the suffix "Input".
+   Example: CreateUserInput, UpdateAppointmentInput
 
-## Naming Conventions
+4. For API output shapes, use the suffix "Response" or a semantic name.
+   Example: UserResponse, AppointmentListItem
 
-- **Components**: PascalCase (`PatientCard`, `AppointmentScheduler`)
-- **Interfaces**: PascalCase (`IPatientData`, `IAppointmentRequest`)
-- **Types**: PascalCase (`AppointmentStatus`, `PatientGender`)
-- **Variables**: camelCase (`patientId`, `appointmentDateTime`)
-- **Functions**: camelCase (`scheduleAppointment`, `validateMedicalData`)
-- **Constants**: UPPER_SNAKE_CASE (`MAX_DAILY_APPOINTMENTS`)
-- **Files**: kebab-case (`patient-management.ts`)
+5. For enums, use clear domain-based naming.
+   Example: UserRole, AppointmentStatus
 
-## Type Safety for Healthcare
+6. For database-only representations, use the suffix "Entity" (backend only).
+   Example: UserEntity
 
-- Never type assert any any case, never use `as` type assertion
-- **Branded types** for sensitive identifiers (SSN, patient IDs)
-- Union types for medical enums (`'scheduled' | 'confirmed' | 'completed'`)
-- Optional properties (`?`) for non-required fields
-- Generic constraints for healthcare operations
-- Reference patterns: [lib/interface.ts](mdc:lib/interface.ts)
+7. When using Zod:
+   - Schema must be named "<EntityName>Schema"
+   - The inferred type must be named "<EntityName>"
 
-## Component Props
+   Example:
+   export const UserSchema = z.object({...});
+   export type User = z.infer<typeof UserSchema>;
 
-```typescript
-interface PatientCardProps {
-  patient: IPatientData;
-  onAppointmentSchedule: (patientId: string) => Promise<void>;
-  showSensitiveData?: boolean;
-}
+8. Avoid ambiguous names.
+   Do NOT use: Data, Object, Item, Definition, Model
+   Prefer domain-specific names.
 
-// Avoid React.FC - use explicit return types
-export function PatientCard({ patient }: PatientCardProps): JSX.Element {
-  // ...
-}
-```
+9. All types must reflect domain meaning, not technical implementation details.
 
-## Validation & Error Handling
+────────────────────────
+TYPE SAFETY RULES
+────────────────────────
 
-- **PRIORITY**: Replace Yup with Zod in [lib/validation.ts](mdc:lib/validation.ts)
-- Comprehensive Zod schemas for healthcare data
-- Typed healthcare exceptions
-- Proper error boundaries
-- Validate medical codes (ICD-10, CPT, NDC)
+10. NEVER use TypeScript type assertions using `as`.
+    ❌ value as User
+    ❌ {} as SomeType
+    ❌ foo as unknown as Something
 
-## Import Organization
+11. Do NOT bypass type safety using `any` or `unknown` unless absolutely unavoidable.
 
-1. React/Next.js framework
-2. Healthcare third-party libraries
-3. Internal healthcare modules (`@/lib/medical`, `@/services/patient`)
-4. Relative component imports
+12. If a type mismatch occurs:
+    - Fix the type definition.
+    - Refactor the code.
+    - Use proper type guards.
+    - Use Zod parsing or schema validation.
+    - Use narrowing instead of assertion.
 
-- Use absolute imports with `@/` prefix
-- Named exports for utilities/components
-- Default exports only for pages/layouts
+13. If narrowing is needed, prefer:
+    - Type guards
+    - `in` operator
+    - Discriminated unions
+    - Zod `.parse()` or `.safeParse()`
 
-## API & Service Types
+14. Never silence TypeScript errors with assertions. The type system must be trusted and preserved.
 
-- Define interfaces for all API endpoints
-- Proper request/response types for medical data
-- Generic types for healthcare CRUD operations
-- Reference: [services/](mdc:services/) directory
-
-## Documentation
-
-```typescript
-/**
- * Schedules a new patient appointment with conflict checking
- * @param appointmentData - Appointment details to schedule
- * @param patientId - Unique patient identifier (branded type)
- * @returns Promise resolving to appointment confirmation
- * @throws {ValidationError} When appointment data is invalid
- * @throws {ConflictError} When appointment conflicts exist
- */
-```
+All generated code must maintain strict type safety.
