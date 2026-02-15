@@ -17,9 +17,8 @@ import {
   Not,
 } from 'typeorm';
 import { Request } from 'express';
-import { CreateQueueDto } from './dto/create-queue.dto';
 import { CurrentUserPayload } from '@auth/decorators/current-user.decorator';
-import { Queue, QueueStatus } from './entities/queue.entity';
+import { Queue } from './entities/queue.entity';
 import {
   formatQueue,
   generateAppointmentId,
@@ -27,15 +26,19 @@ import {
   ensureSequenceExists,
   getNextTokenNumber,
 } from './queue.helper';
-import { CompleteQueueDto } from './dto/compelete-queue.dto';
 import { PaymentsService } from '@client/payments/payments.service';
-import { VerifyPaymentDto } from '@client/payments/dto/verify-payment.dto';
 import { PdfService } from '@client/pdf/pdf.service';
 import { DoctorsService } from '@common/doctors/doctors.service';
-import { PaymentReferenceType } from '@client/payments/entities/payment.entity';
-import { Currency } from '@client/payments/dto/create-payment.dto';
-import { UserRole } from '@repo/store';
-import { PaymentMode } from './enums/queue.enum';
+import {
+  CompleteQueueDto,
+  CreateQueueDto,
+  PaymentCurrency,
+  PaymentMode,
+  PaymentReferenceType,
+  QueueStatus,
+  UserRole,
+  VerifyPaymentDto,
+} from '@repo/store';
 import { appointmentConfirmationTemplate } from './templates/confirm-appointment.template';
 import { QrService } from '@client/qr/qr.service';
 import { ActivityService } from '@common/activity/services/activity.service';
@@ -286,7 +289,7 @@ export class QueueService {
     const payment = await this.paymentsService.createPayment({
       referenceId: queueId,
       amount: 10000,
-      currency: Currency.INR,
+      currency: PaymentCurrency.INR,
       referenceType: PaymentReferenceType.APPOINTMENT_QUEUE,
     });
 

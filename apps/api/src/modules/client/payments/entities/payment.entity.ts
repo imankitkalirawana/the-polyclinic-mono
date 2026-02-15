@@ -1,26 +1,10 @@
+import {
+  PaymentProvider,
+  PaymentReferenceType,
+  PaymentStatus,
+} from '@repo/store';
 import { BaseEntity } from 'src/common/entity/base.entity';
 import { Entity, Column, Index } from 'typeorm';
-
-/**
- * Payment Provider
- */
-export enum PaymentProvider {
-  RAZORPAY = 'RAZORPAY',
-  CASH = 'CASH',
-}
-
-/**
- * Payment Status
- */
-export enum PaymentStatus {
-  CREATED = 'CREATED',
-  PAID = 'PAID',
-  FAILED = 'FAILED',
-}
-
-export enum PaymentReferenceType {
-  APPOINTMENT_QUEUE = 'APPOINTMENT_QUEUE',
-}
 
 @Entity({ name: 'payments' })
 @Index(['referenceType', 'referenceId'])

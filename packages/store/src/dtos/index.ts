@@ -13,3 +13,9 @@ export * from "./company/update-company.dto";
 export * from "./user/create-profile.dto";
 export * from "./user/create-user.dto";
 export * from "./user/update-profile.dto";
+
+export * from "./appointment/queue/create-queue.dto";
+export * from "./appointment/queue/complete-queue.dto";
+
+export * from "./payment/create-payment.dto";
+export * from "./payment/verify-payment.dto";

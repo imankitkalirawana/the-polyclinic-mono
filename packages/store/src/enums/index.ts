@@ -7,3 +7,4 @@ export * from "./appointment.enum";
 export * from "./company.enum";
 export * from "./patient.enum";
 export * from "./auth.enum";
+export * from "./payment.enum";

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { UserTableViewColumn } from './table-view-column.entity';
 import { TableViewType } from '../enums/table-view-type.enum';
-import { QueueStatus } from 'src/modules/client/appointments/queue/entities/queue.entity';
+import { QueueStatus } from '@repo/store';
 import { BaseEntity } from 'src/common/entity/base.entity';
 
 export { TableViewType };

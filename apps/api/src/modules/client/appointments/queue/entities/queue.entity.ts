@@ -12,18 +12,7 @@ import {
 import { Patient } from '@common/patients/entities/patient.entity';
 import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { User } from '@auth/entities/user.entity';
-import { PaymentMode } from '../enums/queue.enum';
-
-export enum QueueStatus {
-  PAYMENT_PENDING = 'PAYMENT_PENDING',
-  PAYMENT_FAILED = 'PAYMENT_FAILED',
-  BOOKED = 'BOOKED',
-  CALLED = 'CALLED',
-  IN_CONSULTATION = 'IN_CONSULTATION',
-  SKIPPED = 'SKIPPED',
-  CANCELLED = 'CANCELLED',
-  COMPLETED = 'COMPLETED',
-}
+import { PaymentMode, QueueStatus } from '@repo/store';
 
 export interface Counter {
   skip: number;

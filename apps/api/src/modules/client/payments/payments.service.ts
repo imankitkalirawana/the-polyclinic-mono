@@ -9,20 +9,18 @@ import {
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { Repository } from 'typeorm';
-import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { Payment } from './entities/payment.entity';
+import { Queue } from '../appointments/queue/entities/queue.entity';
+import { RazorpayService } from './razorpay.service';
+import { getTenantConnection } from 'src/common/db/tenant-connection';
 import {
-  Payment,
+  CreatePaymentDto,
   PaymentProvider,
   PaymentReferenceType,
   PaymentStatus,
-} from './entities/payment.entity';
-import {
-  Queue,
   QueueStatus,
-} from '../appointments/queue/entities/queue.entity';
-import { RazorpayService } from './razorpay.service';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { getTenantConnection } from 'src/common/db/tenant-connection';
+  VerifyPaymentDto,
+} from '@repo/store';
 
 @Injectable()
 export class PaymentsService {

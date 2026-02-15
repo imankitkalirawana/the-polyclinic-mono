@@ -13,7 +13,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { QueueService } from './queue.service';
-import { CreateQueueDto } from './dto/create-queue.dto';
+import { CreateQueueDto, createQueueSchema } from '@repo/store';
 import { BearerAuthGuard } from '@auth/guards/bearer-auth.guard';
 import { RolesGuard } from '@auth/guards/roles.guard';
 import { FieldRestrictionsGuard } from '@auth/guards/field-restrictions.guard';
@@ -22,14 +22,14 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from '@auth/decorators/current-user.decorator';
-import { CompleteQueueDto } from './dto/compelete-queue.dto';
-import { VerifyPaymentDto } from '@client/payments/dto/verify-payment.dto';
+import { CompleteQueueDto, completeQueueSchema } from '@repo/store';
+import { VerifyPaymentDto, verifyPaymentSchema } from '@repo/store';
 import { Response } from 'express';
 import { StandardParam, StandardParams } from 'nest-standard-response';
-import { PaymentMode } from './enums/queue.enum';
 import { formatQueue } from './queue.helper';
 import { Request } from 'express';
-import { UserRole } from '@repo/store';
+import { PaymentMode, UserRole } from '@repo/store';
+import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 
 @Controller('client/appointments/queue')
 @UseGuards(BearerAuthGuard, RolesGuard, FieldRestrictionsGuard)
@@ -41,16 +41,10 @@ export class QueueController {
   @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.PATIENT)
   async create(
     @StandardParam() params: StandardParams,
-    @Body() createQueueDto: CreateQueueDto,
+    @Body(ZodValidationPipe.create(createQueueSchema))
+    createQueueDto: CreateQueueDto,
   ) {
-    let queue = null;
-    if (createQueueDto.queueId) {
-      queue = await this.queueService.find_by_and_fail({
-        id: createQueueDto.queueId,
-      });
-    } else {
-      queue = await this.queueService.create(createQueueDto);
-    }
+    const queue = await this.queueService.create(createQueueDto);
 
     params.setMessage(`Your appointment has been booked`);
 
@@ -67,7 +61,10 @@ export class QueueController {
 
   @Post('verify-payment')
   @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.PATIENT)
-  verifyPayment(@Body() verifyPaymentDto: VerifyPaymentDto) {
+  verifyPayment(
+    @Body(ZodValidationPipe.create(verifyPaymentSchema))
+    verifyPaymentDto: VerifyPaymentDto,
+  ) {
     return this.queueService.verifyPayment(verifyPaymentDto);
   }
 
@@ -163,7 +160,8 @@ export class QueueController {
   completeAppointmentQueue(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
-    @Body() completeQueueDto: CompleteQueueDto,
+    @Body(ZodValidationPipe.create(completeQueueSchema))
+    completeQueueDto: CompleteQueueDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
     params.setMessage(`Appointment Completed`);
