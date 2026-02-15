@@ -9,13 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Gender } from '@repo/store';
 import { User } from '@auth/entities/user.entity';
 
-export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER',
-}
+export { Gender };
 
 export type Vitals = {
   bloodType: string;

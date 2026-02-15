@@ -76,6 +76,9 @@ importers:
       '@react-email/render':
         specifier: ^2.0.2
         version: 2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@repo/store':
+        specifier: workspace:*
+        version: link:../../packages/store
       '@types/qrcode':
         specifier: ^1.5.6
         version: 1.5.6
@@ -290,9 +293,6 @@ importers:
       '@internationalized/date':
         specifier: ^3.9.0
         version: 3.11.0
-      '@polyclinic/store':
-        specifier: ^1.0.0
-        version: 1.0.0
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.4(@types/react@19.1.8)(react@19.1.0)
@@ -308,6 +308,9 @@ importers:
       '@react-types/shared':
         specifier: ^3.29.0
         version: 3.33.0(react@19.1.0)
+      '@repo/store':
+        specifier: workspace:*
+        version: link:../../packages/store
       '@sentry/nextjs':
         specifier: ^10
         version: 10.38.0(@opentelemetry/context-async-hooks@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(next@15.3.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.97.1)
@@ -573,6 +576,12 @@ importers:
       typescript:
         specifier: 5.1.6
         version: 5.1.6
+
+  packages/store:
+    devDependencies:
+      typescript:
+        specifier: latest
+        version: 5.9.3
 
 packages:
 
@@ -3375,9 +3384,6 @@ packages:
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
-
-  '@polyclinic/store@1.0.0':
-    resolution: {integrity: sha512-afrJKmZMppRN3MtatK1VGynntSbFpx0iPDysA4eOLeJ39vdAKaEaZsp+LpaigmLRz+/8xjOOMLyEUTgFPv4yOA==}
 
   '@preact/signals-core@1.13.0':
     resolution: {integrity: sha512-slT6XeTCAbdql61GVLlGU4x7XHI7kCZV5Um5uhE4zLX4ApgiiXc0UYFvVOKq06xcovzp7p+61l68oPi563ARKg==}
@@ -11453,6 +11459,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
@@ -16005,8 +16016,6 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.2.9': {}
-
-  '@polyclinic/store@1.0.0': {}
 
   '@preact/signals-core@1.13.0': {}
 
@@ -25899,6 +25908,8 @@ snapshots:
   typescript@5.1.6: {}
 
   typescript@5.7.2: {}
+
+  typescript@5.9.3: {}
 
   uc.micro@2.1.0: {}
 
