@@ -1,0 +1,52 @@
+---
+description: Apply when creating new files/folders, organizing code, or understanding the healthcare project architecture. Essential for maintaining consistent structure.
+alwaysApply: false
+---
+
+# Project Structure
+
+## Root Directories
+
+- [app/](mdc:app/) - Next.js App Router (dashboard, appointments, auth)
+- [components/](mdc:components/) - React components by domain
+- [lib/](mdc:lib/) - Utilities, config, business logic
+- [services/](mdc:services/) - API services and business logic
+- [types/](mdc:types/) - TypeScript type definitions
+- [store/](mdc:store/) - State management (Zustand)
+- [hooks/](mdc:hooks/) - Custom React hooks
+- [utils/](mdc:utils/) - Utility functions
+
+## App Routes
+
+- `app/(public)/` - Non-authenticated
+- `app/auth/` - Login, register, forgot-password
+- `app/appointments/` - Patient appointments
+- `app/dashboard/` - Provider dashboard
+  - `appointments/`, `doctors/`, `patients/`, `services/`, `drugs/`, `users/`, `organizations/`, `emails/`, `newsletters/`
+- `app/profile/` - User profile
+- `app/s/[subdomain]/` - Multi-tenant
+
+## Components
+
+- `components/client/appointments/` - Patient-facing
+- `components/dashboard/` - Provider dashboard
+- `components/auth/` - Authentication
+- `components/ui/` - Reusable UI
+- `components/sections/` - Page sections
+- `components/layouts/` - Layouts
+
+## Services
+
+- `services/client/` - appointment, doctor, patient, drug, email, newsletters, service
+- `services/common/` - auth, user, activity, notifications
+- `services/system/` - organization
+- `services/external/` - Third-party integrations
+
+## Key Config Files
+
+- [lib/config.ts](mdc:lib/config.ts) - App settings (timings, clinic info)
+- [lib/auth.ts](mdc:lib/auth.ts), [lib/serverAuth.ts](mdc:lib/serverAuth.ts) - Authentication
+- [lib/validation.ts](mdc:lib/validation.ts) - Validation schemas
+- [lib/interface.ts](mdc:lib/interface.ts) - TypeScript interfaces
+- [tailwind.config.ts](mdc:tailwind.config.ts) - Design system
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript config

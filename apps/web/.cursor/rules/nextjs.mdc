@@ -1,0 +1,37 @@
+---
+description: Apply when working with Next.js App Router, pages, layouts, routing, middleware, or server/client components in the healthcare application.
+alwaysApply: false
+---
+
+# Next.js App Router
+
+## App Structure
+
+- Root layout: [app/layout.tsx](mdc:app/layout.tsx)
+- Routes: `app/dashboard/`, `app/appointments/`, `app/(public)/`, `app/auth/`
+- Dynamic routes: `[param]` with proper sanitization
+- Middleware for route protection and HIPAA compliance
+
+## Page Components
+
+- `page.tsx` - proper data validation
+- `layout.tsx` - role-based access
+- `loading.tsx` - no PHI in loading states
+- `error.tsx` - HIPAA-compliant (no PHI in errors)
+- `not-found.tsx` - secure 404s
+
+## Server vs Client
+
+- **Default to Server Components** (minimize PHI exposure)
+- `'use client'` only for interactive forms/real-time features
+- Never store PHI in client state
+- Server Actions for HIPAA-compliant submissions
+- Server-side validation for all healthcare inputs
+- In [app/](mdc:app/) never use 'use client' directive instead create a folder and component file in [components/](mdc:components/) and hydrate it
+
+## Data Fetching
+
+- Server Components for initial data with access controls
+- TanStack Query for client-side with cache policies
+- Cache config: [lib/config.ts](mdc:lib/config.ts) `isCaching`
+- Suspense boundaries with privacy considerations

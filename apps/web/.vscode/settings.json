@@ -1,0 +1,6 @@
+{
+  "iconifySearch.codeType": "unplugin-icons",
+  "iconifySearch.favorTabs": ["solar", "tabler"],
+  "iconifySearch.favorGroup": "solar",
+  "deepscan.enable": true
+}

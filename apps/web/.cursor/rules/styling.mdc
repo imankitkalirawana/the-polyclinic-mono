@@ -1,0 +1,13 @@
+---
+description: Apply when working with Tailwind CSS, styling components, implementing design system, colors, typography, or any UI/UX design tasks.
+alwaysApply: false
+---
+
+# Styling & Design System
+
+## Healthcare Design System
+
+- Tailwind CSS: [tailwind.config.ts](mdc:tailwind.config.ts)
+- HeroUI components with healthcare theme
+- Theme provider: [app/providers.tsx](mdc:app/providers.tsx)
+- Dark/light mode optimized for healthcare environments

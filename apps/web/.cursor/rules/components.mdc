@@ -1,0 +1,31 @@
+---
+description: Apply when creating or modifying React components, forms, UI elements, or client-side healthcare interfaces. Essential for component architecture and state management.
+alwaysApply: false
+---
+
+# React Component Guidelines
+
+## Component Organization
+
+- `components/client/appointments/` - Patient-facing
+- `components/dashboard/` - Provider dashboard
+- `components/auth/` - Authentication
+- `components/ui/` - Reusable UI components
+- Separate client/server components for PHI protection
+
+## Critical Requirements
+
+- **PRIORITY**: Migrate all Yup to Zod in [lib/validation.ts](mdc:lib/validation.ts)
+- Use Zustand for global state [store/appointment/](mdc:store/appointment/)
+- Use TanStack Query for server state
+- Use Formik for complex medical forms
+- Use TanStack Table for data tables, Recharts for visualization
+- HeroUI components from [tailwind.config.ts](mdc:tailwind.config.ts)
+
+## PHI Security
+
+- Never store PHI in unencrypted component state
+- Mask sensitive data in display
+- Implement session timeout handling
+- Add audit logging for sensitive operations
+- Use error boundaries to prevent data leakage

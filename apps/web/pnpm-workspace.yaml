@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@heroui/shared-utils'
+  - '@sentry/cli'
+  - core-js
+  - sharp
+  - unrs-resolver
+  - ws

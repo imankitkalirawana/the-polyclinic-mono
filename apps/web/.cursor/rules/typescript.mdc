@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+---
+
+# TypeScript Standards
+
+## Core Requirements
+
+- Follow [TypeScript Style Guide](https://mkosir.github.io/typescript-style-guide/#naming)
+- Strict mode from [tsconfig.json](mdc:tsconfig.json)
+- **NEVER use `any`** - especially for healthcare data
+- Use `unknown` for external data before validation
+- TSDoc comments for healthcare APIs and compliance-critical code
+
+## Naming Conventions
+
+- **Components**: PascalCase (`PatientCard`, `AppointmentScheduler`)
+- **Interfaces**: PascalCase (`IPatientData`, `IAppointmentRequest`)
+- **Types**: PascalCase (`AppointmentStatus`, `PatientGender`)
+- **Variables**: camelCase (`patientId`, `appointmentDateTime`)
+- **Functions**: camelCase (`scheduleAppointment`, `validateMedicalData`)
+- **Constants**: UPPER_SNAKE_CASE (`MAX_DAILY_APPOINTMENTS`)
+- **Files**: kebab-case (`patient-management.ts`)
+
+## Type Safety for Healthcare
+
+- Never type assert any any case, never use `as` type assertion
+- **Branded types** for sensitive identifiers (SSN, patient IDs)
+- Union types for medical enums (`'scheduled' | 'confirmed' | 'completed'`)
+- Optional properties (`?`) for non-required fields
+- Generic constraints for healthcare operations
+- Reference patterns: [lib/interface.ts](mdc:lib/interface.ts)
+
+## Component Props
+
+```typescript
+interface PatientCardProps {
+  patient: IPatientData;
+  onAppointmentSchedule: (patientId: string) => Promise<void>;
+  showSensitiveData?: boolean;
+}
+
+// Avoid React.FC - use explicit return types
+export function PatientCard({ patient }: PatientCardProps): JSX.Element {
+  // ...
+}
+```
+
+## Validation & Error Handling
+
+- **PRIORITY**: Replace Yup with Zod in [lib/validation.ts](mdc:lib/validation.ts)
+- Comprehensive Zod schemas for healthcare data
+- Typed healthcare exceptions
+- Proper error boundaries
+- Validate medical codes (ICD-10, CPT, NDC)
+
+## Import Organization
+
+1. React/Next.js framework
+2. Healthcare third-party libraries
+3. Internal healthcare modules (`@/lib/medical`, `@/services/patient`)
+4. Relative component imports
+
+- Use absolute imports with `@/` prefix
+- Named exports for utilities/components
+- Default exports only for pages/layouts
+
+## API & Service Types
+
+- Define interfaces for all API endpoints
+- Proper request/response types for medical data
+- Generic types for healthcare CRUD operations
+- Reference: [services/](mdc:services/) directory
+
+## Documentation
+
+```typescript
+/**
+ * Schedules a new patient appointment with conflict checking
+ * @param appointmentData - Appointment details to schedule
+ * @param patientId - Unique patient identifier (branded type)
+ * @returns Promise resolving to appointment confirmation
+ * @throws {ValidationError} When appointment data is invalid
+ * @throws {ConflictError} When appointment conflicts exist
+ */
+```
