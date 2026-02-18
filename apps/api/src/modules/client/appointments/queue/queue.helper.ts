@@ -94,15 +94,14 @@ export function formatQueue(queue: FormattedQueue, role?: UserRole | null) {
   };
 }
 
-export function generateAppointmentId(
-  date: Date,
-  doctorCode: string,
-  sequenceNumber: number,
-) {
+export function generateAppointmentId(date: Date) {
   const year = date.getFullYear().toString().slice(-2);
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
-  return `${year}${month}${day}${doctorCode}${sequenceNumber.toString().padStart(3, '0')}`;
+
+  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  return `${year}${month}${day}${randomPart}`;
 }
 
 /**

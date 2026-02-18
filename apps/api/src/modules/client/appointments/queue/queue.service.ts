@@ -60,6 +60,18 @@ import { getCellValue } from '@common/table-views/table-view-etl.util';
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
 
+const MAX_AID_GENERATION_RETRIES = 5;
+const POSTGRES_UNIQUE_VIOLATION_CODE = '23505';
+
+function isUniqueConstraintViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code: string }).code === POSTGRES_UNIQUE_VIOLATION_CODE
+  );
+}
+
 const defaultQueueFindRelations = {
   patient: { user: true },
   doctor: { user: true, specializations: true },
@@ -199,10 +211,6 @@ export class QueueService {
       );
     }
 
-    const doctor = await this.doctorsService.find_by_and_fail({
-      id: createQueueDto.doctorId,
-    });
-
     // start transaction
     const connection = await this.getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -244,22 +252,38 @@ export class QueueService {
         sequenceName,
       );
 
-      // Generate appointment ID (aid)
-      const aid = generateAppointmentId(
-        createQueueDto.appointmentDate,
-        doctor.code,
-        sequenceNumber,
-      );
+      let queue: Queue | null = null;
+      let lastError: unknown;
+      for (let attempt = 0; attempt < MAX_AID_GENERATION_RETRIES; attempt++) {
+        const aid = generateAppointmentId(createQueueDto.appointmentDate);
+        const queueEntity = queryRunner.manager.create(Queue, {
+          ...createQueueDto,
+          aid,
+          sequenceNumber,
+          status,
+          bookedBy: this.request.user.userId,
+        });
+        try {
+          queue = await queryRunner.manager.save(Queue, queueEntity);
+          break;
+        } catch (err) {
+          lastError = err;
+          if (
+            isUniqueConstraintViolation(err) &&
+            attempt < MAX_AID_GENERATION_RETRIES - 1
+          ) {
+            this.logger.warn(
+              `Duplicate aid collision (attempt ${attempt + 1}/${MAX_AID_GENERATION_RETRIES}), retrying with new id`,
+            );
+            continue;
+          }
+          throw err;
+        }
+      }
 
-      const queue = queryRunner.manager.create(Queue, {
-        ...createQueueDto,
-        aid,
-        sequenceNumber,
-        status,
-        bookedBy: this.request.user.userId,
-      });
-
-      await queryRunner.manager.save(Queue, queue);
+      if (!queue) {
+        throw lastError ?? new Error('Failed to create queue');
+      }
 
       await queryRunner.commitTransaction();
       return queue;
