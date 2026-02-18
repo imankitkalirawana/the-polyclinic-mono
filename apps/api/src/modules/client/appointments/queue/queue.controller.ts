@@ -122,12 +122,6 @@ export class QueueController {
     return formatQueue(queue, req.user.role);
   }
 
-  @Get(':id/activity-logs')
-  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE, UserRole.RECEPTIONIST)
-  async getActivityLogs(@Param('id') id: string) {
-    return this.queueService.getActivityLogs(id);
-  }
-
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {

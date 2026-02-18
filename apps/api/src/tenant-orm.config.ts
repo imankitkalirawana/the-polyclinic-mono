@@ -1,6 +1,5 @@
 import { join } from 'path';
 import { DataSourceOptions } from 'typeorm';
-import { ActivityLog } from './modules/common/activity/entities/activity-log.entity';
 import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
 import { Patient } from './modules/common/patients/entities/patient.entity';
@@ -26,7 +25,6 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
     schema,
     entities: [
       ...clientEntities,
-      ActivityLog,
       AuditLog,
       // Allow tenant schema entities to reference global users in public schema
       User,

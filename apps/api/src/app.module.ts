@@ -12,7 +12,6 @@ import { PatientsModule } from './modules/common/patients/patients.module';
 import { PaymentsModule } from './modules/client/payments/payments.module';
 import { DoctorsModule } from './modules/common/doctors/doctors.module';
 import { QueueModule } from './modules/client/appointments/queue/queue.module';
-import { ActivityModule } from './modules/common/activity/activity.module';
 import { CronModule } from './modules/common/cron/cron.module';
 import { EmailModule } from './modules/common/email/email.module';
 import { LoggingModule } from './modules/common/logging/logging.module';
@@ -62,7 +61,6 @@ const options: StandardResponseModuleOptions = {};
     DoctorsModule,
     QueueModule,
     PaymentsModule,
-    ActivityModule,
     CronModule,
     EmailModule,
     LoggingModule,

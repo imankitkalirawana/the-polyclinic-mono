@@ -14,6 +14,8 @@
     "test": "turbo run test",
     "format": "turbo run format",
     "tsc": "turbo run tsc",
+    "tsc:web": "turbo run tsc --filter=web --filter=@repo/store",
+    "tsc:api": "turbo run tsc --filter=api --filter=@repo/store",
     "commitlint": "commitlint",
     "lint-staged": "pnpm --filter web run lint-staged",
     "prepare": "husky"

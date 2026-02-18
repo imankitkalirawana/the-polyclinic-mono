@@ -41,9 +41,6 @@ import {
 } from '@repo/store';
 import { appointmentConfirmationTemplate } from './templates/confirm-appointment.template';
 import { QrService } from '@client/qr/qr.service';
-import { ActivityService } from '@common/activity/services/activity.service';
-import { ActivityLogService } from '@common/activity/services/activity-log.service';
-import { EntityType } from '@common/activity/enums/entity-type.enum';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { PatientsService } from '@common/patients/patients.service';
@@ -82,8 +79,6 @@ export class QueueService {
     private readonly patientService: PatientsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
-    private readonly activityService: ActivityService,
-    private readonly activityLogService: ActivityLogService,
     private readonly tableViewService: TableViewService,
   ) {
     this.schema = this.request.schema;
@@ -311,19 +306,8 @@ export class QueueService {
       );
     }
 
-    const previousStatus = queue.status;
     queue.status = QueueStatus.BOOKED;
     await queueRepository.save(queue);
-
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus },
-      after: { status: queue.status },
-      description: `Payment verified and appointment status updated`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
 
     return queue;
   }
@@ -331,7 +315,6 @@ export class QueueService {
   async cancelPayment(aid: string, remark?: string) {
     const queue = await this.find_by_and_fail({ aid });
 
-    const previousStatus = queue.status;
     queue.status = QueueStatus.CANCELLED;
     queue.cancellationDetails = {
       by: this.request.user.userId,
@@ -340,15 +323,6 @@ export class QueueService {
     const queueRepository = await this.getQueueRepository();
     await queueRepository.save(queue);
 
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus },
-      after: { status: queue.status },
-      description: `Appointment cancelled by ${this.request.user?.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
     return queue;
   }
 
@@ -432,15 +406,6 @@ export class QueueService {
     }
 
     await queueRepository.remove(queue);
-    this.activityService.logDelete({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      // TODO: Fix this type
-      data: queue as unknown as Record<string, unknown>,
-      description: `Appointment deleted by ${this.request.user?.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
 
     return {
       message: 'Queue entry deleted successfully',
@@ -624,9 +589,6 @@ export class QueueService {
       throw new BadRequestException('Patient is already called');
     }
 
-    const previousStatus = queue.status;
-    const previousCounter = queue.counter;
-
     queue.status = QueueStatus.CALLED;
     queue.counter = {
       skip: queue.counter?.skip || 0,
@@ -634,16 +596,6 @@ export class QueueService {
       call: queue.counter?.call + 1 || 1,
     };
     await queueRepository.save(queue);
-
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus, counter: previousCounter },
-      after: { status: queue.status, counter: queue.counter },
-      description: `Patient called by ${this.request.user?.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
 
     return formatQueue(queue, this.request.user.role);
   }
@@ -666,9 +618,6 @@ export class QueueService {
       );
     }
 
-    const previousStatus = queue.status;
-    const previousCounter = queue.counter;
-
     queue.status = QueueStatus.SKIPPED;
     queue.counter = {
       skip: queue.counter?.skip + 1 || 1,
@@ -676,16 +625,6 @@ export class QueueService {
       call: queue.counter?.call || 0,
     };
     await queueRepository.save(queue);
-
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus, counter: previousCounter },
-      after: { status: queue.status, counter: queue.counter },
-      description: `Appointment skipped by ${this.request.user?.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
 
     return formatQueue(queue, this.request.user.role);
   }
@@ -701,8 +640,6 @@ export class QueueService {
       );
     }
 
-    const previousStatus = queue.status;
-    const previousCounter = queue.counter;
     queue.status = QueueStatus.IN_CONSULTATION;
     queue.counter = {
       skip: queue.counter?.skip || 0,
@@ -712,15 +649,6 @@ export class QueueService {
     queue.startedAt = new Date();
     await queueRepository.save(queue);
 
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus, counter: previousCounter },
-      after: { status: queue.status, counter: queue.counter },
-      description: `Appointment clocked in by ${this.request.user?.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
-    });
     return formatQueue(queue, this.request.user.role);
   }
 
@@ -744,23 +672,11 @@ export class QueueService {
       );
     }
 
-    const previousStatus = queue.status;
-
     Object.assign(queue, {
       ...completeQueueDto,
       status: QueueStatus.COMPLETED,
       completedBy: user.user_id,
       completedAt: new Date(),
-    });
-
-    this.activityService.logStatusChange({
-      entityType: EntityType.QUEUE,
-      entityId: queue.id,
-      module: 'appointments',
-      before: { status: previousStatus },
-      after: { status: queue.status },
-      description: `Appointment completed by ${user.name || 'user'}.`,
-      stakeholders: [queue.patient.user.id, queue.doctor.user.id],
     });
 
     await queueRepository.save(queue);
@@ -793,14 +709,5 @@ export class QueueService {
         filename: `${queue.patient.user.name.replace(' ', '_')}_${queue.sequenceNumber}.pdf`,
       },
     };
-  }
-
-  async getActivityLogs(aid: string) {
-    const queue = await this.find_by_and_fail({ aid });
-
-    return this.activityLogService.getActivityLogsByEntity(
-      EntityType.QUEUE,
-      queue.id,
-    );
   }
 }

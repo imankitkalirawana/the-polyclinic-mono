@@ -29,6 +29,16 @@ export const config: Linter.Config[] = [
       ],
       "@typescript-eslint/no-namespace": "error",
       "@typescript-eslint/no-explicit-any": "error",
+      "sort-imports": [
+        "error",
+        {
+          ignoreCase: false,
+          ignoreDeclarationSort: false,
+          ignoreMemberSort: false,
+          memberSyntaxSortOrder: ["none", "all", "multiple", "single"],
+          allowSeparatedGroups: false,
+        },
+      ],
     },
   },
   {

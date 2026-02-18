@@ -10,7 +10,13 @@
     "rootDir": "src",
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "@enums/*": ["src/enums/*"],
+      "@dtos/*": ["src/dtos/*"],
+      "@types/*": ["src/types/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

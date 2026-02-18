@@ -10,4 +10,3 @@ export * from "./appointment";
 export * from "./queue";
 export * from "./auth";
 export * from "./column";
-export * from "./activity";
