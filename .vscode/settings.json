@@ -1,3 +1,18 @@
 {
-  "jest.runMode": "on-demand"
+  "jest.runMode": "on-demand",
+  "search.exclude": {
+    "**/node_modules/**": true,
+    "**/.pnpm/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.turbo/**": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.pnpm/**": true,
+    "**/.next/**": true
+  },
+  "search.followSymlinks": false
 }

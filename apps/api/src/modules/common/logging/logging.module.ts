@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
-import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CloudLoggerService } from './cloud-logger.service';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { LoggingExceptionFilter } from './filters/logging-exception.filter';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 @Global()
 @Module({
