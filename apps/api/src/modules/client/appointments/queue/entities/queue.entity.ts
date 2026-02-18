@@ -12,13 +12,7 @@ import {
 import { Patient } from '@common/patients/entities/patient.entity';
 import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { User } from '@auth/entities/user.entity';
-import { PaymentMode, QueueStatus } from '@repo/store';
-
-export interface Counter {
-  skip: number;
-  clockIn: number;
-  call: number;
-}
+import { Counter, PaymentMode, QueueStatus } from '@repo/store';
 
 @Entity('appointment_queue')
 @Index(['doctorId', 'aid', 'appointmentDate', 'sequenceNumber'])

@@ -25,6 +25,7 @@ import {
   buildSequenceName,
   ensureSequenceExists,
   getNextTokenNumber,
+  getCounterObject,
 } from './queue.helper';
 import { PaymentsService } from '@client/payments/payments.service';
 import { PdfService } from '@client/pdf/pdf.service';
@@ -577,9 +578,9 @@ export class QueueService {
   }
 
   // Call queue by id
-  async callQueue(aid: string) {
+  async callQueue(id: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.find_by_and_fail({ aid });
+    const queue = await this.find_by_and_fail({ id });
 
     if (
       ![QueueStatus.BOOKED, QueueStatus.SKIPPED, QueueStatus.CALLED].includes(
@@ -601,9 +602,9 @@ export class QueueService {
   }
 
   // skip queue by id
-  async skipQueue(aid: string) {
+  async skipQueue(id: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.find_by_and_fail({ aid });
+    const queue = await this.find_by_and_fail({ id });
 
     if (
       ![
@@ -619,20 +620,16 @@ export class QueueService {
     }
 
     queue.status = QueueStatus.SKIPPED;
-    queue.counter = {
-      skip: queue.counter?.skip + 1 || 1,
-      clockIn: queue.counter?.clockIn || 0,
-      call: queue.counter?.call || 0,
-    };
+    queue.counter = getCounterObject(queue.counter, 'skip', 1);
     await queueRepository.save(queue);
 
     return formatQueue(queue, this.request.user.role);
   }
 
   // clock in
-  async clockIn(aid: string) {
+  async clockIn(id: string) {
     const queueRepository = await this.getQueueRepository();
-    const queue = await this.find_by_and_fail({ aid });
+    const queue = await this.find_by_and_fail({ id });
 
     if (queue.status !== QueueStatus.CALLED) {
       throw new BadRequestException(
@@ -654,13 +651,13 @@ export class QueueService {
 
   // complete appointment queue
   async completeAppointmentQueue(
-    aid: string,
+    id: string,
     completeQueueDto: CompleteQueueDto,
     user: CurrentUserPayload,
   ) {
     const queueRepository = await this.getQueueRepository();
 
-    const queue = await this.find_by_and_fail({ aid });
+    const queue = await this.find_by_and_fail({ id });
 
     if (
       ![QueueStatus.IN_CONSULTATION, QueueStatus.COMPLETED].includes(
@@ -684,10 +681,10 @@ export class QueueService {
     return formatQueue(queue, this.request.user.role);
   }
 
-  async appointmentReceiptPdf(aid: string) {
-    const queue = await this.find_by_and_fail({ aid });
+  async appointmentReceiptPdf(id: string) {
+    const queue = await this.find_by_and_fail({ id });
 
-    const url = `${process.env.APP_URL}/appointments/queues/${queue.aid}`;
+    const url = `${process.env.APP_URL}/appointments/queues/${queue.id}`;
 
     const qrCode = await this.qrService.generateBase64(url);
 

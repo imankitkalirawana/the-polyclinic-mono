@@ -65,3 +65,9 @@ export type AppointmentQueue = {
   previousQueueId?: string;
   nextQueueId?: string;
 };
+
+export type Counter = {
+  skip: number;
+  clockIn: number;
+  call: number;
+};

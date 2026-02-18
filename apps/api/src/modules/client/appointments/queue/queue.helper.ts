@@ -2,6 +2,7 @@ import { UserRole } from '@repo/store';
 import { Queue } from './entities/queue.entity';
 import { redactField } from 'src/common/utils/redact.util';
 import { calculateAge } from '@common/patients/patients.helper';
+import { Counter } from '@repo/store';
 
 interface FormattedQueue extends Queue {
   nextQueueId?: string;
@@ -201,4 +202,15 @@ function hashString(str: string): number {
   }
   // Return non-negative 32-bit integer suitable for pg_advisory_lock
   return hash;
+}
+
+export function getCounterObject(
+  counter: Counter,
+  key: keyof Counter,
+  value: number,
+) {
+  return {
+    ...counter,
+    [key]: (counter?.[key] ?? 0) + value,
+  };
 }
