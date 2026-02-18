@@ -1,11 +1,11 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:20-alpine AS base
+# Use Debian-slim instead of Alpine so Rollup's optional native binaries install correctly
+# (Alpine + musl causes "Cannot find module @rollup/rollup-linux-arm64-musl" in Docker)
+FROM node:20-bookworm-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies

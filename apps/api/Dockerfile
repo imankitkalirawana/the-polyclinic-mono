@@ -21,8 +21,8 @@ RUN pnpm install --frozen-lockfile
 # Copy the rest of the source code
 COPY . .
 
-# Build the NestJS application
-RUN pnpm run build
+# Build only the API (avoid building web/Next.js and Rollup optional-deps issues)
+RUN pnpm run build:api
 
 # Expose the app port
 EXPOSE 3000
