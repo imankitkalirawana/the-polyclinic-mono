@@ -70,6 +70,7 @@ export function formatQueue(queue: FormattedQueue, role?: UserRole | null) {
             currentRole: role,
             targetRole: queue.doctor.user?.role,
           }),
+          seating: queue.doctor.seating ?? null,
           name: queue.doctor.user?.name ?? null,
           user_id: queue.doctor.user?.id ?? null,
         }

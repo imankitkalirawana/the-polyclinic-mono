@@ -62,7 +62,11 @@ export default function MinimalCard({ appointment }: { appointment: AppointmentQ
               <div className="divide-divider flex gap-2 divide-x">
                 <div className="flex flex-col pr-2">
                   <h3 className="text-large font-medium">{appointment.doctor.name}</h3>
-                  {/* <p className="text-default-500">{appointment.doctor.department}</p> */}
+                  <p className="text-default-500">
+                    {appointment.doctor.specializations
+                      ?.map((specialization) => specialization.name)
+                      .join(', ') || '-'}
+                  </p>
                 </div>
               </div>
             </div>

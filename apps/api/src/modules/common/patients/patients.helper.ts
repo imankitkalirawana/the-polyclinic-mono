@@ -65,7 +65,6 @@ export function formatPatient(patient: Patient) {
     dob: patient.dob,
     companies: patient.user?.companies,
     gender: patient.gender,
-    address: patient.address,
     vitals: patient.vitals,
     createdAt: patient.createdAt,
     updatedAt: patient.updatedAt,

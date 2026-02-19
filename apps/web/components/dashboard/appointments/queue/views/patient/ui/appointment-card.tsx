@@ -78,7 +78,11 @@ export default function AppointmentCard({ appointment }: { appointment: Appointm
             <div className="divide-divider flex gap-2 divide-x">
               <div className="flex flex-col pr-2">
                 <h3 className="text-xl font-medium">{appointment.doctor.name}</h3>
-                {/* <p className="text-default-500">{appointment.doctor.specialization}</p> */}
+                <p className="text-default-500">
+                  {appointment.doctor.specializations
+                    ?.map((specialization) => specialization.name)
+                    .join(', ') || '-'}
+                </p>
               </div>
               <div className="flex flex-col gap-1.5 pt-1 pl-4">
                 <div className="flex items-center gap-3 text-sm">

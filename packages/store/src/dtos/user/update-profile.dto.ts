@@ -1,13 +1,19 @@
 import { z } from "zod";
 import { Gender, PatientVitals } from "../../enums";
+import {
+  emailValidation,
+  nameValidation,
+  nullableStringValidation,
+  phoneNumberValidation,
+} from "../factory.dto";
 
 /**
  * Base user fields shared across all roles
  */
 export const updateUserProfileSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
+  name: nameValidation,
+  email: emailValidation,
+  phone: phoneNumberValidation,
 });
 
 /**
@@ -37,9 +43,9 @@ export const updatePatientProfileSchema = z.object({
   gender: z.nativeEnum(Gender).optional(),
 
   // Accept both string and Date
-  dob: z.union([z.string(), z.date()]).optional(),
+  dob: nullableStringValidation,
 
-  address: z.string().optional(),
+  address: nullableStringValidation,
 
   /**
    * TODO: validate nested vitals properly if you define a Zod schema for it.

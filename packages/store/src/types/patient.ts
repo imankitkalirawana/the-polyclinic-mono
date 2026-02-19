@@ -2,7 +2,7 @@ import { Base } from "./common";
 import { Gender } from "../enums";
 
 export type Patient = Base & {
-  userId: string;
+  user_id: string;
   name: string;
   email: string;
   image?: string | null;
@@ -11,4 +11,13 @@ export type Patient = Base & {
   dob?: string;
   age?: number;
   address?: string | null;
+  vitals?: {
+    bloodType?: string;
+    height?: number;
+    weight?: number;
+    bloodPressure?: string;
+    heartRate?: number;
+    allergies?: string;
+    diseases?: string;
+  };
 };
