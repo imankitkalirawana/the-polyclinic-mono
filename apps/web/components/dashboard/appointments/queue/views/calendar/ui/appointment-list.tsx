@@ -3,7 +3,7 @@ import { Card, CardBody, CardFooter, CardHeader, ScrollShadow } from '@heroui/re
 import { format } from 'date-fns';
 import { parseAsIsoDateTime, parseAsStringEnum, useQueryState } from 'nuqs';
 
-import { views } from '../types';
+import { viewTypes } from '../types';
 import DateChip from './date-chip';
 
 import { AppointmentQueue } from '@repo/store';
@@ -23,7 +23,7 @@ export default function AppointmentList({
     parseAsIsoDateTime.withDefault(new Date())
   );
 
-  const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
+  const [_viewType, setViewType] = useQueryState('type', parseAsStringEnum(viewTypes));
 
   return (
     <Card className="flex max-w-xs flex-col shadow-none">
@@ -34,7 +34,7 @@ export default function AppointmentList({
           size="lg"
           onClick={() => {
             setCurrentDate(date);
-            setView('day');
+            setViewType('day');
           }}
         />
       </CardHeader>

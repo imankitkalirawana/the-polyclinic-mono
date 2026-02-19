@@ -10,7 +10,7 @@ import { ScheduleView } from './views/schedule';
 import { WeekView } from './views/week';
 import { YearView } from './views/year';
 import { CalendarHeader } from './header';
-import { views } from './types';
+import { viewTypes } from './types';
 
 import { AppointmentQueue } from '@repo/store';
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
@@ -20,7 +20,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ appointments }: CalendarProps) {
-  const [view] = useQueryState('view', parseAsStringEnum(views).withDefault('schedule'));
+  const [viewType] = useQueryState('type', parseAsStringEnum(viewTypes).withDefault('schedule'));
   const { aid } = useAppointmentStore();
   const [currentDate, setCurrentDate] = useQueryState(
     'date',
@@ -32,7 +32,7 @@ export function Calendar({ appointments }: CalendarProps) {
   };
 
   const renderView = () => {
-    switch (view) {
+    switch (viewType) {
       case 'month':
         return <MonthView appointments={appointments} onTimeSlotClick={handleTimeSlotClick} />;
       case 'week':

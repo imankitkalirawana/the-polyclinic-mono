@@ -4,7 +4,7 @@ import React from 'react';
 import { endOfMonth, format, isWithinInterval, startOfMonth } from 'date-fns';
 import { parseAsStringEnum, useQueryState } from 'nuqs';
 
-import { views } from '../types';
+import { viewTypes } from '../types';
 import AppointmentTriggerItem from '../ui/appointment-trigger-item';
 import DateChip from '../ui/date-chip';
 import { AppointmentQueue } from '@repo/store';
@@ -15,7 +15,7 @@ interface ScheduleViewProps {
 }
 
 export function ScheduleView({ appointments, currentDate }: ScheduleViewProps) {
-  const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
+  const [_viewType, setViewType] = useQueryState('type', parseAsStringEnum(viewTypes));
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
 
@@ -51,7 +51,7 @@ export function ScheduleView({ appointments, currentDate }: ScheduleViewProps) {
             return (
               <div key={dateKey} className="flex w-full items-start py-1">
                 <div className="flex w-28 items-center gap-2">
-                  <DateChip date={date} onClick={() => setView('day')} size="md" />
+                  <DateChip date={date} onClick={() => setViewType('day')} size="md" />
                   <p className="text-default-600 text-tiny mt-1.5 uppercase">
                     {format(date, 'MMM, EEE')}
                   </p>

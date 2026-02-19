@@ -16,7 +16,7 @@ import {
 import { parseAsIsoDateTime, parseAsStringEnum, useQueryState } from 'nuqs';
 
 import { allowedRolesToCreateAppointment, MAX_APPOINTMENTS_IN_CELL } from '../data';
-import { views } from '../types';
+import { viewTypes } from '../types';
 import AppointmentList from '../ui/appointment-list';
 import AppointmentTriggerItem from '../ui/appointment-trigger-item';
 import DateChip from '../ui/date-chip';
@@ -41,8 +41,7 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
 
   const { aid, setIsTooltipOpen } = useAppointmentStore();
 
-  const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
-
+  const [_viewType, setViewType] = useQueryState('type', parseAsStringEnum(viewTypes));
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart);
@@ -135,7 +134,7 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
                 date={day}
                 onClick={() => {
                   setCurrentDate(day);
-                  setView('day');
+                  setViewType('day');
                 }}
               />
 

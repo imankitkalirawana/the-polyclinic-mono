@@ -15,7 +15,7 @@ import {
 import { parseAsIsoDateTime, parseAsStringEnum, useQueryState } from 'nuqs';
 
 import { allowedRolesToCreateAppointment, MAX_APPOINTMENTS_IN_CELL } from '../data';
-import { views } from '../types';
+import { viewTypes } from '../types';
 import AppointmentList from '../ui/appointment-list';
 import AppointmentTriggerItem from '../ui/appointment-trigger-item';
 import { CurrentHourIndicator } from '../ui/current-hour-indicator';
@@ -41,7 +41,7 @@ export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekVie
     parseAsIsoDateTime.withDefault(new Date())
   );
 
-  const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
+  const [_viewType, setViewType] = useQueryState('type', parseAsStringEnum(viewTypes));
 
   const weekStart = startOfWeek(currentDate);
   const weekEnd = endOfWeek(currentDate);
@@ -87,7 +87,7 @@ export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekVie
               date={day}
               size="md"
               onClick={() => {
-                setView('day');
+                setViewType('day');
                 setCurrentDate(day);
               }}
             />

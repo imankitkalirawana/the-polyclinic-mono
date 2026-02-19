@@ -19,7 +19,7 @@ import { parseAsStringEnum, useQueryState } from 'nuqs';
 import { Icon } from '@iconify/react/dist/iconify.js';
 
 import { allowedRolesToCreateAppointment } from './data';
-import { View, views as Views } from './types';
+import { ViewType, viewTypes as ViewTypes } from './types';
 import { useKeyPress } from '@/hooks/useKeyPress';
 import { UserRole } from '@repo/store';
 
@@ -45,7 +45,10 @@ export function CalendarHeader({
   onCreateAppointment,
 }: CalendarHeaderProps) {
   const { user } = useSession();
-  const [view, setView] = useQueryState('view', parseAsStringEnum(Views).withDefault('schedule'));
+  const [view, setView] = useQueryState(
+    'type',
+    parseAsStringEnum(ViewTypes).withDefault('schedule')
+  );
 
   useKeyPress(['m'], () => {
     setView('month');
@@ -167,7 +170,7 @@ export function CalendarHeader({
           selectedKeys={[view || '']}
           defaultSelectedKeys={[view || '']}
           disallowEmptySelection
-          onChange={(e) => setView(e.target.value as View)}
+          onChange={(e) => setView(e.target.value as ViewType)}
           className="max-w-36"
           items={views}
           size="sm"
