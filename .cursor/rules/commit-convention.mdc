@@ -1,0 +1,45 @@
+---
+description: Enforce conventional commit messages
+alwaysApply: false
+---
+
+All commit messages must follow Conventional Commits format:
+
+type(scope?): subject
+
+Allowed types:
+
+- feat
+- fix
+- docs
+- style
+- refactor
+- perf
+- test
+- build
+- ci
+- chore
+- revert
+
+Rules:
+
+- Header maximum length: 200 characters
+- Subject must NOT be:
+  - UPPER CASE
+  - PascalCase
+  - Start Case
+- Scope is optional
+- Multiple scopes allowed using "/", "\" or ","
+- Use sentence case for subject
+
+Examples:
+
+✔️ Valid:
+feat(auth): add email verification flow
+fix(queue): prevent duplicate appointment ids
+docs(readme): update setup instructions
+
+❌ Invalid:
+FEAT: ADD LOGIN
+Fix: Update Stuff
+feat: Add New Feature
