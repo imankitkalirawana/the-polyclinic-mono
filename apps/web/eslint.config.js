@@ -42,6 +42,10 @@ export default [
             },
             { name: 'yup', message: 'Please use zod instead of yup.' },
             { name: 'formik', message: 'Please use react-hook-form instead of formik.' },
+            {
+              name: '@iconify/react',
+              message: 'Please use @gravity-ui/icons instead of @iconify/react.',
+            },
           ],
         },
       ],

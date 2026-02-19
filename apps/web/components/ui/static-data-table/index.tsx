@@ -26,8 +26,16 @@ import {
   TableRow,
   Tooltip,
 } from '@heroui/react';
-import { SearchIcon } from '@heroui/shared-icons';
-import { Icon } from '@iconify/react';
+import {
+  ArrowRightArrowLeft,
+  BarsDescendingAlignCenter,
+  BarsAscendingAlignLeftArrowDown,
+  BarsAscendingAlignLeftArrowUp,
+  Magnifier,
+  Sliders,
+  ArrowDown,
+  CircleInfoFill,
+} from '@gravity-ui/icons';
 
 import { isAll } from './helper';
 import type { TableItem, TableProps, TableState } from './types';
@@ -281,7 +289,7 @@ export function Table<T extends TableItem>({
             {searchField && (
               <Input
                 className="min-w-[200px]"
-                endContent={<SearchIcon className="text-default-400" width={16} />}
+                endContent={<Magnifier className="text-default-400" width={16} />}
                 placeholder="Search"
                 size="sm"
                 value={searchValue}
@@ -297,13 +305,7 @@ export function Table<T extends TableItem>({
                     <Button
                       className="bg-default-100 text-default-800"
                       size="sm"
-                      startContent={
-                        <Icon
-                          className="text-default-400"
-                          icon="solar:tuning-2-linear"
-                          width={16}
-                        />
-                      }
+                      startContent={<Sliders className="text-default-400" width={14} />}
                     >
                       Filter
                     </Button>
@@ -337,7 +339,7 @@ export function Table<T extends TableItem>({
                     className="bg-default-100 text-default-800"
                     size="sm"
                     startContent={
-                      <Icon className="text-default-400" icon="solar:sort-linear" width={16} />
+                      <BarsDescendingAlignCenter className="text-default-400" width={14} />
                     }
                   >
                     Sort
@@ -362,16 +364,15 @@ export function Table<T extends TableItem>({
                         });
                       }}
                       endContent={
-                        state.sortDescriptor.column === item.uid && (
-                          <Icon
-                            icon={
-                              state.sortDescriptor.direction === 'ascending'
-                                ? 'solar:sort-from-top-to-bottom-bold-duotone'
-                                : 'solar:sort-from-bottom-to-top-bold-duotone'
-                            }
-                            width={18}
+                        state.sortDescriptor.column === item.uid &&
+                        (state.sortDescriptor.direction === 'ascending' ? (
+                          <BarsAscendingAlignLeftArrowDown
+                            className="text-default-400"
+                            width={14}
                           />
-                        )
+                        ) : (
+                          <BarsAscendingAlignLeftArrowUp className="text-default-400" width={14} />
+                        ))
                       }
                     >
                       {item.name}
@@ -387,13 +388,7 @@ export function Table<T extends TableItem>({
                   <Button
                     className="bg-default-100 text-default-800"
                     size="sm"
-                    startContent={
-                      <Icon
-                        className="text-default-400"
-                        icon="solar:sort-horizontal-linear"
-                        width={16}
-                      />
-                    }
+                    startContent={<ArrowRightArrowLeft className="text-default-400" width={14} />}
                   >
                     Columns
                   </Button>
@@ -431,9 +426,7 @@ export function Table<T extends TableItem>({
             <Dropdown>
               <DropdownTrigger>
                 <Button
-                  endContent={
-                    <Icon className="text-default-400" icon="solar:alt-arrow-down-linear" />
-                  }
+                  endContent={<ArrowDown className="text-default-400" width={14} />}
                   size="sm"
                   variant="flat"
                 >
@@ -535,21 +528,16 @@ export function Table<T extends TableItem>({
                   {column.name}
                   {state.sortDescriptor.column === column.uid &&
                     (state.sortDescriptor.direction === 'ascending' ? (
-                      <Icon icon="solar:alt-arrow-up-linear" className="text-default-400" />
+                      <BarsAscendingAlignLeftArrowUp className="text-default-400" width={14} />
                     ) : (
-                      <Icon icon="solar:alt-arrow-down-linear" className="text-default-400" />
+                      <BarsAscendingAlignLeftArrowDown className="text-default-400" width={14} />
                     ))}
                 </div>
               ) : column.info ? (
                 <div className="flex min-w-[108px] items-center justify-between">
                   {column.name}
                   <Tooltip content={column.info}>
-                    <Icon
-                      className="text-default-300"
-                      height={16}
-                      icon="solar:info-circle-linear"
-                      width={16}
-                    />
+                    <CircleInfoFill className="text-default-300" width={16} />
                   </Tooltip>
                 </div>
               ) : (
