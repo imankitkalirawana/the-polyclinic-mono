@@ -14,7 +14,7 @@ import {
   CreateAppointmentContentHeader,
   SearchInput,
 } from '@/components/dashboard/appointments/(common)';
-import { PatientType, useAllPatients } from '@/services/client/patient';
+import { useAllPatients } from '@/services/client/patient';
 import { useCacheStore } from '@/store';
 import { useFormContext } from 'react-hook-form';
 import Modal from '@/components/ui/modal';
@@ -29,11 +29,12 @@ import { BookQueueSteps } from '@/components/dashboard/appointments/create/data'
 import { CreateAppointmentQueueFormValues } from '@/services/client/appointment/queue/queue.types';
 import EditPatientModal from './edit-patient';
 import { formatAge, formatGender } from '@repo/store';
+import { Patient } from '@repo/store';
 
 export default function PatientSelection() {
   const [search, setSearch] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState<PatientType | null>(null);
-  const [patientToEdit, setPatientToEdit] = useState<PatientType | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -136,7 +137,7 @@ export default function PatientSelection() {
         onClose={() => setSelectedPatient(null)}
         size="3xl"
         title="Patient Details"
-        body={<ViewPatientBody patient={selectedPatient as PatientType} />}
+        body={<ViewPatientBody patient={selectedPatient as Patient} />}
         hideCancelButton
       />
       {patientToEdit && (
@@ -157,11 +158,11 @@ const PatientCard = ({
   onView,
   onEdit,
 }: {
-  patient: PatientType;
+  patient: Patient;
   isSelected: boolean;
   onSelect: (id: string) => void;
-  onView?: (patient: PatientType) => void;
-  onEdit?: (patient: PatientType) => void;
+  onView?: (patient: Patient) => void;
+  onEdit?: (patient: Patient) => void;
 }) => {
   return (
     <Card

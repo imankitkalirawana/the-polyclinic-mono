@@ -6,7 +6,7 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import Modal from '@/components/ui/modal';
-import { PatientType } from '@/services/client/patient';
+import { Patient } from '@repo/store';
 import { useUpdateUser } from '@/services/common/user/user.query';
 import { Gender } from '@repo/store';
 
@@ -41,7 +41,7 @@ const editPatientSchema = z.object({
 type EditPatientFormValues = z.infer<typeof editPatientSchema>;
 
 interface EditPatientModalProps {
-  patient: PatientType | null;
+  patient: Patient | null;
   onClose: () => void;
   isOpen?: boolean;
 }

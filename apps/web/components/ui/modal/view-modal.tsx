@@ -1,7 +1,7 @@
-import { PatientType } from '@/services/client/patient';
+import { Patient } from '@repo/store';
 import { CellRenderer } from '@/components/ui/cell/rich-color/cell-renderer';
 
-const ViewPatientBody = ({ patient }: { patient: PatientType }) => {
+const ViewPatientBody = ({ patient }: { patient: Patient }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <CellRenderer

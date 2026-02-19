@@ -14,7 +14,7 @@ import { ActionType, DropdownKeyType } from '../types';
 
 import { PermissionProps } from '@/components/ui/dashboard/quicklook/types';
 import { avatars } from '@/libs/avatar';
-import { PatientType } from '@/services/client/patient';
+import { Patient } from '@repo/store';
 
 export const permissions: PermissionProps<ActionType, DropdownKeyType> = {
   DOCTOR: ['cancel', 'reschedule', 'reminder', 'new-tab', 'add-to-calendar', 'invoice', 'reports'],
@@ -23,7 +23,7 @@ export const permissions: PermissionProps<ActionType, DropdownKeyType> = {
   NURSE: ['cancel', 'reschedule'],
   RECEPTIONIST: ['cancel', 'reschedule', 'reminder'],
 };
-export const sidebarContent = (patient: PatientType) => (
+export const sidebarContent = (patient: Patient) => (
   <>
     <div className="flex flex-col items-center gap-2 p-4">
       <Avatar
@@ -73,7 +73,7 @@ export const sidebarContent = (patient: PatientType) => (
             </div>
             <span className="text-default-foreground capitalize">{patient.id}</span>
           </div>
-          <div className="from-divider/20 via-divider to-divider/20 bg-linear-to-r h-px w-full" />
+          <div className="from-divider/20 via-divider to-divider/20 h-px w-full bg-linear-to-r" />
           <div className="text-small flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="rounded-medium bg-pink-200 p-[5px] text-pink-400">
@@ -83,7 +83,7 @@ export const sidebarContent = (patient: PatientType) => (
             </div>
             <span className="text-default-foreground capitalize">{patient.name}</span>
           </div>
-          <div className="from-divider/20 via-divider to-divider/20 bg-linear-to-r h-px w-full" />
+          <div className="from-divider/20 via-divider to-divider/20 h-px w-full bg-linear-to-r" />
           <div className="text-small flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="rounded-medium bg-blue-200 p-[5px] text-blue-400">
