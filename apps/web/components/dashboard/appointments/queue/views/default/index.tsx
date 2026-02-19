@@ -52,13 +52,6 @@ export default function AppointmentQueues() {
         onPress: () => router.push(`/dashboard/queues/${queue.id}/edit`),
       },
       {
-        key: 'change-password',
-        color: 'warning',
-        children: 'Reset Password',
-        section: 'Danger Zone',
-        className: 'text-warning',
-      },
-      {
         key: 'delete',
         children: 'Delete',
         color: 'danger',

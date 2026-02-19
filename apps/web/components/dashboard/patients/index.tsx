@@ -20,7 +20,7 @@ import { useAllPatients } from '@/services/client/patient';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import Link from 'next/link';
 import { CopyText } from '@/components/ui/copy';
-import { formatAge, formatGender } from '@/libs/utils';
+import { formatAge, formatGender } from '@repo/store';
 import ResetPasswordModal from '../users/ui/reset-password-modal';
 import DeleteUserModal from '../users/ui/delete-user-modal';
 import { UserRole } from '@repo/store';

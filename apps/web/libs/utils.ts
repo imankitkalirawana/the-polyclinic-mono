@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
 import { CalendarDate } from '@internationalized/date';
-import { Gender } from '@repo/store';
 import { z } from 'zod';
 
 export const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
@@ -109,49 +108,6 @@ export function extractFirstName(fullName: string): string {
   const formattedFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   return isDoctor ? `Dr. ${formattedFirst}` : formattedFirst;
-}
-
-/**
- * Converts strings like "on_hold" or "on-hold" to "On Hold"
- * Handles underscores, hyphens, and mixed casing.
- */
-export function formatLabel(text: string): string {
-  if (!text) return '';
-
-  return text
-    .toLowerCase()
-    .replace(/[_-]+/g, ' ')
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
-export function formatAge(
-  age: number | null | undefined,
-  {
-    fullString = false,
-  }: {
-    fullString?: boolean;
-  } = {}
-): string {
-  if (!age) return '-';
-  return fullString
-    ? `${age} ${age === 1 ? 'year' : 'years'}`
-    : `${age} ${age === 1 ? 'yr' : 'yrs'}`;
-}
-
-export function formatGender(
-  gender: Gender | null | undefined,
-  {
-    fullString = false,
-  }: {
-    fullString?: boolean;
-  } = {}
-): string {
-  if (!gender) return '-';
-  return fullString
-    ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
-    : gender.charAt(0).toUpperCase();
 }
 
 export function handleDateChange(value: CalendarDate | null) {

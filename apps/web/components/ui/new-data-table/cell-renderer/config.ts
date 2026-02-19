@@ -60,8 +60,8 @@ const APPOINTMENT_QUEUE_STATUS_CONFIG: Record<QueueStatus, ChipProps['classNames
     content: 'text-red-700',
   },
   PAYMENT_FAILED: {
-    base: 'bg-green-100 text-green-700',
-    content: 'text-green-700',
+    base: 'bg-danger-100 text-danger-700',
+    content: 'text-danger-700',
   },
   BOOKED: {
     base: 'bg-blue-100 text-blue-700',

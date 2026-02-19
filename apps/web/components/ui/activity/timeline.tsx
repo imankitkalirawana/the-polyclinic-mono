@@ -11,7 +11,7 @@ import {
   ActivityLogResponse,
   ActorType,
 } from '@/services/common/activity/activity.types';
-import { formatLabel } from '@/libs/utils';
+import { formatLabel } from '@repo/store';
 
 const getActivityIcon = (action: ActivityAction) => {
   switch (action) {
@@ -53,7 +53,7 @@ export default function ActivityTimeline({ activities }: { activities: ActivityL
       <h2 className="text-default-800 text-small pb-4 font-medium">Activity Logs</h2>
       <ScrollShadow className="flex h-full flex-col gap-2 pb-16" hideScrollBar>
         <ul className="relative flex flex-col gap-4">
-          <div className="from-divider via-divider bg-linear-to-b absolute bottom-0 left-4 top-5 w-px to-transparent" />
+          <div className="from-divider via-divider absolute top-5 bottom-0 left-4 w-px bg-linear-to-b to-transparent" />
 
           {activities?.map((activity) => (
             <ActivityTimelineItem key={activity.id} activity={activity} />
@@ -72,7 +72,7 @@ function ActivityTimelineItem({ activity }: { activity: ActivityLogResponse }) {
       <Tooltip content={formatLabel(activity.action)}>
         <div
           className={cn(
-            'absolute left-0 top-0 z-10 flex size-9 items-center justify-center rounded-full',
+            'absolute top-0 left-0 z-10 flex size-9 items-center justify-center rounded-full',
             getActivityColor(activity.action)
           )}
         >

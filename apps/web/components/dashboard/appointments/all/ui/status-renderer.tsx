@@ -3,7 +3,7 @@ import { cn, Tooltip } from '@heroui/react';
 
 import { chipColorMap } from '@/libs/chip';
 import { Appointment } from '@repo/store';
-import { formatLabel } from '@/libs/utils';
+import { formatLabel } from '@repo/store';
 
 export default function StatusRenderer({
   status,

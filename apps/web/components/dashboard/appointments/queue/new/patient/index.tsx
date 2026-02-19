@@ -28,7 +28,7 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import { BookQueueSteps } from '@/components/dashboard/appointments/create/data';
 import { CreateAppointmentQueueFormValues } from '@/services/client/appointment/queue/queue.types';
 import EditPatientModal from './edit-patient';
-import { formatAge, formatGender } from '@/libs/utils';
+import { formatAge, formatGender } from '@repo/store';
 
 export default function PatientSelection() {
   const [search, setSearch] = useState('');
