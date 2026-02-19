@@ -37,6 +37,7 @@ const PERMISSIONS: Record<Action, Partial<Record<UserRole, UserRole[]>>> = {
     DOCTOR: [UserRole.ADMIN],
     RECEPTIONIST: [UserRole.ADMIN],
     ADMIN: [UserRole.ADMIN],
+    NURSE: [UserRole.ADMIN],
   },
 
   delete: {
@@ -44,6 +45,7 @@ const PERMISSIONS: Record<Action, Partial<Record<UserRole, UserRole[]>>> = {
     DOCTOR: [UserRole.ADMIN],
     RECEPTIONIST: [UserRole.ADMIN],
     ADMIN: [UserRole.ADMIN],
+    NURSE: [UserRole.ADMIN],
   },
 
   'change-password': {
@@ -51,6 +53,7 @@ const PERMISSIONS: Record<Action, Partial<Record<UserRole, UserRole[]>>> = {
     DOCTOR: [UserRole.ADMIN],
     RECEPTIONIST: [UserRole.ADMIN],
     ADMIN: [UserRole.ADMIN],
+    NURSE: [UserRole.ADMIN],
   },
 };
 

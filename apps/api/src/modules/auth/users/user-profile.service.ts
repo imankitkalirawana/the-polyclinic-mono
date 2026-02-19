@@ -3,7 +3,7 @@ import { User } from '../entities/user.entity';
 import { UserService } from './users.service';
 import { DoctorsService } from '@common/doctors/doctors.service';
 import { PatientsService } from '@common/patients/patients.service';
-import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
+import { CreateProfileDto } from '@repo/store';
 import { EmailService } from '@common/email/email.service';
 import { UserRole } from '@repo/store';
 
@@ -82,7 +82,7 @@ export class UserProfileService {
 
   async updateProfile(
     userId: string,
-    dto: UpdateProfileDto,
+    dto: CreateProfileDto,
   ): Promise<UserProfileResponse> {
     const user = await this.userService.find_by_and_fail({ id: userId });
 

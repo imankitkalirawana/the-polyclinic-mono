@@ -5,7 +5,7 @@ import { ArrayContains, FindOptionsWhere, Repository } from 'typeorm';
 import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 
-import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
+import { CreateProfileDto } from '@repo/store';
 import { DoctorFindOptions } from './doctor.types';
 import { SpecializationsService } from './specializations.service';
 
@@ -72,7 +72,7 @@ export class DoctorsService {
     });
   }
 
-  async update_by_user_id(userId: string, dto: UpdateProfileDto['doctor']) {
+  async update_by_user_id(userId: string, dto: CreateProfileDto['doctor']) {
     const repo = await this.getDoctorRepository();
     if (!dto || Object.keys(dto).length === 0) {
       return this.find_by_and_fail({ user_id: userId });

@@ -11,15 +11,13 @@ import {
   useUpdateUser,
   useUserProfileByID,
 } from '@/services/common/user/user.query';
-import { userFormValuesSchema } from '@/services/common/user/user.validation';
-import { UserRole } from '@repo/store';
+import { CreateProfileDto, UserRole, createProfileSchema } from '@repo/store';
 import { useQueryState } from 'nuqs';
-import { renderChip } from '@/components/ui/static-data-table/cell-renderers';
-import { UserFormValues } from '@/services/common/user/user.types';
 import DoctorFields from './doctor-fields';
 import PatientFields from './patient-fields';
 import DashboardFooter from '@/components/ui/dashboard/footer';
 import CommonFields from './common-fields';
+import RenderChip from '@/components/ui/new-data-table/cell-renderer/render-chip';
 
 export default function UserForm({ id }: { id?: string }) {
   const router = useRouter();
@@ -33,8 +31,8 @@ export default function UserForm({ id }: { id?: string }) {
 
   const { user, doctor, patient } = profile || {};
 
-  const { control, handleSubmit, watch } = useForm<UserFormValues>({
-    resolver: zodResolver(userFormValuesSchema),
+  const { control, handleSubmit, watch } = useForm({
+    resolver: zodResolver(createProfileSchema),
     defaultValues: {
       user,
       doctor: {
@@ -45,7 +43,7 @@ export default function UserForm({ id }: { id?: string }) {
     },
   });
 
-  const onSubmit = async (values: UserFormValues) => {
+  const onSubmit = async (values: CreateProfileDto) => {
     if (id) {
       await updateUser.mutateAsync({
         id,
@@ -59,7 +57,7 @@ export default function UserForm({ id }: { id?: string }) {
 
   const title = id ? 'Update User' : 'Create a User';
 
-  const role = watch('user.role');
+  const role = watch('user.role') || UserRole.GUEST;
 
   return (
     <Card
@@ -77,16 +75,15 @@ export default function UserForm({ id }: { id?: string }) {
             Fields with <span className="text-danger-500">*</span> are required
           </p>
         </div>
-        {role &&
-          renderChip({
-            item: role,
-          })}
+        {role && <RenderChip value={role} />}
       </CardHeader>
       <CardBody>
         <ScrollShadow className="grid grid-cols-1 gap-4 p-1 sm:grid-cols-2 md:grid-cols-3">
           <CommonFields control={control} showRole={!id} />
 
-          {[UserRole.PATIENT, UserRole.DOCTOR].includes(role) && <Divider className="col-span-full" />}
+          {[UserRole.PATIENT, UserRole.DOCTOR].includes(role) && (
+            <Divider className="col-span-full" />
+          )}
 
           {role === UserRole.PATIENT && <PatientFields control={control} />}
           {role === UserRole.DOCTOR && <DoctorFields control={control} />}

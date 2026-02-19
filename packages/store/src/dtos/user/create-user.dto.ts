@@ -1,20 +1,27 @@
 import { z } from "zod";
 import { AuthSource, CompanyType, UserRole } from "../../enums";
+import {
+  emailValidation,
+  nameValidation,
+  nullableStringValidation,
+  passwordValidation,
+  phoneNumberValidation,
+} from "../factory.dto";
 
 export const createUserSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: emailValidation,
 
-  password: z.string().optional(),
+  password: passwordValidation.nullable().optional(),
 
-  name: z.string().min(1),
+  name: nameValidation,
 
   role: z.enum(UserRole).optional().default(UserRole.PATIENT),
 
   company_type: z.enum(CompanyType).optional(),
 
-  phone: z.string().optional(),
+  phone: phoneNumberValidation.nullable().optional(),
 
-  time_zone: z.string().optional(),
+  time_zone: nullableStringValidation,
 
   auth_source: z.enum(AuthSource).optional(),
 

@@ -1,13 +1,11 @@
 import { handleDateChange } from '@/libs/utils';
-import { BloodType } from '@/services/client/patient/patient.types';
-import { UserFormValues } from '@/services/common/user/user.types';
 import { DatePicker, Input, NumberInput, Select, SelectItem } from '@heroui/react';
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 import { I18nProvider } from '@react-aria/i18n';
-import { Gender } from '@repo/store';
+import { BloodType, CreateProfileDto, Gender, formatBloodType, formatGender } from '@repo/store';
 import { Control, Controller } from 'react-hook-form';
 
-export default function PatientFields({ control }: { control: Control<UserFormValues> }) {
+export default function PatientFields({ control }: { control: Control<CreateProfileDto> }) {
   return (
     <>
       <Controller
@@ -24,9 +22,7 @@ export default function PatientFields({ control }: { control: Control<UserFormVa
             errorMessage={fieldState.error?.message}
           >
             {Object.values(Gender).map((gender) => (
-              <SelectItem key={gender}>
-                {gender.charAt(0).toUpperCase() + gender.slice(1)}
-              </SelectItem>
+              <SelectItem key={gender}>{formatGender(gender, { fullString: true })}</SelectItem>
             ))}
           </Select>
         )}
@@ -43,7 +39,11 @@ export default function PatientFields({ control }: { control: Control<UserFormVa
               minValue={today(getLocalTimeZone()).subtract({ years: 120 })}
               maxValue={today(getLocalTimeZone())}
               label="Date of Birth"
-              value={field.value ? parseDate(field.value.split('T')[0]) : null}
+              value={
+                field.value instanceof Date
+                  ? parseDate(field.value.toISOString().split('T')[0])
+                  : null
+              }
               onChange={(value) => field.onChange(handleDateChange(value))}
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
@@ -66,9 +66,7 @@ export default function PatientFields({ control }: { control: Control<UserFormVa
             errorMessage={fieldState.error?.message}
           >
             {Object.values(BloodType).map((bloodType) => (
-              <SelectItem key={bloodType}>
-                {bloodType.charAt(0).toUpperCase() + bloodType.slice(1)}
-              </SelectItem>
+              <SelectItem key={bloodType}>{formatBloodType(bloodType)}</SelectItem>
             ))}
           </Select>
         )}
@@ -140,29 +138,13 @@ export default function PatientFields({ control }: { control: Control<UserFormVa
       />
 
       <Controller
-        name="patient.vitals.allergies"
+        name="patient.vitals.allergy"
         control={control}
         render={({ field, fieldState }) => (
           <Input
             {...field}
             label="Allergy"
             placeholder="Enter allergy details"
-            value={field.value || ''}
-            onChange={field.onChange}
-            isInvalid={!!fieldState.error}
-            errorMessage={fieldState.error?.message}
-          />
-        )}
-      />
-
-      <Controller
-        name="patient.vitals.diseases"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Input
-            {...field}
-            label="Diseases"
-            placeholder="Enter disease / medical history"
             value={field.value || ''}
             onChange={field.onChange}
             isInvalid={!!fieldState.error}

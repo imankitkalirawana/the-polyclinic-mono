@@ -1,6 +1,7 @@
 import { apiRequest } from '@/libs/axios';
-import { User } from '@repo/store';
-import { ResetPasswordRequest, UserProfile, UserFormValues } from './user.types';
+import { CreateProfileDto, User } from '@repo/store';
+import { UserProfile } from './user.types';
+import { $FixMe } from '@/types';
 
 export class UserApi {
   private static API_BASE = '/users';
@@ -41,7 +42,7 @@ export class UserApi {
     });
   }
 
-  static async resetPassword(id: string, data: ResetPasswordRequest) {
+  static async resetPassword(id: string, data: $FixMe) {
     return await apiRequest({
       url: `${this.API_BASE}/${id}/reset-password`,
       method: 'POST',
@@ -49,7 +50,7 @@ export class UserApi {
     });
   }
 
-  static async create(data: UserFormValues) {
+  static async create(data: CreateProfileDto) {
     return await apiRequest<User>({
       url: this.API_BASE,
       method: 'POST',

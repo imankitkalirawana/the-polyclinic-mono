@@ -17,7 +17,6 @@ import {
   LoginDto,
   GoogleAuthDto,
   ConfirmResetPasswordDto,
-  AuthSource,
   UserRole,
   RegisterDto,
 } from '@repo/store';
@@ -129,7 +128,6 @@ export class AuthService {
           email,
           name,
           role: UserRole.PATIENT,
-          auth_source: AuthSource.GOOGLE,
         },
         patient: {},
         email_verified: true,

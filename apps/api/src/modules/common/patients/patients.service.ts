@@ -5,7 +5,7 @@ import { ArrayContains, FindOptionsWhere } from 'typeorm';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { UserService } from '@auth/users/users.service';
 import { Patient } from '@common/patients/entities/patient.entity';
-import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
+import { CreateProfileDto } from '@repo/store';
 import { PatientFindOptions } from './patient.types';
 
 @Injectable()
@@ -73,7 +73,7 @@ export class PatientsService {
   }
 
   /** Update patient profile by user id (used by profile service). */
-  async update_by_user_id(userId: string, dto: UpdateProfileDto['patient']) {
+  async update_by_user_id(userId: string, dto: CreateProfileDto['patient']) {
     const repo = await this.getPatientRepository();
     if (dto && Object.keys(dto).length > 0) {
       await repo.update({ user_id: userId }, dto);

@@ -1,23 +1,43 @@
-import { z } from "zod";
-import { BloodType, Gender, UserRole } from "../../enums";
-import { createUserSchema } from "./create-user.dto";
 import {
+  emailValidation,
+  nameValidation,
   nullablePositiveNumberValidation,
   nullableStringValidation,
+  passwordValidation,
+  phoneNumberValidation,
 } from "../factory.dto";
 
-const createDoctorProfileSchema = z.object({
-  code: nullableStringValidation,
-  specializations: nullableStringValidation.array(),
+import { z } from "zod";
+import { UserRole, Gender, BloodType, AuthSource } from "../../enums";
+
+const userProfileUpdateSchema = z.object({
+  role: z.enum(UserRole),
+  name: nameValidation,
+  email: emailValidation,
+  phone: phoneNumberValidation.optional().nullable(),
+  image: nullableStringValidation,
+  time_zone: nullableStringValidation,
+  auth_source: z.enum(AuthSource).optional(),
+  companies: z.array(z.string()).optional(),
+  password: passwordValidation.optional(),
+});
+
+export const doctorProfileUpdateSchema = z.object({
+  specializations: nullableStringValidation.array().optional(),
   designation: nullableStringValidation,
-  education: nullableStringValidation,
   experience: nullablePositiveNumberValidation,
+  education: nullableStringValidation,
   biography: nullableStringValidation,
   seating: nullableStringValidation,
 });
 
 const vitalsSchema = z.object({
-  bloodType: z.enum(BloodType),
+  bloodType: z
+    .enum(BloodType, {
+      error: "Please select a valid blood type.",
+    })
+    .optional()
+    .nullable(),
   bloodPressure: nullableStringValidation,
   heartRate: nullableStringValidation,
   weight: nullablePositiveNumberValidation,
@@ -32,22 +52,10 @@ const createPatientProfileSchema = z.object({
   vitals: vitalsSchema.optional(),
 });
 
-/**
- * Unified create profile schema: base user fields (from store) + optional role-specific block,
- * with validation linking user.role to the required profile block.
- */
-export const createProfileSchema = z
-  .object({
-    user: createUserSchema,
-    doctor: createDoctorProfileSchema.optional(),
-    patient: createPatientProfileSchema.optional(),
-  })
-  .refine((data) => {
-    const role = data.user?.role;
-    if (!role) return true;
-    if (role === UserRole.DOCTOR) return !!data.doctor && !data.patient;
-    if (role === UserRole.PATIENT) return !!data.patient && !data.doctor;
-    return !data.doctor && !data.patient;
-  }, "doctor/patient profile is required when role is DOCTOR or PATIENT; only one profile block is allowed and must match the role");
+export const createProfileSchema = z.object({
+  user: userProfileUpdateSchema,
+  doctor: doctorProfileUpdateSchema.optional(),
+  patient: createPatientProfileSchema.optional(),
+});
 
-export type CreateProfileDto = z.infer<typeof createProfileSchema>;
+export type CreateProfileDto = z.input<typeof createProfileSchema>;

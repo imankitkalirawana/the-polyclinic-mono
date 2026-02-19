@@ -15,9 +15,7 @@ import { FieldRestrictionsGuard } from '../guards/field-restrictions.guard';
 import { Roles } from '../decorators/roles.decorator';
 import {
   ConfirmResetPasswordDto,
-  UpdateProfileDto,
   confirmResetPasswordSchema,
-  updateProfileSchema,
 } from '@repo/store';
 import { CreateProfileDto, createProfileSchema, UserRole } from '@repo/store';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
@@ -83,7 +81,7 @@ export class UsersController {
   async update_profile(
     @StandardParam() params: StandardParams,
     @Param('id') id: string,
-    @Body(ZodValidationPipe.create(updateProfileSchema)) dto: UpdateProfileDto,
+    @Body(ZodValidationPipe.create(createProfileSchema)) dto: CreateProfileDto,
   ) {
     const result = await this.userProfileService.updateProfile(id, dto);
     params.setMessage('Profile updated successfully');

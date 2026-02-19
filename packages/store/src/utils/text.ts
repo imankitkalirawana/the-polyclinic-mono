@@ -1,4 +1,4 @@
-import { Gender } from "@enums/index";
+import { BloodType, Gender } from "@enums/index";
 
 /**
  * Converts strings like "on_hold" or "on-hold" to "On Hold"
@@ -41,4 +41,9 @@ export function formatGender(
   return fullString
     ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
     : gender.charAt(0).toUpperCase();
+}
+
+export function formatBloodType(bloodType: BloodType | null | undefined) {
+  if (!bloodType) return "-";
+  return bloodType.replace("_POSITIVE", "+").replace("_NEGATIVE", "-");
 }

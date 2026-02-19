@@ -1,9 +1,9 @@
 import { useSpecializations } from '@/services/client/doctor';
-import { UserFormValues } from '@/services/common/user/user.types';
 import { Input, NumberInput, Select, SelectItem, Textarea } from '@heroui/react';
+import { CreateProfileDto } from '@repo/store';
 import { Control, Controller } from 'react-hook-form';
 
-export default function DoctorFields({ control }: { control: Control<UserFormValues> }) {
+export default function DoctorFields({ control }: { control: Control<CreateProfileDto> }) {
   const { data: specializations = [] } = useSpecializations();
 
   return (

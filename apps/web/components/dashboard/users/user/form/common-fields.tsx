@@ -1,5 +1,4 @@
-import { UserRole } from '@repo/store';
-import { UserFormValues } from '@/services/common/user/user.types';
+import { CreateProfileDto, UserRole } from '@repo/store';
 import { Input, Select, SelectItem } from '@heroui/react';
 import { Control, Controller } from 'react-hook-form';
 
@@ -7,7 +6,7 @@ export default function CommonFields({
   control,
   showRole = true,
 }: {
-  control: Control<UserFormValues>;
+  control: Control<CreateProfileDto>;
   showRole?: boolean;
 }) {
   return (
