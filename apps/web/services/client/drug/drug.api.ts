@@ -2,7 +2,7 @@ import { Drug } from '@repo/store';
 import { apiRequest } from '@/libs/axios';
 
 export class DrugApi {
-  private static API_BASE = '/client/drugs';
+  private static API_BASE = '/drugs';
 
   static async getAll() {
     return await apiRequest<Drug[]>({
@@ -27,7 +27,7 @@ export class DrugApi {
 
   static async update(data: Drug) {
     return await apiRequest<Drug>({
-      url: `${this.API_BASE}/${data.did}`,
+      url: `${this.API_BASE}/${data.id}`,
       method: 'PUT',
       data,
     });

@@ -1,52 +1,46 @@
 ---
-description: Apply when creating new files/folders, organizing code, or understanding the healthcare project architecture. Essential for maintaining consistent structure.
-alwaysApply: false
+alwaysApply: true
 ---
 
-# Project Structure
+# Project structure (monorepo)
 
-## Root Directories
+## Shared code → `packages/store` (@repo/store)
 
-- [app/](mdc:app/) - Next.js App Router (dashboard, appointments, auth)
-- [components/](mdc:components/) - React components by domain
-- [lib/](mdc:lib/) - Utilities, config, business logic
-- [services/](mdc:services/) - API services and business logic
-- [types/](mdc:types/) - TypeScript type definitions
-- [store/](mdc:store/) - State management (Zustand)
-- [hooks/](mdc:hooks/) - Custom React hooks
-- [utils/](mdc:utils/) - Utility functions
+Put in **store** anything used by both API and web (or likely reused later):
 
-## App Routes
+- **Types**: `packages/store/src/types/` — domain types (User, Doctor, Drug, Patient, etc.). One file per domain, e.g. `drug.ts`, `user/user.type.ts`. Export via `types/index.ts`.
+- **Enums**: `packages/store/src/enums/` — domain enums (UserRole, DrugForm, QueueStatus, etc.). One file per domain, e.g. `drug.enum.ts`. Export via `enums/index.ts`.
+- **DTOs**: `packages/store/src/dtos/` — request/input shapes (CreateUserInput, CreateSpecializationDto, etc.). Group by domain under subfolders. Export via `dtos/index.ts`.
+- **Utils**: `packages/store/src/utils/` — pure helpers used across apps (formatLabel, formatAge, formatGender, etc.). Export via `utils/index.ts`.
 
-- `app/(public)/` - Non-authenticated
-- `app/auth/` - Login, register, forgot-password
-- `app/appointments/` - Patient appointments
-- `app/dashboard/` - Provider dashboard
-  - `appointments/`, `doctors/`, `patients/`, `services/`, `drugs/`, `users/`, `organizations/`, `emails/`, `newsletters/`
-- `app/profile/` - User profile
-- `app/s/[subdomain]/` - Multi-tenant
+API and web must **import** these from `@repo/store`; do not duplicate types/enums/utils in apps.
 
-## Components
+---
 
-- `components/client/appointments/` - Patient-facing
-- `components/dashboard/` - Provider dashboard
-- `components/auth/` - Authentication
-- `components/ui/` - Reusable UI
-- `components/sections/` - Page sections
-- `components/layouts/` - Layouts
+## API → `apps/api/src`
 
-## Services
+- **Feature code**: `src/modules/<domain>/` — e.g. `modules/common/doctors/`, `modules/auth/users/`, `modules/client/appointments/`.
+  - **Controller**: `*.controller.ts`
+  - **Service**: `*.service.ts`
+  - **Module**: `*.module.ts`
+  - **Entities** (TypeORM): `entities/*.entity.ts` — DB-only shape; use suffix `Entity` (e.g. `Drug` entity → `Drug` class in `drug.entity.ts`). Import types/enums from `@repo/store`.
+  - **API-only types**: optional `*.types.ts` or `*.helper.ts` in the same module when not shared.
+- **Cross-cutting**: `src/common/` — db, middleware, pipes, request-context, utils.
+- **App types**: `src/types/` — only for API-specific declarations (e.g. `express.d.ts`).
 
-- `services/client/` - appointment, doctor, patient, drug, email, newsletters, service
-- `services/common/` - auth, user, activity, notifications
-- `services/system/` - organization
-- `services/external/` - Third-party integrations
+Prefer DTOs and validation from `@repo/store`; use `ZodValidationPipe` with store schemas where applicable.
 
-## Key Config Files
+---
 
-- [lib/config.ts](mdc:lib/config.ts) - App settings (timings, clinic info)
-- [lib/auth.ts](mdc:lib/auth.ts), [lib/serverAuth.ts](mdc:lib/serverAuth.ts) - Authentication
-- [lib/validation.ts](mdc:lib/validation.ts) - Validation schemas
-- [lib/interface.ts](mdc:lib/interface.ts) - TypeScript interfaces
-- [tailwind.config.ts](mdc:tailwind.config.ts) - Design system
-- [tsconfig.json](mdc:tsconfig.json) - TypeScript config
+## Web → `apps/web`
+
+- **Pages**: `app/` — Next.js App Router (e.g. `app/dashboard/drugs/`, `app/auth/login/`).
+- **UI**: `components/` — `components/dashboard/<feature>/`, `components/ui/`, `components/auth/`, etc.
+- **API client**: `services/client/<domain>/` — e.g. `doctor/`, `drug/`, `patient/`. Use `*.api.ts` for HTTP calls; import types/enums from `@repo/store`.
+- **Shared web**: `libs/`, `hooks/`, `utils/`, `store/` (e.g. Zustand), `types/` — app-specific only. Do not redefine types/enums that exist in `@repo/store`.
+
+---
+
+## Type safety
+
+- **Never use `as` type assertions.** Use type guards, Zod parse/safeParse, or fix types. See `.cursor/rules/typescript.mdc`.

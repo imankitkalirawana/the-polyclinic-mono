@@ -2,7 +2,7 @@ import { Base } from "./common";
 import { DrugStatus } from "../enums";
 
 export type Drug = Base & {
-  did: number;
+  unique_id: number;
   brandName: string;
   genericName: string;
   description?: string;

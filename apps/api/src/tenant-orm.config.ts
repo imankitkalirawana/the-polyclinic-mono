@@ -7,9 +7,10 @@ import { Doctor } from './modules/common/doctors/entities/doctor.entity';
 import { AuditLog } from './modules/common/audit-logs/entities/audit-logs.entity';
 import { AuditLogSubscriber } from './modules/common/audit-logs/audit-log.subscriber';
 import { Specialization } from './modules/common/doctors/entities/specialization.entity';
+import { Drug } from './modules/common/drugs/entities/drug.entity';
 
 export function getTenantConnectionConfig(schema: string): DataSourceOptions {
-  // Client entities (appointment_queue, payments, etc.) must only exist in tenant schemas, not public
+  // Client entities (appointment_queue, payments, drug_inventories, drug_stocks, etc.) must only exist in tenant schemas, not public
   const clientEntities =
     schema === 'public'
       ? []
@@ -33,6 +34,8 @@ export function getTenantConnectionConfig(schema: string): DataSourceOptions {
       Patient,
       Doctor,
       Specialization,
+      // Allow tenant DrugInventory to reference public Drug
+      Drug,
     ],
     subscribers: [AuditLogSubscriber],
     synchronize: false,

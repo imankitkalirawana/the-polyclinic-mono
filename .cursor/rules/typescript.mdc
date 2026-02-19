@@ -27,7 +27,7 @@ alwaysApply: true
 
    Example:
    export const UserSchema = z.object({...});
-   export type User = z.infer<typeof UserSchema>;
+   export type User = z.input<typeof UserSchema>;
 
 8. Avoid ambiguous names.
    Do NOT use: Data, Object, Item, Definition, Model
