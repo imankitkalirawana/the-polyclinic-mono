@@ -92,7 +92,10 @@ export class AppointmentQueueApi {
     });
   }
 
-  static async getQueueByAid(aid: string) {
+  static async getQueueByAid(aid: string | null) {
+    if (!aid) {
+      throw new Error('Appointment ID is required');
+    }
     return await apiRequest<AppointmentQueue>({
       url: `${this.API_BASE}/${aid}`,
     });

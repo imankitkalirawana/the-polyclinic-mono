@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { APPOINTMENT_STATUSES, Appointment } from '@repo/store';
+import { AppointmentQueue, QueueStatus } from '@repo/store';
 import { useAppointmentActions } from './hooks/useAppointmentActions';
 import RescheduleAppointment from './components/reschedule-modal';
 import CancelModal from './components/cancel-modal';
@@ -9,8 +9,8 @@ import { UserRole } from '@repo/store';
 import { ButtonConfig } from './appointment.types';
 
 export const createAppointmentButtonConfigs = (actions: {
-  handleConfirm: (appointment: Appointment) => Promise<void>;
-  handleReminder: (appointment: Appointment) => Promise<void>;
+  handleConfirm: (appointment: AppointmentQueue) => Promise<void>;
+  handleReminder: (appointment: AppointmentQueue) => Promise<void>;
 }): ButtonConfig[] => [
   {
     key: 'cancel',
@@ -21,14 +21,9 @@ export const createAppointmentButtonConfigs = (actions: {
     position: 'right',
     isIconOnly: true,
     visibilityRules: {
-      statuses: [
-        APPOINTMENT_STATUSES.confirmed,
-        APPOINTMENT_STATUSES.in_progress,
-        APPOINTMENT_STATUSES.on_hold,
-        APPOINTMENT_STATUSES.overdue,
-      ],
+      statuses: [QueueStatus.CALLED, QueueStatus.BOOKED, QueueStatus.IN_CONSULTATION],
       roles: [UserRole.PATIENT, UserRole.RECEPTIONIST, UserRole.ADMIN, UserRole.DOCTOR],
-      custom: (appointment) => appointment.status !== APPOINTMENT_STATUSES.in_progress,
+      custom: (appointment) => appointment.status !== QueueStatus.IN_CONSULTATION,
     },
     action: {
       type: 'store-action',
@@ -44,9 +39,9 @@ export const createAppointmentButtonConfigs = (actions: {
     variant: 'flat',
     position: 'left',
     visibilityRules: {
-      statuses: [APPOINTMENT_STATUSES.booked],
+      statuses: [QueueStatus.BOOKED],
       roles: [UserRole.ADMIN, UserRole.DOCTOR],
-      custom: (appointment) => appointment.doctor?.uid !== undefined,
+      custom: (appointment) => appointment.doctor?.id !== undefined,
     },
     action: {
       type: 'store-action',
@@ -64,12 +59,7 @@ export const createAppointmentButtonConfigs = (actions: {
     isIconOnly: true,
     whileLoading: 'Sending...',
     visibilityRules: {
-      statuses: [
-        APPOINTMENT_STATUSES.confirmed,
-        APPOINTMENT_STATUSES.in_progress,
-        APPOINTMENT_STATUSES.on_hold,
-        APPOINTMENT_STATUSES.overdue,
-      ],
+      statuses: [QueueStatus.CALLED, QueueStatus.IN_CONSULTATION],
       roles: [UserRole.DOCTOR, UserRole.RECEPTIONIST, UserRole.ADMIN],
     },
     action: {
@@ -86,9 +76,9 @@ export const createAppointmentButtonConfigs = (actions: {
     position: 'left',
     isIconOnly: true,
     visibilityRules: {
-      statuses: [APPOINTMENT_STATUSES.booked, APPOINTMENT_STATUSES.confirmed],
+      statuses: [QueueStatus.BOOKED, QueueStatus.CALLED],
       roles: [UserRole.RECEPTIONIST, UserRole.ADMIN],
-      custom: (appointment) => appointment.doctor?.uid !== undefined,
+      custom: (appointment) => appointment.doctor?.id !== undefined,
     },
     action: {
       type: 'store-action',
@@ -104,9 +94,9 @@ export const createAppointmentButtonConfigs = (actions: {
     variant: 'flat',
     position: 'left',
     visibilityRules: {
-      statuses: [APPOINTMENT_STATUSES.booked],
+      statuses: [QueueStatus.BOOKED],
       roles: [UserRole.RECEPTIONIST, UserRole.ADMIN],
-      custom: (appointment) => !appointment.doctor?.uid,
+      custom: (appointment) => !appointment.doctor?.id,
     },
     action: {
       type: 'store-action',
@@ -123,20 +113,12 @@ export const createAppointmentButtonConfigs = (actions: {
     isIconOnly: true,
     position: 'right',
     visibilityRules: {
-      statuses: [
-        APPOINTMENT_STATUSES.booked,
-        APPOINTMENT_STATUSES.confirmed,
-        APPOINTMENT_STATUSES.in_progress,
-        APPOINTMENT_STATUSES.on_hold,
-        APPOINTMENT_STATUSES.overdue,
-      ],
+      statuses: [QueueStatus.BOOKED, QueueStatus.CALLED, QueueStatus.IN_CONSULTATION],
       roles: [UserRole.PATIENT, UserRole.DOCTOR, UserRole.RECEPTIONIST, UserRole.ADMIN],
       custom: (appointment) =>
-        [
-          APPOINTMENT_STATUSES.booked,
-          APPOINTMENT_STATUSES.confirmed,
-          APPOINTMENT_STATUSES.overdue,
-        ].some((status) => status === appointment.status),
+        [QueueStatus.BOOKED, QueueStatus.CALLED, QueueStatus.IN_CONSULTATION].some(
+          (status) => status === appointment.status
+        ),
     },
     action: {
       type: 'store-action',
@@ -152,9 +134,9 @@ export const createAppointmentButtonConfigs = (actions: {
     variant: 'flat',
     position: 'left',
     visibilityRules: {
-      statuses: [APPOINTMENT_STATUSES.booked],
+      statuses: [QueueStatus.BOOKED],
       roles: [UserRole.DOCTOR, UserRole.ADMIN],
-      custom: (appointment) => appointment.doctor?.uid !== undefined,
+      custom: (appointment) => appointment.doctor?.id !== undefined,
     },
     action: {
       type: 'async-function',
@@ -169,11 +151,7 @@ export const createAppointmentButtonConfigs = (actions: {
     variant: 'flat',
     position: 'right',
     visibilityRules: {
-      statuses: [
-        APPOINTMENT_STATUSES.confirmed,
-        APPOINTMENT_STATUSES.in_progress,
-        APPOINTMENT_STATUSES.on_hold,
-      ],
+      statuses: [QueueStatus.CALLED, QueueStatus.IN_CONSULTATION],
       roles: [UserRole.DOCTOR, UserRole.ADMIN],
     },
     action: {
@@ -195,7 +173,7 @@ export const useAppointmentButtonConfigs = () => {
 
 export const isButtonVisible = (
   config: ButtonConfig,
-  appointment: Appointment | null,
+  appointment: AppointmentQueue | null,
   role: UserRole
 ): boolean => {
   if (!appointment) return false;

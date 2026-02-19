@@ -9,16 +9,12 @@ import { SlotsPreview } from '@/components/dashboard/doctors/doctor/slots/slots-
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
 import { Calendar } from '@heroui/react';
 import { TIMINGS } from '@/libs/config';
-import { isDateUnavailable } from '@/components/dashboard/appointments/create/helpers';
-import { useLocale } from '@react-aria/i18n';
-import CalendarTimeSelect from '@/components/dashboard/appointments/all/booking/calendar-time-select';
 import { isPast } from 'date-fns';
 import { useAppointmentWithAID, useRescheduleAppointment } from '../appointment.query';
 
 export default function RescheduleAppointment() {
   const { mutateAsync: rescheduleMutation } = useRescheduleAppointment();
   const { user } = useSession();
-  const { locale } = useLocale();
 
   const { setAction, aid } = useAppointmentStore();
   const { data: appointment } = useAppointmentWithAID(aid);
@@ -57,7 +53,6 @@ export default function RescheduleAppointment() {
             setDate(newDate);
           }}
           showHelper
-          isDateUnavailable={(date) => isDateUnavailable(date, locale)}
           calendarWidth="372px"
           className="rounded-r-none shadow-none"
           classNames={{
@@ -73,7 +68,6 @@ export default function RescheduleAppointment() {
               'w-full h-9 rounded-medium data-selected:shadow-[0_2px_12px_0] data-[selected]:shadow-primary-300 text-small font-medium',
           }}
         />
-        <CalendarTimeSelect date={date} setDate={setDate} />
       </div>
     );
   };

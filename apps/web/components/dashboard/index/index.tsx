@@ -4,7 +4,6 @@ import { dummyData } from './data';
 import Revenue from './revenue';
 import { ScrollShadow } from '@heroui/react';
 import PatientByAgeGroup from './patient-by-age-group';
-import Sidebar from './sidebar';
 
 export default function Dashboard() {
   return (
@@ -28,8 +27,6 @@ export default function Dashboard() {
           </div>
         </div>
       </ScrollShadow>
-      {/* sidebar */}
-      <Sidebar />
     </div>
   );
 }

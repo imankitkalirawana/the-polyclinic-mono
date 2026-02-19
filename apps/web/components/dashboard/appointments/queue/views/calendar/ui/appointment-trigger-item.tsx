@@ -1,0 +1,47 @@
+import React from 'react';
+import { cn } from '@heroui/react';
+
+import { formatTime } from '../helper';
+import StatusRenderer from './status-renderer';
+
+import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
+import { AppointmentQueue } from '@repo/store';
+import { extractFirstName } from '@/libs/utils';
+
+export default function AppointmentTriggerItem({
+  appointment,
+  openInNewTab = false,
+}: {
+  appointment: AppointmentQueue;
+  openInNewTab?: boolean;
+}) {
+  const { setAid } = useAppointmentStore();
+
+  return (
+    <button
+      title={`${appointment.patient.name} - ${appointment.doctor?.name}`}
+      key={appointment.aid}
+      data-testid={`appointment-trigger-item-${appointment.aid}`}
+      className={cn(
+        'text-tiny hover:bg-default-100 flex min-h-6 cursor-pointer items-center justify-start gap-1 truncate rounded-lg p-1 md:px-2'
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (openInNewTab) {
+          window.open(`/appointments/${appointment.aid}`, '_blank');
+        } else {
+          setAid(appointment.aid);
+        }
+      }}
+    >
+      <StatusRenderer isDotOnly status={appointment.status} />
+      <div className="hidden font-light sm:block">
+        {formatTime(new Date(appointment.appointmentDate ?? ''))}
+      </div>
+      <div className="font-medium">
+        {extractFirstName(appointment.patient.name)}{' '}
+        {appointment.doctor?.name ? `- ${extractFirstName(appointment.doctor.name)}` : ''}
+      </div>
+    </button>
+  );
+}

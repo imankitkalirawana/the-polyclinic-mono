@@ -1,6 +1,6 @@
 import { $FixMe } from '@/types';
 import { ButtonProps } from '@heroui/react';
-import { Appointment, AppointmentStatus, UserRole } from '@repo/store';
+import { AppointmentQueue, QueueStatus, UserRole } from '@repo/store';
 
 export type ActionType =
   | 'reschedule'
@@ -24,18 +24,18 @@ export type ButtonConfig = {
   isIconOnly?: boolean;
   whileLoading?: string;
   visibilityRules: {
-    statuses?: AppointmentStatus[];
+    statuses?: QueueStatus[];
     roles?: UserRole[];
-    custom?: (appointment: Appointment, role: UserRole) => boolean;
+    custom?: (appointment: AppointmentQueue, role: UserRole) => boolean;
   };
   action: {
     type: 'store-action' | 'async-function' | 'navigation';
     payload?: $FixMe;
-    handler?: (appointment: Appointment) => Promise<void> | void;
-    url?: (appointment: Appointment) => string;
+    handler?: (appointment: AppointmentQueue) => Promise<void> | void;
+    url?: (appointment: AppointmentQueue) => string;
   };
   content?: React.ComponentType<{
-    appointment: Appointment;
+    appointment: AppointmentQueue;
     onClose: () => void;
   }>;
 };

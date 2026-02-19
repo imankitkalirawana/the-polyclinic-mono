@@ -56,11 +56,18 @@ export const sectionItems: SidebarItem[] = [
             roles: [UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.PATIENT],
           },
           {
+            key: 'queues-calendar-view',
+            href: '/dashboard/queues?view=calendar',
+            title: 'Calendar View',
+            roles: [UserRole.ADMIN, UserRole.RECEPTIONIST, UserRole.DOCTOR],
+          },
+          {
             key: 'scheduled-queues-doctor',
             href: '/dashboard/queues?view=scheduled',
             title: 'Scheduled Appointments',
             roles: [UserRole.DOCTOR],
           },
+
           {
             key: 'all-queues-doctor',
             href: '/dashboard/queues?view=all',
