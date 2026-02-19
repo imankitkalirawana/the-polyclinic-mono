@@ -56,36 +56,36 @@ const GENDER_CONFIG: Record<Gender, ChipProps['classNames']> = {
 };
 const APPOINTMENT_QUEUE_STATUS_CONFIG: Record<QueueStatus, ChipProps['classNames']> = {
   PAYMENT_PENDING: {
-    base: 'bg-red-100 text-red-700',
-    content: 'text-red-700',
+    base: 'bg-red-100 text-red-700 rounded-full',
+    content: 'text-red-700 bg-red-100',
   },
   PAYMENT_FAILED: {
-    base: 'bg-danger-100 text-danger-700',
-    content: 'text-danger-700',
+    base: 'bg-danger-100 text-danger-700 rounded-full',
+    content: 'text-danger-700 bg-danger-100',
   },
   BOOKED: {
-    base: 'bg-blue-100 text-blue-700',
-    content: 'text-blue-700',
+    base: 'bg-blue-100 text-blue-700 rounded-full',
+    content: 'text-blue-700 bg-blue-100',
   },
   CALLED: {
-    base: 'bg-yellow-100 text-yellow-700',
-    content: 'text-yellow-700',
+    base: 'bg-yellow-100 text-yellow-700 rounded-full',
+    content: 'text-yellow-700 bg-yellow-100',
   },
   IN_CONSULTATION: {
-    base: 'bg-green-100 text-green-700',
-    content: 'text-green-700',
+    base: 'bg-green-100 text-green-700 rounded-full',
+    content: 'text-green-700 bg-green-100',
   },
   SKIPPED: {
-    base: 'bg-red-100 text-red-700',
-    content: 'text-red-700',
+    base: 'bg-red-100 text-red-700 rounded-full',
+    content: 'text-red-700 bg-red-100',
   },
   CANCELLED: {
-    base: 'bg-yellow-100 text-yellow-700',
-    content: 'text-yellow-700',
+    base: 'bg-yellow-100 text-yellow-700 rounded-full',
+    content: 'text-yellow-700 bg-yellow-100',
   },
   COMPLETED: {
-    base: 'bg-green-100 text-green-700',
-    content: 'text-green-700',
+    base: 'bg-green-100 text-green-700 rounded-full',
+    content: 'text-green-700 bg-green-100',
   },
 };
 

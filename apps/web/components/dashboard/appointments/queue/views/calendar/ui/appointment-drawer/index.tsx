@@ -27,8 +27,6 @@ import {
 import { format } from 'date-fns';
 import { Icon } from '@iconify/react/dist/iconify.js';
 
-import StatusRenderer from '../status-renderer';
-
 import AsyncButton from '@/components/ui/buttons/async-button';
 import useAppointmentButtonsInDrawer from '@/services/client/appointment/hooks/useAppointmentButton';
 import { useIsMobile } from '@/hooks/useMobile';
@@ -39,6 +37,7 @@ import { useClipboard } from '@/hooks/useClipboard';
 import { UserDetailsPopover } from './user-details-popover';
 import { UserRole } from '@repo/store';
 import { useAppointmentQueueWithAID } from '@/services/client/appointment/queue/queue.query';
+import RenderChip from '@/components/ui/new-data-table/cell-renderer/render-chip';
 
 const DRAWER_DELAY = 200;
 
@@ -168,13 +167,13 @@ const AppointmentContent = memo(({ appointment }: { appointment: AppointmentQueu
       <div className="flex flex-col items-start gap-1">
         <AppointmentHeading title="PEOPLE" />
         <UserDetailsPopover
-          id={appointment.patient.id}
+          id={appointment.patient.user_id}
           name={appointment.patient.name}
           description={patientDescription}
         />
         {!!appointment.doctor?.id && (
           <UserDetailsPopover
-            id={appointment.doctor.id}
+            id={appointment.doctor.user_id}
             name={appointment.doctor.name}
             description={doctorDescription}
           />
@@ -243,7 +242,8 @@ const AppointmentHeader = memo(
             )}
           </div>
           <div className="flex items-center gap-1">
-            <StatusRenderer status={appointment.status} />
+            {/* <StatusRenderer status={appointment.status} /> */}
+            <RenderChip value={appointment.status} isDotOnly />
             &middot;
             <span className="text-primary-foreground/90 text-tiny">{formattedDate}</span>
           </div>

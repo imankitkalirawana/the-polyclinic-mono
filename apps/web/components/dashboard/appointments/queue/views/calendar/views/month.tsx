@@ -94,7 +94,6 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
           return (
             <div
               key={day.toISOString()}
-              title={isDateDisabled ? 'Booking is not allowed in the past' : ''}
               className={cn(
                 'border-divider flex flex-col justify-start overflow-hidden border-r border-b p-1 select-none last:border-r-0',
                 {
@@ -144,6 +143,7 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
                 ))}
                 {dayAppointments.length > maxAppointmentsToShow && (
                   <Tooltip
+                    delay={200}
                     content={<AppointmentList appointments={dayAppointments} date={day} />}
                     onOpenChange={setIsTooltipOpen}
                   >

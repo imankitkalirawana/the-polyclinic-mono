@@ -1,12 +1,9 @@
 import React from 'react';
 import { cn } from '@heroui/react';
 
-import { formatTime } from '../helper';
-import StatusRenderer from './status-renderer';
-
 import { useAppointmentStore } from '@/services/client/appointment/appointment.store';
 import { AppointmentQueue } from '@repo/store';
-import { extractFirstName } from '@/libs/utils';
+import RenderChip from '@/components/ui/new-data-table/cell-renderer/render-chip';
 
 export default function AppointmentTriggerItem({
   appointment,
@@ -23,7 +20,7 @@ export default function AppointmentTriggerItem({
       key={appointment.aid}
       data-testid={`appointment-trigger-item-${appointment.aid}`}
       className={cn(
-        'text-tiny hover:bg-default-100 flex min-h-6 cursor-pointer items-center justify-start gap-1 truncate rounded-lg p-1 md:px-2'
+        'text-tiny hover:bg-default-100 line-clamp-1 flex min-h-6 cursor-pointer items-center justify-start gap-1 rounded-lg p-1 md:px-2'
       )}
       onClick={(e) => {
         e.stopPropagation();
@@ -34,13 +31,10 @@ export default function AppointmentTriggerItem({
         }
       }}
     >
-      <StatusRenderer isDotOnly status={appointment.status} />
-      <div className="hidden font-light sm:block">
-        {formatTime(new Date(appointment.appointmentDate ?? ''))}
-      </div>
-      <div className="font-medium">
-        {extractFirstName(appointment.patient.name)}{' '}
-        {appointment.doctor?.name ? `- ${extractFirstName(appointment.doctor.name)}` : ''}
+      <RenderChip value={appointment.status} isDotOnly />
+      <div className="line-clamp-1 font-medium">
+        {appointment.patient.name}
+        {appointment.doctor?.name ? ` - ${appointment.doctor.name}` : ''}
       </div>
     </button>
   );
