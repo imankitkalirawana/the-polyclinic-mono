@@ -19,3 +19,5 @@ export * from "./appointment/queue/complete-queue.dto";
 
 export * from "./payment/create-payment.dto";
 export * from "./payment/verify-payment.dto";
+
+export * from "./doctor/create-specialization.dto";

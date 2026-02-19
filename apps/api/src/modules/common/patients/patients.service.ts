@@ -2,14 +2,11 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { ArrayContains, FindOptionsWhere } from 'typeorm';
-import { CreatePatientDto } from './dto/create-patient.dto';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { UserService } from '@auth/users/users.service';
 import { Patient } from '@common/patients/entities/patient.entity';
-import { UpdatePatientDto } from './dto/update-patient.dto';
 import { CreateProfileDto, UpdateProfileDto } from '@repo/store';
 import { PatientFindOptions } from './patient.types';
-import { UserRole } from '@repo/store';
 
 @Injectable()
 export class PatientsService {
@@ -73,38 +70,6 @@ export class PatientsService {
       ...rest,
       relations: relations ?? { user: true },
     });
-  }
-
-  async create(createPatientDto: CreatePatientDto) {
-    const user = await this.userService.create({
-      email: createPatientDto.email,
-      name: createPatientDto.name,
-      phone: createPatientDto.phone,
-      password: createPatientDto.password,
-      role: UserRole.PATIENT,
-      companies: [this.schema],
-    });
-
-    const patientRepository = await this.getPatientRepository();
-    const patient = await patientRepository.save({
-      user_id: user.id,
-      gender: createPatientDto.gender,
-      dob: createPatientDto.dob,
-      address: createPatientDto.address,
-    });
-
-    return patient;
-  }
-
-  async update(id: string, updatePatientDto: UpdatePatientDto) {
-    const repo = await this.getPatientRepository();
-    const updatedPatient = await repo.update(id, updatePatientDto);
-
-    if (updatedPatient.affected === 0) {
-      throw new NotFoundException('Patient not found');
-    }
-
-    return this.find_by_and_fail({ id });
   }
 
   /** Update patient profile by user id (used by profile service). */

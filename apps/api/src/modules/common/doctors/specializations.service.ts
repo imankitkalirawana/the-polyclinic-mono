@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { Specialization } from './entities/specialization.entity';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
-import { CreateSpecializationDto } from './dto/create-specialization.dto';
+import { CreateSpecializationDto } from '@repo/store';
 import { generateSpecializationSlug } from './specialization.helper';
 
 @Injectable()

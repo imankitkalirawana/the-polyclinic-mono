@@ -20,8 +20,12 @@ import {
 import { formatDoctor } from './doctors.helper';
 import { Request } from 'express';
 import { ILike } from 'typeorm';
-import { CreateSpecializationDto } from './dto/create-specialization.dto';
+import {
+  CreateSpecializationDto,
+  createSpecializationSchema,
+} from '@repo/store';
 import { UserRole } from '@repo/store';
+import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 
 @Controller('doctors')
 @UseGuards(BearerAuthGuard, RolesGuard)
@@ -87,7 +91,10 @@ export class DoctorsController {
 
   @Post('specializations')
   @Roles(UserRole.ADMIN)
-  async create_specialization(@Body() body: CreateSpecializationDto) {
+  async create_specialization(
+    @Body(ZodValidationPipe.create(createSpecializationSchema))
+    body: CreateSpecializationDto,
+  ) {
     const specialization = await this.specializationsService.create(body);
     return specialization;
   }

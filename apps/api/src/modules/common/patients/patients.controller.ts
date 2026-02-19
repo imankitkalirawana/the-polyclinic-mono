@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
   Param,
   Delete,
   UseGuards,
@@ -17,8 +15,6 @@ import {
   CurrentUser,
   CurrentUserPayload,
 } from '@auth/decorators/current-user.decorator';
-import { StandardParam, StandardParams } from 'nest-standard-response';
-import { CreatePatientDto } from './dto/create-patient.dto';
 import { formatPatient } from './patients.helper';
 import { ILike } from 'typeorm';
 import { Request } from 'express';
@@ -28,17 +24,6 @@ import { UserRole } from '@repo/store';
 @UseGuards(BearerAuthGuard, RolesGuard)
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
-
-  @Post()
-  @Roles(UserRole.ADMIN, UserRole.DOCTOR, UserRole.RECEPTIONIST, UserRole.NURSE)
-  async create(
-    @Body() createPatientDto: CreatePatientDto,
-    @StandardParam() params: StandardParams,
-  ) {
-    params.setMessage(`Patient created successfully`);
-
-    return this.patientsService.create(createPatientDto);
-  }
 
   @Get()
   @Roles(

@@ -7,7 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { RequestContext } from './request-context';
 import { RequestWithUser, singleHeader } from './request-context.types';
-import { ActorType } from '../../modules/common/audit-logs/entities/audit-logs.entity';
+import { ActorType } from '@repo/store';
 
 @Injectable()
 export class RequestContextInterceptor implements NestInterceptor {

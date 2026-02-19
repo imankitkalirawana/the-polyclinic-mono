@@ -8,12 +8,11 @@ import {
   RecoverEvent,
 } from 'typeorm';
 import {
-  AuditLog,
   Event as AuditEvent,
   ItemType,
   ActorType,
   ObjectChanges,
-} from './entities/audit-logs.entity';
+} from '@repo/store';
 import { User } from '@auth/entities/user.entity';
 import { Patient } from '@common/patients/entities/patient.entity';
 import { Doctor } from '@common/doctors/entities/doctor.entity';
@@ -21,6 +20,7 @@ import { Company } from '@auth/entities/company.entity';
 import { Queue } from '@client/appointments/queue/entities/queue.entity';
 import { Payment } from '@client/payments/entities/payment.entity';
 import { RequestContext } from 'src/common/request-context/request-context';
+import { AuditLog } from './entities/audit-logs.entity';
 
 type AnyEntity =
   | User
@@ -29,7 +29,6 @@ type AnyEntity =
   | Company
   | Queue
   | Payment
-  | AuditLog
   | Record<string, unknown>;
 
 function isActorType(value: string | null | undefined): value is ActorType {
