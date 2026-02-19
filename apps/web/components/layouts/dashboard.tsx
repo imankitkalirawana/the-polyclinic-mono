@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }: { readonly children: React
           maxWidth: isHidden ? SIDEBAR_WIDTHS.collapsed : SIDEBAR_WIDTHS.expanded,
         }}
         className={cn(
-          '!border-r-small border-divider duration-250 relative flex h-full flex-1 flex-col overflow-x-hidden transition-all ease-in-out'
+          'border-r-small! border-divider relative flex h-full flex-1 flex-col overflow-x-hidden transition-all duration-250 ease-in-out'
         )}
       >
         <div className="border-divider flex justify-center gap-4 border-b py-2">

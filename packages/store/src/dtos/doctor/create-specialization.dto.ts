@@ -1,4 +1,4 @@
-import { nameValidation, nullableStringValidation } from "@dtos/factory.dto";
+import { nameValidation, nullableStringValidation } from "../factory.dto";
 import { z } from "zod";
 
 export const createSpecializationSchema = z.object({
