@@ -56,10 +56,7 @@ import type {
   TableViewColumnConfig,
 } from '@common/table-views/table-view.types';
 import { getCellValue } from '@common/table-views/table-view-etl.util';
-import { endOfDay, isPast } from 'date-fns';
-
-const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
-const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
+import { endOfDay, isPast, startOfDay } from 'date-fns';
 
 const MAX_AID_GENERATION_RETRIES = 5;
 const POSTGRES_UNIQUE_VIOLATION_CODE = '23505';
@@ -175,10 +172,21 @@ export class QueueService {
   }
 
   // check if a queue is already booked for the same doctor and patient for that date
-  async checkIfQueueIsBooked(doctorId: string, patientId: string) {
+  async checkIfQueueIsBooked(
+    doctorId: string,
+    patientId: string,
+    appointmentDate: Date,
+  ) {
     const queueRepository = await this.getQueueRepository();
     const queue = await queueRepository.findOne({
-      where: { doctorId, patientId, createdAt: Between(todayStart, todayEnd) },
+      where: {
+        doctorId,
+        patientId,
+        appointmentDate: Between(
+          startOfDay(appointmentDate),
+          endOfDay(appointmentDate),
+        ),
+      },
     });
     return queue;
   }
@@ -195,6 +203,7 @@ export class QueueService {
     const existingQueue = await this.checkIfQueueIsBooked(
       createQueueDto.doctorId,
       createQueueDto.patientId,
+      createQueueDto.appointmentDate,
     );
 
     if (isPast(endOfDay(createQueueDto.appointmentDate))) {
@@ -706,20 +715,14 @@ export class QueueService {
     return formatQueue(queue, this.request.user.role);
   }
 
-  async appointmentReceiptPdf(id: string) {
-    const queue = await this.find_by_and_fail({ id });
+  async appointmentReceiptPdf(aid: string) {
+    const queue = await this.find_by_and_fail({ aid });
 
-    const url = `${process.env.APP_URL}/appointments/queues/${queue.id}`;
+    const url = `${process.env.APP_URL}/appointments/queues/${queue.aid}`;
 
     const qrCode = await this.qrService.generateBase64(url);
 
-    const html = appointmentConfirmationTemplate(
-      {
-        ...queue,
-        id: queue.id.slice(-6).toUpperCase(),
-      },
-      qrCode,
-    );
+    const html = appointmentConfirmationTemplate(queue, qrCode);
 
     const pdf = await this.pdfService.htmlToPdf(html, 'A6');
 

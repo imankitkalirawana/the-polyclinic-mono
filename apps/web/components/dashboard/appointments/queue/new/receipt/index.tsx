@@ -67,6 +67,10 @@ export default function AppointmentQueueReceipt() {
               <p className="font-medium">{appointment?.sequenceNumber}</p>
             </div>
             <div className="text-small flex w-full items-center justify-between">
+              <p className="text-default-500 text-tiny">Appointment ID</p>
+              <AppointmentNumber aid={appointment?.aid ?? ''} />
+            </div>
+            <div className="text-small flex w-full items-center justify-between">
               <p className="text-default-500 text-tiny">Patient Name</p>
               <p className="font-medium">{appointment?.patient?.name}</p>
             </div>
@@ -75,9 +79,10 @@ export default function AppointmentQueueReceipt() {
               <p className="font-medium">{appointment?.doctor?.name}</p>
             </div>
             <div className="text-small flex w-full items-center justify-between">
-              <p className="text-default-500 text-tiny">Reference Number</p>
-              {/* only last 6 digits of the appointment id */}
-              <AppointmentNumber aid={appointment?.aid ?? ''} />
+              <p className="text-default-500 text-tiny">Appointment Date</p>
+              <p className="font-medium">
+                {formatDate(new Date(appointment?.appointmentDate || ''), 'EEEE, MMMM d, yyyy')}
+              </p>
             </div>
             <div className="text-small flex w-full items-center justify-between">
               <p className="text-default-500 text-tiny">Payment Mode</p>
@@ -86,7 +91,7 @@ export default function AppointmentQueueReceipt() {
             <div className="text-small flex w-full items-center justify-between">
               <p className="text-default-500 text-tiny">Booked On</p>
               <p className="font-medium">
-                {formatDate(new Date(appointment?.createdAt || ''), 'EEEE, MMMM d, yyyy')}
+                {formatDate(new Date(appointment?.createdAt || ''), 'MMMM d, yyyy hh:mm a')}
               </p>
             </div>
           </div>
