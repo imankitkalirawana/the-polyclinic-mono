@@ -92,7 +92,7 @@ export default function DateScroll({
               endContent={
                 <div
                   className={cn(
-                    'flex flex-col gap-1 text-[10px] font-medium leading-none',
+                    'flex flex-col gap-1 text-[10px] leading-none font-medium',
                     isSelected ? 'text-primary-foreground/80' : 'text-default-500'
                   )}
                 >

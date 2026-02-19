@@ -56,6 +56,7 @@ import type {
   TableViewColumnConfig,
 } from '@common/table-views/table-view.types';
 import { getCellValue } from '@common/table-views/table-view-etl.util';
+import { endOfDay, isPast } from 'date-fns';
 
 const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
 const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
@@ -196,7 +197,7 @@ export class QueueService {
       createQueueDto.patientId,
     );
 
-    if (createQueueDto.appointmentDate < new Date()) {
+    if (isPast(endOfDay(createQueueDto.appointmentDate))) {
       throw new BadRequestException('Cannot book appointment in the past');
     }
 

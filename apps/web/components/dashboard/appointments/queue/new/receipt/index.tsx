@@ -77,7 +77,7 @@ export default function AppointmentQueueReceipt() {
             <div className="text-small flex w-full items-center justify-between">
               <p className="text-default-500 text-tiny">Reference Number</p>
               {/* only last 6 digits of the appointment id */}
-              <p className="font-medium uppercase">{appointment?.aid}</p>
+              <AppointmentNumber aid={appointment?.aid ?? ''} />
             </div>
             <div className="text-small flex w-full items-center justify-between">
               <p className="text-default-500 text-tiny">Payment Mode</p>
@@ -133,5 +133,14 @@ export default function AppointmentQueueReceipt() {
         </ModalFooter>
       </ModalContent>
     </Modal>
+  );
+}
+
+function AppointmentNumber({ aid }: { aid: string }) {
+  return (
+    <p className="border-primary-500 border-b border-dashed font-medium uppercase">
+      <span>{aid.slice(0, 6)}</span>
+      <span className="text-primary-500">{aid.slice(6, 10)}</span>
+    </p>
   );
 }
