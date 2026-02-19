@@ -98,7 +98,7 @@ const DataTable = <TData extends RowData>({
     <div
       ref={(node) => {
         internalTableContainerRef.current = node;
-        // eslint-disable-next-line no-param-reassign
+
         if (containerRef) containerRef.current = node;
       }}
       style={{ ...columnSizingVars }}
@@ -114,7 +114,7 @@ const DataTable = <TData extends RowData>({
       onPointerEnter={(e) => {
         internalTableContainerRef.current?.releasePointerCapture(e.pointerId);
       }}
-      className="relative flex-1 overflow-auto rounded-t-md border-l border-t"
+      className="relative flex-1 overflow-auto rounded-t-md border-t border-l"
     >
       <div
         role="table"

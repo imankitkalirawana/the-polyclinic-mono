@@ -155,9 +155,7 @@ export default function DashboardDoctor({ id }: { id: string }) {
               label={item.label}
               value={
                 item.value === 'specializations'
-                  ? doctor.specializations
-                      ?.map((specialization: any) => specialization.name)
-                      .join(', ')
+                  ? doctor.specializations?.map((specialization) => specialization.name).join(', ')
                   : doctor[item.value] || '-'
               }
               icon={item.icon}

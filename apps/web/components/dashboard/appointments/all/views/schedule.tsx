@@ -15,7 +15,6 @@ interface ScheduleViewProps {
 }
 
 export function ScheduleView({ appointments, currentDate }: ScheduleViewProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);

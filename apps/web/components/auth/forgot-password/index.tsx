@@ -133,28 +133,32 @@ export default function ForgotPassword(): React.ReactElement {
     switch (data.meta.page) {
       case 0:
         // check email exists
-        const res = await AuthApi.checkEmail({ email: data.user.email });
-        if (res.data?.exists) {
-          sendOTP({
-            email: data.user.email,
-            type: VerificationType.PASSWORD_RESET,
-          });
-          form.setValue('meta.page', 1);
-        } else {
-          form.setError('user.email', { message: 'Email does not exist' });
+        {
+          const res = await AuthApi.checkEmail({ email: data.user.email });
+          if (res.data?.exists) {
+            sendOTP({
+              email: data.user.email,
+              type: VerificationType.PASSWORD_RESET,
+            });
+            form.setValue('meta.page', 1);
+          } else {
+            form.setError('user.email', { message: 'Email does not exist' });
+          }
         }
         break;
       case 1:
         // verify OTP
-        const { success } = await AuthApi.verifyOTP({
-          email: data.user.email,
-          otp: data.user.otp ?? '',
-          type: VerificationType.PASSWORD_RESET,
-        });
-        if (success) {
-          form.setValue('meta.page', 2);
-        } else {
-          form.setError('user.otp', { message: 'Invalid OTP' });
+        {
+          const { success } = await AuthApi.verifyOTP({
+            email: data.user.email,
+            otp: data.user.otp ?? '',
+            type: VerificationType.PASSWORD_RESET,
+          });
+          if (success) {
+            form.setValue('meta.page', 2);
+          } else {
+            form.setError('user.otp', { message: 'Invalid OTP' });
+          }
         }
         break;
       case 2:

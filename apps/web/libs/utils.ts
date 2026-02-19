@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
-import { z } from 'zod';
 import { CalendarDate } from '@internationalized/date';
 import { Gender } from '@repo/store';
+import { z } from 'zod';
 
 export const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
 export const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'thepolyclinic.app';
@@ -87,7 +87,9 @@ export async function tryCatch<T, E = Error>(promise: Promise<T>): Promise<Resul
     const data = await promise;
     return [data, null] as const;
   } catch (error) {
-    process.env.NODE_ENV !== 'production' && console.error('error', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('error', error);
+    }
     return [null, error as E] as const;
   }
 }

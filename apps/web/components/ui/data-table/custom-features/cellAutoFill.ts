@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import {
   Cell,
   Column,
@@ -75,14 +74,15 @@ export interface CellAutoFillCell {
  * Note: This affect global namespace for @tanstack/react-table types
  */
 declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface TableState extends CellAutoFillTableState {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
   interface TableOptionsResolved<TData extends RowData> extends CellAutoFillOptions {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
   interface Table<TData extends RowData> extends CellAutoFillInstance {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
   interface Row<TData extends RowData> extends CellAutoFillRow {}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
   interface Cell<TData extends RowData, TValue> extends CellAutoFillCell {}
 }
 

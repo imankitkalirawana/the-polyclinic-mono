@@ -41,7 +41,6 @@ export function MonthView({ appointments, onTimeSlotClick }: MonthViewProps) {
 
   const { aid, setIsTooltipOpen } = useAppointmentStore();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
 
   const monthStart = startOfMonth(currentDate);

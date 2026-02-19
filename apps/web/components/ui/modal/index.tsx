@@ -1,18 +1,18 @@
 'use client';
-import { forwardRef } from 'react';
 import {
+  Button,
+  ButtonProps,
   Modal as HeroModal,
   ModalProps as HeroModalProps,
   ModalBody,
   ModalContent,
-  ModalHeader,
   ModalFooter,
-  Button,
-  ButtonProps,
+  ModalHeader,
   ScrollShadow,
+  cn,
 } from '@heroui/react';
+import { forwardRef } from 'react';
 import AsyncButton from '../buttons/async-button';
-import { cn } from '@heroui/react';
 
 const isLargerThan3xl = (size?: string) => /^(5xl|4xl|full)$/.test(size ?? '');
 
@@ -183,14 +183,9 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                   <AsyncButton
                     radius={isLargeModal ? 'md' : 'none'}
                     onPress={async () => {
-                      try {
-                        await onSubmit();
-                        if (closeOnSubmit) {
-                          onClose();
-                        }
-                      } catch (error) {
-                        // Don't close modal on error - let the error be handled by the parent
-                        throw error;
+                      await onSubmit();
+                      if (closeOnSubmit) {
+                        onClose();
                       }
                     }}
                     variant="flat"

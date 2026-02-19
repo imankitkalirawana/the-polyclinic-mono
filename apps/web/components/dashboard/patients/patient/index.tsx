@@ -7,10 +7,10 @@ import AppointmentSlots from './appointment-slots';
 import Appointments from './appointments';
 
 import { CellRenderer } from '@/components/ui/cell/rich-color/cell-renderer';
-import { castData } from '@/libs/utils';
-import { Doctor } from '@repo/store';
-import { useDoctorById } from '@/services/client/doctor/doctor.query';
 import MinimalPlaceholder from '@/components/ui/minimal-placeholder';
+import { castData } from '@/libs/utils';
+import { useDoctorById } from '@/services/client/doctor/doctor.query';
+import { Doctor } from '@repo/store';
 
 type ListItem = {
   label: string;
@@ -155,9 +155,7 @@ export default function DashboardDoctor({ id }: { id: string }) {
               label={item.label}
               value={
                 item.value === 'specializations'
-                  ? doctor.specializations
-                      ?.map((specialization: any) => specialization.name)
-                      .join(', ')
+                  ? doctor.specializations?.map((specialization) => specialization.name).join(', ')
                   : doctor[item.value] || '-'
               }
               icon={item.icon}

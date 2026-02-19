@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Button,
   Card,
@@ -12,26 +10,24 @@ import {
   ScrollShadow,
   Textarea,
 } from '@heroui/react';
-import { useFormik } from 'formik';
 import { Icon } from '@iconify/react/dist/iconify.js';
+import { useFormik } from 'formik';
+import { useRouter } from 'next/navigation';
 
 import NoResults from '@/components/ui/no-results';
 import { drugValidationSchema } from '@/libs/validation';
 import { useDrugWithDid, useUpdateDrug } from '@/services/client/drug/drug.query';
+import { Drug } from '@repo/store';
 
 export default function EditDrug({ did }: { did: number }) {
   const router = useRouter();
   const { data } = useDrugWithDid(did);
   const updateDrug = useUpdateDrug();
 
-  if (!data) {
-    return <NoResults message="Drug not found" />;
-  }
-
   const drug = data;
 
-  const formik = useFormik({
-    initialValues: drug,
+  const formik = useFormik<Drug>({
+    initialValues: drug || ({} as Drug),
     validationSchema: drugValidationSchema,
     onSubmit: async (values) => {
       await updateDrug.mutateAsync(values).then(() => {
@@ -39,6 +35,10 @@ export default function EditDrug({ did }: { did: number }) {
       });
     },
   });
+
+  if (!data) {
+    return <NoResults message="Drug not found" />;
+  }
 
   return (
     <Card

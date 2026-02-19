@@ -16,7 +16,6 @@ declare module '@tanstack/react-table' {
     isFiltered?: boolean;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     rowHeight: number;
     getIsCellSelectable?: <TValue = unknown>(cell: Cell<TData, TValue>) => boolean;

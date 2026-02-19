@@ -18,12 +18,11 @@ export default function AppointmentList({
   date: Date;
   openInNewTab?: boolean;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_currentDate, setCurrentDate] = useQueryState(
     'date',
     parseAsIsoDateTime.withDefault(new Date())
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
 
   return (

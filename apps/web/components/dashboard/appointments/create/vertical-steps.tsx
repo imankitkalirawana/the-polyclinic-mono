@@ -153,7 +153,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
           className={cn('flex h-full max-h-[70vh] flex-col gap-y-3 pb-8', colors, className)}
         >
           {steps?.map((step, stepIdx) => {
-            let status =
+            const status =
               currentStep === stepIdx ? 'active' : currentStep < stepIdx ? 'inactive' : 'complete';
 
             return (
@@ -221,7 +221,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
                           >
                             <div className="flex items-center justify-center">
                               {status === 'complete' ? (
-                                <CheckIcon className="text-(--active-fg-color) h-6 w-6" />
+                                <CheckIcon className="h-6 w-6 text-(--active-fg-color)" />
                               ) : (
                                 <span>{stepIdx + 1}</span>
                               )}
@@ -281,7 +281,7 @@ const VerticalCollapsibleSteps = React.forwardRef<HTMLButtonElement, VerticalCol
                       }}
                     >
                       <Spacer x={14} />
-                      <ul className="text-default-400 list-disc pb-4 pl-1 pr-12">
+                      <ul className="text-default-400 list-disc pr-12 pb-4 pl-1">
                         {step.details.map((detail, idx) => (
                           <li key={idx} className="text-tiny mb-1">
                             {detail}

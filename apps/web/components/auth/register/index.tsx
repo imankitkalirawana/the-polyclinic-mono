@@ -226,15 +226,18 @@ export default function Register() {
         }
         break;
       case 2:
-        const { success } = await AuthApi.verifyOTP({
-          email: data.user.email ?? '',
-          otp: data.user.otp ?? '',
-          type: VerificationType.REGISTRATION,
-        });
-        if (success) {
-          form.setValue('meta.page', 3);
-        } else {
-          form.setError('user.otp', { message: 'Invalid OTP' });
+        {
+          const { success } = await AuthApi.verifyOTP({
+            email: data.user.email ?? '',
+            otp: data.user.otp ?? '',
+            type: VerificationType.REGISTRATION,
+          });
+
+          if (success) {
+            form.setValue('meta.page', 3);
+          } else {
+            form.setError('user.otp', { message: 'Invalid OTP' });
+          }
         }
         break;
       case 3:

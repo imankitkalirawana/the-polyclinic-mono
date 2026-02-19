@@ -47,7 +47,6 @@ function generateSlots(start: number, end: number, interval: number): Slot[] {
 }
 
 export default function AppointmentSlots({ id }: { id: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   const slots = generateSlots(

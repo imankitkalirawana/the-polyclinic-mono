@@ -37,7 +37,6 @@ export function useEventListener(
     const eventListener = (event: Event) => savedHandler.current(event);
     targetElement.addEventListener(eventName, eventListener);
 
-    // eslint-disable-next-line consistent-return
     return () => {
       targetElement.removeEventListener(eventName, eventListener);
     };

@@ -35,12 +35,12 @@ interface WeekViewProps {
 export function WeekView({ appointments, currentDate, onTimeSlotClick }: WeekViewProps) {
   const { user } = useSession();
   const ref = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [_currentDate, setCurrentDate] = useQueryState(
     'date',
     parseAsIsoDateTime.withDefault(new Date())
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [_view, setView] = useQueryState('view', parseAsStringEnum(views));
 
   const weekStart = startOfWeek(currentDate);
