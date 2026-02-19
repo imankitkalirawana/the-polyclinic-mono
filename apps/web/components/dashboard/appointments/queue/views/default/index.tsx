@@ -70,7 +70,6 @@ export default function AppointmentQueues() {
         sortable: true,
         renderCell: (queue) => <CopyText>{queue.aid}</CopyText>,
       },
-
       {
         name: 'Patient',
         uid: 'patient',
@@ -120,12 +119,23 @@ export default function AppointmentQueues() {
         renderCell: (queue) => <RenderChip value={queue.patient.gender} />,
       },
       {
-        name: 'Created At',
+        name: 'Booked At',
         uid: 'createdAt',
         sortable: true,
         renderCell: (queue) => <FormatDateTime value={queue.createdAt} />,
       },
-
+      {
+        name: 'Booked By',
+        uid: 'bookedByUser',
+        sortable: true,
+        renderCell: (queue) => (
+          <RenderUser
+            size="md"
+            name={queue.bookedByUser.name}
+            description={queue.bookedByUser.email}
+          />
+        ),
+      },
       {
         name: 'Actions',
         uid: 'actions',

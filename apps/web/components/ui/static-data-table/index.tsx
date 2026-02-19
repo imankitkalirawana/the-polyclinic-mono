@@ -43,8 +43,19 @@ import { useMemoizedCallback } from './use-memoized-callback';
 
 import type { $FixMe } from '@/types';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSession } from '@/libs/providers/session-provider';
 import { UserRole } from '@repo/store';
+
+type StoredTableState = {
+  key: string;
+  filterValue: string;
+  visibleColumns: string[];
+  page: number;
+  sortDescriptor: TableState['sortDescriptor'];
+  rowsPerPage: number;
+  filterValues: TableState['filterValues'];
+};
 
 export function Table<T extends TableItem>({
   uniqueKey,
@@ -66,27 +77,66 @@ export function Table<T extends TableItem>({
   errorMessage,
   renderFilter,
 }: TableProps<T>) {
-  const [searchValue, setSearchValue] = useState<string>('');
+  const storageKey = useMemo(() => `table-state:${uniqueKey}`, [uniqueKey]);
+
+  const [storedState, setStoredState] = useLocalStorage<StoredTableState | null>(storageKey, null);
+
+  const [state, setState] = useState<TableState>(() => {
+    if (storedState && storedState.key === uniqueKey) {
+      const visibleColumnsSet = new Set<string>(storedState.visibleColumns);
+      visibleColumnsSet.add('actions');
+
+      return {
+        key: uniqueKey,
+        filterValue: storedState.filterValue,
+        selectedKeys,
+        visibleColumns: visibleColumnsSet,
+        page: storedState.page,
+        sortDescriptor: storedState.sortDescriptor,
+        rowsPerPage: storedState.rowsPerPage,
+        filterValues: storedState.filterValues,
+      };
+    }
+
+    return {
+      key: uniqueKey,
+      filterValue: '',
+      selectedKeys,
+      visibleColumns: new Set([
+        ...(initialVisibleColumns || columns.map((col) => col.uid)),
+        'actions',
+      ]),
+      page: 1,
+      sortDescriptor: initialSortDescriptor,
+      rowsPerPage,
+      filterValues: Object.fromEntries(filters.map((filter) => [filter.key, 'all'])),
+    };
+  });
+
+  const [searchValue, setSearchValue] = useState<string>(state.filterValue);
   const debouncedSearch = useDebounce(searchValue, 500);
   const { user: currentUser } = useSession();
-
-  const [state, setState] = useState<TableState>({
-    key: uniqueKey,
-    filterValue: debouncedSearch,
-    selectedKeys,
-    visibleColumns: new Set([
-      ...(initialVisibleColumns || columns.map((col) => col.uid)),
-      'actions',
-    ]),
-    page: 1,
-    sortDescriptor: initialSortDescriptor,
-    rowsPerPage,
-    filterValues: Object.fromEntries(filters.map((filter) => [filter.key, 'all'])),
-  });
 
   const updateState = (newState: Partial<TableState>) => {
     setState((prevState) => ({ ...prevState, ...newState }));
   };
+
+  useEffect(() => {
+    const visibleColumnsArray =
+      state.visibleColumns === 'all'
+        ? columns.map((column) => column.uid)
+        : Array.from(state.visibleColumns);
+
+    setStoredState({
+      key: state.key,
+      filterValue: state.filterValue,
+      visibleColumns: visibleColumnsArray,
+      page: state.page,
+      sortDescriptor: state.sortDescriptor,
+      rowsPerPage: state.rowsPerPage,
+      filterValues: state.filterValues,
+    });
+  }, [state, columns, setStoredState]);
 
   const headerColumns = useMemo(() => {
     if (state.visibleColumns === 'all') return columns;
