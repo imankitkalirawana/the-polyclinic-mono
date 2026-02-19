@@ -221,6 +221,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.0
         version: 6.0.3
+      '@types/winston':
+        specifier: ^2.4.4
+        version: 2.4.4
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@20.19.33)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.19.33)(typescript@5.9.3))
@@ -533,6 +536,10 @@ importers:
         version: 5.1.6
 
   packages/eslint-config:
+    dependencies:
+      prettier:
+        specifier: ^3.8.1
+        version: 3.8.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.15.0
@@ -4844,6 +4851,10 @@ packages:
 
   '@types/whatwg-url@8.2.2':
     resolution: {integrity: sha512-FtQu10RWgn3D9U4aazdwIE2yzphmTJREDqNdODHrbrZmmMqI0vMheC/6NE/J1Yveaj8H+ela+YwWTjq5PGmuhA==}
+
+  '@types/winston@2.4.4':
+    resolution: {integrity: sha512-BVGCztsypW8EYwJ+Hq+QNYiT/MUyCif0ouBH+flrY66O5W+KIXAMML6E/0fJpm7VjIzgangahl5S03bJJQGrZw==}
+    deprecated: This is a stub types definition. winston provides its own type definitions, so you do not need this installed.
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -16793,6 +16804,10 @@ snapshots:
     dependencies:
       '@types/node': 20.19.33
       '@types/webidl-conversions': 7.0.3
+
+  '@types/winston@2.4.4':
+    dependencies:
+      winston: 0.7.3
 
   '@types/yargs-parser@21.0.3': {}
 

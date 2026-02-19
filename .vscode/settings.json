@@ -14,5 +14,9 @@
     "**/.pnpm/**": true,
     "**/.next/**": true
   },
-  "search.followSymlinks": false
+  "search.followSymlinks": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll.eslint": "explicit"
+  }
 }

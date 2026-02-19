@@ -1,5 +1,5 @@
-import type { Linter } from "eslint";
 import js from "@eslint/js";
+import type { Linter } from "eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
 import tseslint from "typescript-eslint";
@@ -29,16 +29,6 @@ export const config: Linter.Config[] = [
       ],
       "@typescript-eslint/no-namespace": "error",
       "@typescript-eslint/no-explicit-any": "error",
-      "sort-imports": [
-        "error",
-        {
-          ignoreCase: false,
-          ignoreDeclarationSort: false,
-          ignoreMemberSort: false,
-          memberSyntaxSortOrder: ["none", "all", "multiple", "single"],
-          allowSeparatedGroups: false,
-        },
-      ],
     },
   },
   {
