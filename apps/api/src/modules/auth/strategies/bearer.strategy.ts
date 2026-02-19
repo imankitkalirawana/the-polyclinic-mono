@@ -10,6 +10,9 @@ import { User } from '../entities/user.entity';
 import { UserRole } from '@repo/store';
 import { SchemaValidatorService } from '../schema/schema-validator.service';
 import { SchemaHandler } from 'src/libs/schema/schema.service';
+import { getTenantConnection } from 'src/common/db/tenant-connection';
+import { Doctor } from '@common/doctors/entities/doctor.entity';
+import { Patient } from '@common/patients/entities/patient.entity';
 
 export interface GlobalJwtPayload {
   sessionId: string;
@@ -87,6 +90,21 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
 
     await this.assertSchemaIfRequired(request, user);
 
+    let integrated_user_id: string | null = null;
+    const connection = await getTenantConnection(tokenSchema);
+    if (user.role === UserRole.DOCTOR) {
+      const doctor = await connection.getRepository(Doctor).findOne({
+        where: { user_id: user.id },
+      });
+      integrated_user_id = doctor?.id ?? null;
+    }
+    if (user.role === UserRole.PATIENT) {
+      const patient = await connection.getRepository(Patient).findOne({
+        where: { user_id: user.id },
+      });
+      integrated_user_id = patient?.id ?? null;
+    }
+
     return {
       userId: user.id,
       email: user.email,
@@ -95,6 +113,7 @@ export class GlobalBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
       role: user.role,
       sessionId: session.id,
       schema: tokenSchema,
+      integrated_user_id,
     };
   }
 

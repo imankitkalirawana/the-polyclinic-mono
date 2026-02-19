@@ -92,6 +92,9 @@ export const RenderUser = ({
   );
 };
 
+/**
+  @deprecated Use the `FormatDate` component from the `new-data-table/cell-renderer` instead.
+*/
 export const renderDate = ({ date, isTime = false }: { date: Date | string; isTime?: boolean }) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
 
@@ -114,6 +117,9 @@ export const renderCountry = (name: string, icon: React.ReactNode) => (
   </div>
 );
 
+/**
+  @deprecated Use the `RenderChip` component from the `new-data-table/cell-renderer` instead.
+*/
 export const renderChip = ({ item, size }: { item: ChipColorType; size?: ChipProps['size'] }) => (
   <Chip
     className={cn('flex w-fit items-center', chipColorMap[item])}

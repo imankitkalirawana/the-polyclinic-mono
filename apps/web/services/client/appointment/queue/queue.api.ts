@@ -8,16 +8,12 @@ import {
 import { PrescriptionFormSchema } from '@/components/dashboard/appointments/queue/views/doctor/prescription-panel';
 import { ActivityLogResponse } from '@/services/common/activity/activity.types';
 import { format } from 'date-fns/format';
-import { ColumnDefinition, RowData } from '@/components/ui/new-data-table/types';
 
 export class AppointmentQueueApi {
   private static API_BASE = '/client/appointments/queue';
 
   static async getAll() {
-    return await apiRequest<{
-      columns: ColumnDefinition[];
-      rows: RowData[];
-    }>({
+    return await apiRequest<AppointmentQueue[]>({
       url: `${this.API_BASE}/all`,
     });
   }

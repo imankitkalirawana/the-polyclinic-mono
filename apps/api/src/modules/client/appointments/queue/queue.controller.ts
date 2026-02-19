@@ -76,10 +76,10 @@ export class QueueController {
     UserRole.RECEPTIONIST,
     UserRole.PATIENT,
   )
-  async findAll(@Query('view_id') view_id: string) {
-    const result = await this.queueService.find_all_by_view(view_id);
+  async findAll(@Req() req: Request) {
+    const result = await this.queueService.find_all_by_user();
 
-    return result;
+    return result.map((queue) => formatQueue(queue, req.user.role));
   }
 
   @Get('doctor/:doctorId/queue')

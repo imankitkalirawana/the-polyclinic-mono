@@ -1,4 +1,4 @@
-import { QueueStatus, UserRole } from '@repo/store';
+import { Gender, QueueStatus, UserRole } from '@repo/store';
 import { ChipProps } from '@heroui/react';
 
 const USER_ROLE_CONFIG: Record<UserRole, ChipProps['classNames']> = {
@@ -40,6 +40,20 @@ const USER_ROLE_CONFIG: Record<UserRole, ChipProps['classNames']> = {
   },
 };
 
+const GENDER_CONFIG: Record<Gender, ChipProps['classNames']> = {
+  MALE: {
+    base: 'bg-blue-100 text-blue-700',
+    content: 'text-blue-700',
+  },
+  FEMALE: {
+    base: 'bg-pink-100 text-pink-700',
+    content: 'text-pink-700',
+  },
+  OTHER: {
+    base: 'bg-gray-100 text-gray-700',
+    content: 'text-gray-700',
+  },
+};
 const APPOINTMENT_QUEUE_STATUS_CONFIG: Record<QueueStatus, ChipProps['classNames']> = {
   PAYMENT_PENDING: {
     base: 'bg-red-100 text-red-700',
@@ -78,4 +92,5 @@ const APPOINTMENT_QUEUE_STATUS_CONFIG: Record<QueueStatus, ChipProps['classNames
 export const CHIP_CONFIG: Record<string, ChipProps['classNames']> = {
   ...USER_ROLE_CONFIG,
   ...APPOINTMENT_QUEUE_STATUS_CONFIG,
+  ...GENDER_CONFIG,
 };

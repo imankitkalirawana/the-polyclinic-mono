@@ -11,6 +11,7 @@ declare global {
       phone: string | null;
       role: Role;
       sessionId: string;
+      integrated_user_id: string | null;
     }
 
     interface Request {
