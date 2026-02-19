@@ -4,7 +4,6 @@ import { AppointmentQueue, QueueStatus } from '@repo/store';
 import {
   Accordion,
   AccordionItem,
-  Avatar as HerouiAvatar,
   Card,
   CardHeader,
   CardBody,
@@ -61,11 +60,7 @@ export default function QueuesList({
                 >
                   <CardHeader className="justify-between">
                     <div className="flex items-center gap-3">
-                      {queue.patient.image ? (
-                        <HerouiAvatar src={queue.patient.image} size="sm" />
-                      ) : (
-                        <Avatar name={queue.patient.name} size={30} />
-                      )}
+                      <Avatar name={queue.patient.name} size={30} />
                       <span className="text-default-500 text-small font-medium">
                         {queue.patient.name}
                       </span>
