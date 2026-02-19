@@ -24,7 +24,7 @@ import {
   Tooltip,
   DropdownMenu,
 } from '@heroui/react';
-import { format } from 'date-fns';
+import { formatDate } from 'date-fns';
 import { Icon } from '@iconify/react/dist/iconify.js';
 
 import AsyncButton from '@/components/ui/buttons/async-button';
@@ -220,11 +220,6 @@ AppointmentContent.displayName = 'AppointmentContent';
 // Shared header component
 const AppointmentHeader = memo(
   ({ appointment, onClose }: { appointment: AppointmentQueue; onClose: () => void }) => {
-    const formattedDate = useMemo(
-      () => format(new Date(appointment.appointmentDate ?? ''), 'EEEE, MMMM d · hh:mm a'),
-      [appointment.appointmentDate]
-    );
-
     return (
       <div className="flex w-full flex-row items-start justify-between gap-8 rounded-none pr-2">
         <div>
@@ -234,18 +229,14 @@ const AppointmentHeader = memo(
                 'line-through': appointment.status === QueueStatus.CANCELLED,
               })}
             >
-              #{appointment.aid} - {appointment.title}
+              {appointment.aid}
             </h2>
-            {/* TODO: FIx this */}
-            {appointment.title === 'Emergency' && (
-              <Icon icon="solar:danger-triangle-bold" className="text-warning-500 animate-pulse" />
-            )}
           </div>
           <div className="flex items-center gap-1">
-            {/* <StatusRenderer status={appointment.status} /> */}
-            <RenderChip value={appointment.status} isDotOnly />
-            &middot;
-            <span className="text-primary-foreground/90 text-tiny">{formattedDate}</span>
+            <RenderChip value={appointment.status} />
+            <span className="text-primary-foreground/90 text-tiny">
+              {formatDate(new Date(appointment.appointmentDate), 'EE, MMMM d')}
+            </span>
           </div>
         </div>
 

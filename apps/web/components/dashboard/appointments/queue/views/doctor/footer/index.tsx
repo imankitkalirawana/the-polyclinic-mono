@@ -16,7 +16,7 @@ export default function QueueFooter({ currentQueue }: { currentQueue?: Appointme
     <div
       data-testid="queue-footer"
       className={cn(
-        'border-divider bg-background absolute bottom-0 left-0 z-10 flex w-full justify-between gap-2 border-t p-2 px-4',
+        'border-divider bg-background/60 absolute bottom-0 left-0 z-10 flex w-full justify-between gap-2 border-t p-2 px-4 backdrop-blur-sm',
         {
           'max-w-full': !showNextQueues,
         }
