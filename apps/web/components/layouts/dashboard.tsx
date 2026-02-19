@@ -32,7 +32,7 @@ export const SIDEBAR_WIDTHS = {
   collapsed: 64,
 };
 
-const MAX_LENGTH = 10;
+const MAX_LENGTH = 15;
 
 function formatLongSegment(text: string) {
   return text.length > MAX_LENGTH ? (
