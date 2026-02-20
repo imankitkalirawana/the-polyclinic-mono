@@ -27,7 +27,7 @@ export const permissions: PermissionProps<ActionType, DropdownKeyType> = {
 export const content = (drug: Drug) => [
   {
     label: 'drug ID',
-    value: () => drug.did,
+    value: () => drug.unique_id,
     icon: 'solar:hashtag-circle-bold-duotone',
     classNames: { icon: 'text-purple-500 bg-purple-50' },
   },
@@ -137,9 +137,9 @@ export const sidebarContent = (drug: Drug) => (
               </div>
               <span className="text-default-400 capitalize">UID</span>
             </div>
-            <span className="text-default-foreground capitalize">{drug.did}</span>
+            <span className="text-default-foreground capitalize">{drug.unique_id}</span>
           </div>
-          <div className="from-divider/20 via-divider to-divider/20 bg-linear-to-r h-px w-full" />
+          <div className="from-divider/20 via-divider to-divider/20 h-px w-full bg-linear-to-r" />
           <div className="text-small flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="rounded-medium bg-pink-200 p-[5px] text-pink-400">

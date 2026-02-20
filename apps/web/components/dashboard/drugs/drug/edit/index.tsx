@@ -58,8 +58,8 @@ export default function EditDrug({ did }: { did: number }) {
           <div>
             <Input
               label="Drug ID"
-              name="did"
-              value={formik.values.did !== undefined ? String(formik.values.did) : ''}
+              name="unique_id"
+              value={formik.values.unique_id !== undefined ? String(formik.values.unique_id) : ''}
               placeholder="e.g. 1, 2, etc."
               onChange={(e) => {
                 formik.handleChange(e);
@@ -70,8 +70,8 @@ export default function EditDrug({ did }: { did: number }) {
                   <span className="text-default-400 text-small">#</span>
                 </div>
               }
-              isInvalid={!!formik.errors.did}
-              errorMessage={formik.errors.did}
+              isInvalid={!!formik.errors.unique_id}
+              errorMessage={formik.errors.unique_id}
             />
           </div>
           <div>

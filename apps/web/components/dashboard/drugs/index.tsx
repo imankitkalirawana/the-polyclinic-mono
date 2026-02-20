@@ -19,7 +19,7 @@ import { useAllDrugs } from '@/services/client/drug/drug.query';
 import { Drug } from '@repo/store';
 
 const INITIAL_VISIBLE_COLUMNS = [
-  'did',
+  'unique_id',
   'brandName',
   'genericName',
   'manufacturer',
@@ -39,19 +39,19 @@ export default function Drugs() {
         key: 'view',
         children: 'View',
         as: Link,
-        href: `/dashboard/drugs/${drug.did}`,
+        href: `/dashboard/drugs/${drug.unique_id}`,
       },
       {
         key: 'edit',
         children: 'Edit',
         as: Link,
-        href: `/dashboard/drugs/${drug.did}/edit`,
+        href: `/dashboard/drugs/${drug.unique_id}/edit`,
       },
       {
         key: 'delete',
         children: 'Delete',
         color: 'danger',
-        onPress: () => console.log('Delete', drug.did),
+        onPress: () => console.log('Delete', drug.unique_id),
         section: 'Danger Zone',
         className: 'text-danger',
       },
@@ -63,16 +63,16 @@ export default function Drugs() {
     () => [
       {
         name: 'Drug ID',
-        uid: 'did',
+        uid: 'unique_id',
         sortable: true,
-        renderCell: (drug) => renderCopyableText(drug.did.toString()),
+        renderCell: (drug) => renderCopyableText(drug.unique_id.toString()),
       },
       {
         name: 'Brand Name',
         uid: 'brandName',
         sortable: true,
         renderCell: (drug) => (
-          <div className="font-medium text-default-foreground">{drug.brandName}</div>
+          <div className="text-default-foreground font-medium">{drug.brandName}</div>
         ),
       },
       {
@@ -80,7 +80,7 @@ export default function Drugs() {
         uid: 'genericName',
         sortable: true,
         renderCell: (drug) => (
-          <div className="truncate capitalize text-default-foreground">{drug.genericName}</div>
+          <div className="text-default-foreground truncate capitalize">{drug.genericName}</div>
         ),
       },
       {
@@ -88,7 +88,7 @@ export default function Drugs() {
         uid: 'manufacturer',
         sortable: true,
         renderCell: (drug) => (
-          <div className="truncate capitalize text-default-foreground">{drug.manufacturer}</div>
+          <div className="text-default-foreground truncate capitalize">{drug.manufacturer}</div>
         ),
       },
       {
@@ -212,7 +212,7 @@ export default function Drugs() {
         data={drugs}
         columns={columns}
         initialVisibleColumns={INITIAL_VISIBLE_COLUMNS}
-        keyField="did"
+        keyField="unique_id"
         filters={filters}
         searchField={(drug, searchValue) =>
           drug.brandName.toLowerCase().includes(searchValue.toLowerCase()) ||
@@ -228,7 +228,7 @@ export default function Drugs() {
           direction: 'descending',
         }}
         onRowAction={(row) => {
-          const drug = drugs.find((drug) => drug.did == row);
+          const drug = drugs.find((drug) => drug.unique_id == row);
           if (drug) {
             setSelected(drug);
           }

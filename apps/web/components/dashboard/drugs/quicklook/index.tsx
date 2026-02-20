@@ -26,7 +26,7 @@ export function DrugQuickLook() {
         position: 'left',
         isIconOnly: true,
         onPress: () => {
-          const url = `/dashboard/drugs/${selected?.did}`;
+          const url = `/dashboard/drugs/${selected?.unique_id}`;
           window.open(url, '_blank');
         },
       },
@@ -100,7 +100,7 @@ export function DrugQuickLook() {
   const content = (drug: Drug) => [
     {
       label: 'Drug ID',
-      value: () => drug.did,
+      value: () => drug.unique_id,
       icon: 'solar:hashtag-circle-bold-duotone',
       classNames: { icon: 'text-purple-500 bg-purple-50' },
     },
