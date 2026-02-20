@@ -1,16 +1,17 @@
 import { Drug } from './entities/drug.entity';
 import { ArrayContains, FindOptionsWhere } from 'typeorm';
-import { Inject, NotFoundException } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { DrugFindOptions } from './drug.types';
+import { ClsService } from 'nestjs-cls';
+import { SCHEMA_KEY } from '@libs/schema/schema.constants';
 
+@Injectable()
 export class DrugService {
-  private readonly schema: string;
+  constructor(private readonly cls: ClsService) {}
 
-  constructor(@Inject(REQUEST) private request: Request) {
-    this.schema = this.request.schema;
+  private get schema(): string {
+    return this.cls.get(SCHEMA_KEY);
   }
 
   private async getConnection() {

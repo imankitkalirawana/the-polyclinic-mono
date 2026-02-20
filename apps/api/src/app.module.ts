@@ -20,6 +20,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SchemaModule } from './libs/schema/schema.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClsModule } from 'nestjs-cls';
 
 import {
   StandardResponseModule,
@@ -36,6 +37,10 @@ const options: StandardResponseModuleOptions = {};
     //     limit: process.env.NODE_ENV === 'production' ? 10 : 100, // 10 requests per minute
     //   },
     // ]),
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
     StandardResponseModule.forRoot(options),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     TypeOrmModule.forRoot({

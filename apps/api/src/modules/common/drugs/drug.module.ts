@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClsModule } from 'nestjs-cls';
 import { Drug } from './entities/drug.entity';
 import { DrugService } from './drug.service';
 import { DrugController } from './drug.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Drug])],
+  imports: [TypeOrmModule.forFeature([Drug]), ClsModule],
   controllers: [DrugController],
   providers: [DrugService],
   exports: [DrugService],

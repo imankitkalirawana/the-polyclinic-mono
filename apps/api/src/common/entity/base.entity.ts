@@ -2,14 +2,23 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v7 as uuidv7 } from 'uuid';
 
 @Entity({ name: 'base_entities' })
 export class BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = uuidv7();
+    }
+  }
 
   @CreateDateColumn()
   createdAt: Date;
