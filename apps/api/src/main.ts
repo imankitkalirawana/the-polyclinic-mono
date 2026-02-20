@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import './constants/globals';
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';

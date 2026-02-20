@@ -1,6 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 // import { APP_GUARD } from '@nestjs/core';
 // import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ClsUserInterceptor } from './common/request-context/cls-user.interceptor';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -74,7 +76,15 @@ const options: StandardResponseModuleOptions = {};
     SchemaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseInitService, SchemaMiddleware],
+  providers: [
+    AppService,
+    DatabaseInitService,
+    SchemaMiddleware,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClsUserInterceptor,
+    },
+  ],
   // {
   //   provide: APP_GUARD,
   //   useClass: ThrottlerGuard,

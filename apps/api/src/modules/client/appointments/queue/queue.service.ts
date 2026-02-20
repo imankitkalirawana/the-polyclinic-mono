@@ -1,12 +1,10 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
 import {
   Between,
   Equal,
@@ -16,8 +14,9 @@ import {
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
-import { Request } from 'express';
+import { ClsService } from 'nestjs-cls';
 import { CurrentUserPayload } from '@auth/decorators/current-user.decorator';
+import { REQUEST_USER_KEY } from 'src/common/request-context/request-context.constants';
 import { Queue } from './entities/queue.entity';
 import {
   formatQueue,
@@ -46,7 +45,6 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 
 import { PatientsService } from '@common/patients/patients.service';
 import { QueueFindOptions } from './queue.types';
-import { TableViewService } from '@common/table-views/table-view.service';
 import { endOfDay, isPast, startOfDay } from 'date-fns';
 
 const MAX_AID_GENERATION_RETRIES = 5;
@@ -55,7 +53,7 @@ const POSTGRES_UNIQUE_VIOLATION_CODE = '23505';
 function isUniqueConstraintViolation(error: unknown): boolean {
   return (
     typeof error === 'object' &&
-    error !== null &&
+    error &&
     'code' in error &&
     (error as { code: string }).code === POSTGRES_UNIQUE_VIOLATION_CODE
   );
@@ -70,20 +68,24 @@ const defaultQueueFindRelations = {
 
 @Injectable()
 export class QueueService {
-  private readonly schema: string;
   private readonly logger = new Logger(QueueService.name);
 
   constructor(
-    @Inject(REQUEST) private readonly request: Request,
+    private readonly cls: ClsService,
     private readonly paymentsService: PaymentsService,
     private readonly patientsService: PatientsService,
     private readonly doctorsService: DoctorsService,
     private readonly patientService: PatientsService,
     private readonly pdfService: PdfService,
     private readonly qrService: QrService,
-    private readonly tableViewService: TableViewService,
-  ) {
-    this.schema = this.request.schema;
+  ) {}
+
+  private get schema() {
+    return this.cls.get(SCHEMA_KEY);
+  }
+
+  private get user() {
+    return this.cls.get(REQUEST_USER_KEY);
   }
 
   private async getConnection() {
@@ -206,7 +208,7 @@ export class QueueService {
     });
     await this.checkDoctorExists(createQueueDto.doctorId);
 
-    if (existingQueue && this.request.user.role === UserRole.PATIENT) {
+    if (existingQueue && this.user.role === UserRole.PATIENT) {
       throw new BadRequestException(
         `You already have an appointment booked  <a class="underline text-primary-500" href="/appointments/queues/${existingQueue.id}">view</a>`,
       );
@@ -223,9 +225,9 @@ export class QueueService {
 
       if (
         createQueueDto.paymentMode === PaymentMode.CASH &&
-        (this.request.user.role === UserRole.ADMIN ||
-          this.request.user.role === UserRole.RECEPTIONIST ||
-          this.request.user.role === UserRole.NURSE)
+        (this.user.role === UserRole.ADMIN ||
+          this.user.role === UserRole.RECEPTIONIST ||
+          this.user.role === UserRole.NURSE)
       ) {
         status = QueueStatus.BOOKED;
       } else if (createQueueDto.paymentMode === PaymentMode.CASH) {
@@ -262,7 +264,7 @@ export class QueueService {
           aid,
           sequenceNumber,
           status,
-          bookedBy: this.request.user.userId,
+          bookedBy: this.user.userId,
         });
         try {
           queue = await queryRunner.manager.save(Queue, queueEntity);
@@ -343,7 +345,7 @@ export class QueueService {
 
     queue.status = QueueStatus.CANCELLED;
     queue.cancellationDetails = {
-      by: this.request.user.userId,
+      by: this.user.userId,
       remark,
     };
     const queueRepository = await this.getQueueRepository();
@@ -354,11 +356,11 @@ export class QueueService {
 
   async find_all_by_user() {
     const where = {
-      ...(this.request.user.role === UserRole.PATIENT && {
-        patientId: this.request.user.integrated_user_id,
+      ...(this.user.role === UserRole.PATIENT && {
+        patientId: this.user.integrated_user_id,
       }),
-      ...(this.request.user.role === UserRole.DOCTOR && {
-        doctorId: this.request.user.integrated_user_id,
+      ...(this.user.role === UserRole.DOCTOR && {
+        doctorId: this.user.integrated_user_id,
       }),
     };
 
@@ -372,7 +374,7 @@ export class QueueService {
   }
 
   async remove(id: string) {
-    const user = this.request.user;
+    const user = this.user;
     if (!user) throw new UnauthorizedException('Unauthorized');
 
     const queueRepository = await this.getQueueRepository();
@@ -463,11 +465,11 @@ export class QueueService {
 
     return {
       previous: previousQueues.map((queue) =>
-        formatQueue(queue, this.request.user.role),
+        formatQueue(queue, this.user.role),
       ),
-      current: current ? formatQueue(current, this.request.user.role) : null,
+      current: current ? formatQueue(current, this.user.role) : null,
       next: next
-        ? next.map((queue) => formatQueue(queue, this.request.user.role))
+        ? next.map((queue) => formatQueue(queue, this.user.role))
         : null,
 
       metaData: {
@@ -480,7 +482,7 @@ export class QueueService {
   async getQueueForPatient() {
     const queueRepo = await this.getQueueRepository();
     const now = new Date();
-    const userId = this.request.user.userId;
+    const userId = this.user.userId;
     const patient = await this.patientService.find_by_and_fail({
       user_id: userId,
     });
@@ -519,12 +521,12 @@ export class QueueService {
 
     return {
       previous: previousQueues.map((queue) =>
-        formatQueue(queue, this.request.user.role),
+        formatQueue(queue, this.user.role),
       ),
-      current: formatQueue(latestUpcomingAppointment, this.request.user.role),
+      current: formatQueue(latestUpcomingAppointment, this.user.role),
       next: nextQueues
         .slice(1)
-        .map((queue) => formatQueue(queue, this.request.user.role)),
+        .map((queue) => formatQueue(queue, this.user.role)),
       metaData: {
         totalPrevious: previousQueues.length,
         totalNext: nextQueues.length - 1,
@@ -534,10 +536,10 @@ export class QueueService {
 
   //get appointment by aid
   async getAppointmentByAid(aid: string) {
-    const userId = this.request.user.userId;
+    const userId = this.user.userId;
 
     let patientId = undefined;
-    if (this.request.user.role === UserRole.PATIENT) {
+    if (this.user.role === UserRole.PATIENT) {
       patientId = (
         await this.patientService.find_by_and_fail({ user_id: userId })
       ).id;
@@ -575,7 +577,7 @@ export class QueueService {
     };
     await queueRepository.save(queue);
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, this.user.role);
   }
 
   // skip queue by id
@@ -600,7 +602,7 @@ export class QueueService {
     queue.counter = getCounterObject(queue.counter, 'skip', 1);
     await queueRepository.save(queue);
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, this.user.role);
   }
 
   // clock in
@@ -623,7 +625,7 @@ export class QueueService {
     queue.startedAt = new Date();
     await queueRepository.save(queue);
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, this.user.role);
   }
 
   // complete appointment queue
@@ -655,7 +657,7 @@ export class QueueService {
 
     await queueRepository.save(queue);
 
-    return formatQueue(queue, this.request.user.role);
+    return formatQueue(queue, this.user.role);
   }
 
   async appointmentReceiptPdf(aid: string) {

@@ -4,7 +4,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { DrugFindOptions } from './drug.types';
 import { ClsService } from 'nestjs-cls';
-import { SCHEMA_KEY } from '@libs/schema/schema.constants';
 import { CreateDrugDto } from '@repo/store';
 
 @Injectable()
