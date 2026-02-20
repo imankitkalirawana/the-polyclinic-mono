@@ -1,6 +1,14 @@
 import { ActorType, Event, ItemType, ObjectChanges } from '@repo/store';
-import { Column, Entity, Index } from 'typeorm';
-import { BaseEntity } from 'src/common/entity/base.entity';
+import {
+  BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { v7 as uuidv7 } from 'uuid';
 
 /**
  * Table name only; schema comes from the DataSource (public vs tenant).
@@ -8,7 +16,23 @@ import { BaseEntity } from 'src/common/entity/base.entity';
  * Does not extend BaseEntity so we do not have deletedAt (audit logs are append-only).
  */
 @Entity('audit_logs')
-export class AuditLog extends BaseEntity {
+export class AuditLog {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = uuidv7();
+    }
+  }
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
+
   @Column({ type: 'uuid', nullable: true })
   @Index()
   item_id: string | null;
