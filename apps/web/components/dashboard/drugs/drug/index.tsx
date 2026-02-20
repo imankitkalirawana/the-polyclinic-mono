@@ -24,7 +24,7 @@ export default function DrugCard({ did }: { did: number }) {
           <p className="text-large">Drug Details</p>
           <p className="text-default-500 text-small">View and manage drug details</p>
         </div>
-        <Button color="primary" as={Link} href={`/dashboard/drugs/${drug.did}/edit`}>
+        <Button color="primary" as={Link} href={`/dashboard/drugs/${drug.unique_id}/edit`}>
           Edit
         </Button>
       </CardHeader>
