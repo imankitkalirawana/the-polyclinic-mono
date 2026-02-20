@@ -23,9 +23,18 @@ export async function ensureAuditLogsInSchema(
           WHERE n.nspname = ${escapeLiteral(schema)} AND t.typname = 'audit_logs_item_type_enum'
         ) THEN
           CREATE TYPE ${escapedSchema}.audit_logs_item_type_enum AS ENUM (
-            'User', 'Patient', 'Doctor', 'Company', 'Queue', 'Payment'
+            'User', 'Patient', 'Doctor', 'Company', 'Queue', 'Payment', 'Drug'
           );
         END IF;
+      END $$;
+    `);
+    // Add 'Drug' to existing enum if it was created before Drug was added (safe to run multiple times)
+    await q.query(`
+      DO $$
+      BEGIN
+        ALTER TYPE ${escapedSchema}.audit_logs_item_type_enum ADD VALUE 'Drug';
+      EXCEPTION
+        WHEN duplicate_object OR undefined_object THEN NULL;
       END $$;
     `);
     await q.query(`

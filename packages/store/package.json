@@ -8,8 +8,8 @@
     "src"
   ],
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc"
+    "dev": "tsc-watch -p tsconfig.json --onSuccess \"tsc-alias -p tsconfig.json\"",
+    "build": "tsc && tsc-alias -p tsconfig.json"
   },
   "exports": {
     ".": {
@@ -22,6 +22,8 @@
     }
   },
   "devDependencies": {
+    "tsc-alias": "^1.8.16",
+    "tsc-watch": "^6.0.4",
     "typescript": "latest"
   },
   "dependencies": {

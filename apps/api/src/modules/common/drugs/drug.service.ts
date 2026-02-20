@@ -5,6 +5,7 @@ import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { DrugFindOptions } from './drug.types';
 import { ClsService } from 'nestjs-cls';
 import { SCHEMA_KEY } from '@libs/schema/schema.constants';
+import { CreateDrugDto } from '@repo/store';
 
 @Injectable()
 export class DrugService {
@@ -65,5 +66,11 @@ export class DrugService {
       ...rest,
       relations,
     });
+  }
+
+  async create(dto: CreateDrugDto): Promise<Drug> {
+    const drugRepository = await this.getDrugRepository();
+    const drug = drugRepository.create(dto);
+    return drugRepository.save(drug);
   }
 }

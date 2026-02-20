@@ -20,3 +20,5 @@ export * from "./payment/create-payment.dto";
 export * from "./payment/verify-payment.dto";
 
 export * from "./doctor/create-specialization.dto";
+
+export * from "./drug/create-drug.dto";

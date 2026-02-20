@@ -24,9 +24,7 @@ export async function getTenantConnection(
         const config = getTenantConnectionConfig(schema);
         const connection = new DataSource(config);
         await connection.initialize();
-        if (schema !== 'public') {
-          await ensureAuditLogsInSchema(connection, schema);
-        }
+        await ensureAuditLogsInSchema(connection, schema);
         connections.set(schema, connection);
         return connection;
       } finally {

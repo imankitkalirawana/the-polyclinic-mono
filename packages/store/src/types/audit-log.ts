@@ -5,6 +5,7 @@ export enum ItemType {
   COMPANY = "Company",
   QUEUE = "Queue",
   PAYMENT = "Payment",
+  DRUG = "Drug",
 }
 
 export enum Event {
@@ -21,6 +22,6 @@ export enum ActorType {
 }
 
 export type ObjectChanges = {
-  before: Record<string, unknown>;
-  after: Record<string, unknown>;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
 };

@@ -1,5 +1,6 @@
 import {
   EntitySubscriberInterface,
+  EntityManager,
   EventSubscriber,
   InsertEvent,
   UpdateEvent,
@@ -19,7 +20,9 @@ import { Doctor } from '@common/doctors/entities/doctor.entity';
 import { Company } from '@auth/entities/company.entity';
 import { Queue } from '@client/appointments/queue/entities/queue.entity';
 import { Payment } from '@client/payments/entities/payment.entity';
+import { Drug } from '@common/drugs/entities/drug.entity';
 import { RequestContext } from 'src/common/request-context/request-context';
+import { getTenantConnection } from 'src/common/db/tenant-connection';
 import { AuditLog } from './entities/audit-logs.entity';
 
 type AnyEntity =
@@ -29,7 +32,21 @@ type AnyEntity =
   | Company
   | Queue
   | Payment
+  | Drug
   | Record<string, unknown>;
+
+/** ItemTypes that live only in public schema; their audit logs must go to public.audit_logs. */
+const PUBLIC_ITEM_TYPES: ItemType[] = [
+  ItemType.USER,
+  ItemType.COMPANY,
+  ItemType.DRUG,
+  ItemType.PATIENT,
+  ItemType.DOCTOR,
+];
+
+function isPublicEntity(itemType: ItemType): boolean {
+  return PUBLIC_ITEM_TYPES.includes(itemType);
+}
 
 function isActorType(value: string | null | undefined): value is ActorType {
   return value === ActorType.USER || value === ActorType.SYSTEM;
@@ -78,8 +95,26 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
     if (entity instanceof Company) return ItemType.COMPANY;
     if (entity instanceof Queue) return ItemType.QUEUE;
     if (entity instanceof Payment) return ItemType.PAYMENT;
+    if (entity instanceof Drug) return ItemType.DRUG;
 
     return null;
+  }
+
+  /**
+   * Saves the audit log to the correct schema: public entities (User, Company, Drug)
+   * always go to public.audit_logs; tenant entities go to the current connection's schema.
+   */
+  private async saveAuditLog(
+    manager: EntityManager,
+    log: AuditLog,
+    itemType: ItemType,
+  ): Promise<void> {
+    if (isPublicEntity(itemType)) {
+      const publicConn = await getTenantConnection('public');
+      await publicConn.getRepository(AuditLog).save(log);
+    } else {
+      await manager.save(log);
+    }
   }
 
   /**
@@ -147,7 +182,9 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
       object_changes,
     });
 
-    await event.manager.save(log);
+    console.log('[afterInsert] log', log);
+
+    await this.saveAuditLog(event.manager, log, itemType);
   }
 
   async afterUpdate(event: UpdateEvent<AnyEntity>): Promise<void> {
@@ -170,7 +207,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
       object_changes: changes,
     });
 
-    await event.manager.save(log);
+    await this.saveAuditLog(event.manager, log, itemType);
   }
 
   async afterRemove(event: RemoveEvent<AnyEntity>): Promise<void> {
@@ -195,7 +232,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
       object_changes,
     });
 
-    await event.manager.save(log);
+    await this.saveAuditLog(event.manager, log, itemType);
   }
 
   async afterSoftRemove(event: SoftRemoveEvent<AnyEntity>): Promise<void> {
@@ -220,7 +257,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
       object_changes,
     });
 
-    await event.manager.save(log);
+    await this.saveAuditLog(event.manager, log, itemType);
   }
 
   async afterRecover(event: RecoverEvent<AnyEntity>): Promise<void> {
@@ -245,6 +282,6 @@ export class AuditLogSubscriber implements EntitySubscriberInterface<AnyEntity> 
       object_changes,
     });
 
-    await event.manager.save(log);
+    await this.saveAuditLog(event.manager, log, itemType);
   }
 }
